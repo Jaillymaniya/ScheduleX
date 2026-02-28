@@ -1,5 +1,15 @@
-﻿<h3>AdminLayout</h3>
+﻿@inherits LayoutComponentBase
 
-@code {
+<link href="css/admin-layout.css" rel="stylesheet" />
 
-}
+<div class="admin-wrapper">
+    <AdminSidebar />
+
+    <div class="admin-main">
+        <AdminTopbar />
+
+        <div class="admin-content">
+            @Body
+        </div>
+    </div>
+</div>
