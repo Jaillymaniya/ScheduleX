@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Timetable.Core.Entities;
+using ScheduleX.Core.Entities;
 
-namespace Timetable.Infrastructure.Data;
+namespace ScheduleX.Infrastructure.Data;
 
 public class AppDbContext : DbContext
 {

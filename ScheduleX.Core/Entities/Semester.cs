@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Timetable.Core.Entities;
+namespace ScheduleX.Core.Entities;
 
 public class Semester
 {

@@ -1,0 +1,205 @@
+﻿@page "/admin/departments"
+@rendermode InteractiveServer
+@layout ScheduleX.Web.Components.Layout.Admin.AdminLayout
+@using ScheduleX.Core.Entities
+@inject ScheduleX.Web.Services.Admin.DepartmentApiService DepartmentService
+
+<link href="css/department.css" rel="stylesheet" />
+
+<div class="page-container">
+
+    <div class="page-header">
+        <h2>Department Management</h2>
+
+        <div class="header-actions">
+            <input class="search-box" placeholder="Search department..."
+                   @bind="searchText" />
+
+            <button class="btn-primary" @onclick="OpenForm">
+                + Add Department
+            </button>
+        </div>
+    </div>
+
+    <div class="grid-container">
+
+        <!-- ACTIVE -->
+        <div class="card">
+            <h4>Active Departments (@departments.Count(x => x.IsActive))</h4>
+
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var dept in departments
+                    .Where(x => x.IsActive &&
+                    (string.IsNullOrEmpty(searchText) ||
+                    x.DepartmentName.Contains(searchText, StringComparison.OrdinalIgnoreCase))))
+                    {
+                        <tr>
+                            <td>@dept.DepartmentName</td>
+                            <td>@dept.DepartmentCode</td>
+                            <td>
+                                <button class="btn-edit"
+                                        @onclick="() => Edit(dept)">
+                                    Edit
+                                </button>
+
+                                <button class="btn-danger"
+                                        @onclick="() => Toggle(dept.DepartmentId)">
+                                    Deactivate
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- INACTIVE -->
+        <div class="card">
+            <h4>Inactive Departments (@departments.Count(x => !x.IsActive))</h4>
+
+            <table class="styled-table">
+                <tbody>
+                    @foreach (var dept in departments
+                    .Where(x => !x.IsActive &&
+                    (string.IsNullOrEmpty(searchText) ||
+                    x.DepartmentName.Contains(searchText, StringComparison.OrdinalIgnoreCase))))
+                    {
+                        <tr>
+                            <td>@dept.DepartmentName</td>
+                            <td>@dept.DepartmentCode</td>
+                            <td>
+                                <button class="btn-success"
+                                        @onclick="() => Toggle(dept.DepartmentId)">
+                                    Activate
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL -->
+@if (showForm)
+{
+    <div class="modal-overlay">
+        <div class="modal-box">
+            <h3>@(departmentModel.DepartmentId == 0 ? "Add Department" : "Edit Department")</h3>
+
+            <EditForm Model="departmentModel" OnValidSubmit="SaveDepartment">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <InputText class="form-control"
+                           placeholder="Department Name"
+                           @bind-Value="departmentModel.DepartmentName" />
+
+                <InputText class="form-control"
+                           placeholder="Department Code"
+                           @bind-Value="departmentModel.DepartmentCode" />
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn-success">Save</button>
+                    <button type="button" class="btn-cancel" @onclick="CloseForm">Cancel</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<!-- TOAST -->
+@if (showToast)
+{
+    <div class="toast-container">
+        <div class="toast-message">
+            @toastMessage
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+}
+
+@code {
+
+    List<Department> departments = new();
+    Department departmentModel = new();
+    string searchText = "";
+
+    bool showForm = false;
+    bool showToast = false;
+    string toastMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    async Task LoadData()
+    {
+        departments = await DepartmentService.GetAllAsync();
+    }
+
+    void OpenForm()
+    {
+        departmentModel = new Department();
+        showForm = true;
+    }
+
+    void CloseForm() => showForm = false;
+
+    async Task SaveDepartment()
+    {
+        if (departmentModel.DepartmentId == 0)
+        {
+            await DepartmentService.CreateAsync(departmentModel);
+            ShowToast("Department Added Successfully");
+        }
+        else
+        {
+            await DepartmentService.UpdateAsync(departmentModel);
+            ShowToast("Department Updated Successfully");
+        }
+
+        showForm = false;
+        await LoadData();
+    }
+
+    void Edit(Department dept)
+    {
+        departmentModel = new Department
+            {
+                DepartmentId = dept.DepartmentId,
+                DepartmentName = dept.DepartmentName,
+                DepartmentCode = dept.DepartmentCode,
+                IsActive = dept.IsActive
+            };
+
+        showForm = true;
+    }
+
+    async Task Toggle(int id)
+    {
+        await DepartmentService.ToggleAsync(id);
+        await LoadData();
+    }
+
+    async void ShowToast(string message)
+    {
+        toastMessage = message;
+        showToast = true;
+
+        await Task.Delay(3000);
+        showToast = false;
+        StateHasChanged();
+    }
+}

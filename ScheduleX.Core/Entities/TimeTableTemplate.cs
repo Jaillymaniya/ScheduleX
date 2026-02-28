@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Timetable.Core.Entities;
+namespace ScheduleX.Core.Entities;
 
 public enum LayoutTypeEnum : byte
 {
