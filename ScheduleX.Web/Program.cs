@@ -1,11 +1,15 @@
 using ScheduleX.Web.Components;
 using Microsoft.EntityFrameworkCore;
-using Timetable.Infrastructure.Data;
+using ScheduleX.Infrastructure.Data;
+using Microsoft.AspNetCore.Components;
+using ScheduleX.Core.Interfaces;
+using ScheduleX.Infrastructure.Repositories;
+using ScheduleX.Web.Services.Admin;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

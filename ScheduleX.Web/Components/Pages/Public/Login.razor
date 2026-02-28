@@ -1,13 +1,13 @@
 ﻿@rendermode InteractiveServer
 @page "/login"
 @using Microsoft.EntityFrameworkCore
-@using Timetable.Core.Entities
+@using ScheduleX.Core.Entities
 @* @inject Timetable.Infrastructure.Data.AppDbContext Db *@
-@inject IDbContextFactory<Timetable.Infrastructure.Data.AppDbContext> DbFactory
+@inject IDbContextFactory<ScheduleX.Infrastructure.Data.AppDbContext> DbFactory
 @inject ScheduleX.Web.Services.AuthState Auth
 @inject ScheduleX.Web.Services.PasswordHasher Hasher
 @inject NavigationManager Nav
-@using Timetable.Infrastructure.Data
+@using ScheduleX.Infrastructure.Data
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<AppDbContext> DbFactory
 

@@ -9,7 +9,7 @@
 
 namespace ScheduleX.Web.Services;
 
-using Timetable.Core.Entities;
+using ScheduleX.Core.Entities;
 
 public class AuthState
 {
