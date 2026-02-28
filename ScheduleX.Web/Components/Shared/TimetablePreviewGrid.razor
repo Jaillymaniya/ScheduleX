@@ -1,0 +1,58 @@
+﻿@* <h3>TimetablePreviewGrid</h3> *@
+
+@* @code { *@
+
+@* } *@
+
+
+<div class="tt-grid">
+    <div class="tt-cell head"></div>
+    <div class="tt-cell head">Mon</div>
+    <div class="tt-cell head">Tue</div>
+    <div class="tt-cell head">Wed</div>
+    <div class="tt-cell head">Thu</div>
+    <div class="tt-cell head">Fri</div>
+
+    @foreach (var row in Rows)
+    {
+        <div class="tt-cell time">@row.Time</div>
+
+        @foreach (var c in row.Cells)
+        {
+            <div class="tt-cell slot">
+                <div class="slot-title">@c.Title</div>
+                <div class="slot-sub">@c.Sub</div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<Row> Rows = new()
+    {
+        new Row("09:00", new() {
+            new Cell("DBMS", "BCA-6 | R-101"),
+            new Cell("OOP", "BCA-6 | R-102"),
+            new Cell("—", "Free"),
+            new Cell("CN", "BCA-6 | R-201"),
+            new Cell("DBMS", "BCA-6 | R-101"),
+        }),
+        new Row("10:00", new() {
+            new Cell("Math", "BCA-6 | R-103"),
+            new Cell("—", "Free"),
+            new Cell("SE", "BCA-6 | R-105"),
+            new Cell("OOP", "BCA-6 | R-102"),
+            new Cell("—", "Free"),
+        }),
+        new Row("11:00", new() {
+            new Cell("Lab", "Batch A"),
+            new Cell("Lab", "Batch B"),
+            new Cell("Lab", "Batch C"),
+            new Cell("—", "Free"),
+            new Cell("SE", "BCA-6 | R-105"),
+        }),
+    };
+
+    private record Cell(string Title, string Sub);
+    private record Row(string Time, List<Cell> Cells);
+}
