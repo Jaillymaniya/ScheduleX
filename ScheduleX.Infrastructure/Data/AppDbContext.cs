@@ -35,6 +35,7 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+
         // ✅ Table names exactly like your DB dictionary
         modelBuilder.Entity<Department>().ToTable("TblDepartment");
         modelBuilder.Entity<User>().ToTable("TblUser");
