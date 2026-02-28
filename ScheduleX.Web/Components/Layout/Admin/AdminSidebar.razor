@@ -1,4 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
+@inject ScheduleX.Web.Services.AuthState Auth
+@inject NavigationManager Nav
 
 <div class="admin-sidebar">
 
@@ -20,7 +22,17 @@
     </ul>
 
     <div class="logout-section">
-        <button class="logout-btn">Logout</button>
+        <button class="logout-btn" @onclick="Logout">Logout</button>
     </div>
 
 </div>
+
+
+
+@code {
+    void Logout()
+    {
+        Auth.SignOut();
+        Nav.NavigateTo("/login", true);
+    }
+}

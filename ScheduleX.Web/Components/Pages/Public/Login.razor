@@ -1,0 +1,92 @@
+﻿@rendermode InteractiveServer
+@page "/login"
+@using Microsoft.EntityFrameworkCore
+@using Timetable.Core.Entities
+@* @inject Timetable.Infrastructure.Data.AppDbContext Db *@
+@inject IDbContextFactory<Timetable.Infrastructure.Data.AppDbContext> DbFactory
+@inject ScheduleX.Web.Services.AuthState Auth
+@inject ScheduleX.Web.Services.PasswordHasher Hasher
+@inject NavigationManager Nav
+@using Timetable.Infrastructure.Data
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<AppDbContext> DbFactory
+
+<h3>Login</h3>
+
+<div class="login-box">
+    @* <input class="input" placeholder="Username" @bind="Username" /> *@
+    @* <input class="input" placeholder="Password" type="password" @bind="Password" /> *@
+
+    <input class="input" placeholder="Username"
+           @bind-value="Username" @bind-value:event="oninput" />
+
+    <input class="input" placeholder="Password" type="password"
+           @bind-value="Password" @bind-value:event="oninput" />
+
+
+    <button type="button" class="btn primary" @onclick="DoLogin">Login</button>
+
+    <p>Entered Username: @Username</p>
+    <p>Entered Password: @Password</p>
+
+
+    @if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <p style="color:red;margin-top:10px">@Error</p>
+    }
+</div>
+
+@code {
+    private string Username = "";
+    private string Password = "";
+    private string Error = "";
+
+    private bool _busy;
+
+    private async Task DoLogin()
+    {
+        if (_busy) return;      // prevent double-click / parallel calls
+        _busy = true;
+
+        try
+        {
+            Error = "";
+
+            Username = (Username ?? "").Trim();
+            Password = (Password ?? "").Trim();
+
+            await using var db = await DbFactory.CreateDbContextAsync();
+
+            var user = await db.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Username == Username && u.IsActive);
+
+            if (user == null)
+            {
+                Error = "Invalid username or password.";
+                return;
+            }
+
+            var hash = (user.PasswordHash ?? "").Trim();
+
+            if (!Hasher.Verify(Password, hash))
+            {
+                Error = "Invalid username or password.";
+                return;
+            }
+
+            Auth.SignIn(user.UserId, user.FullName, user.Role);
+
+            // Nav.NavigateTo(user.Role == UserRole.Admin ? "/admin/overview" : "/tt/overview", forceLoad: true);
+            Nav.NavigateTo(user.Role == UserRole.Admin ? "/admin/overview" : "/tt/overview");
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

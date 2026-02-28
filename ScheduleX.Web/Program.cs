@@ -1,10 +1,6 @@
 using ScheduleX.Web.Components;
 using Microsoft.EntityFrameworkCore;
-using ScheduleX.Infrastructure.Data;
-using Microsoft.AspNetCore.Components;
-using ScheduleX.Core.Interfaces;
-using ScheduleX.Infrastructure.Repositories;
-using ScheduleX.Web.Services.Admin;
+using Timetable.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +26,12 @@ builder.Services.AddScoped(sp =>
 
 builder.Services.AddScoped<DepartmentApiService>();
 
+//for login
+builder.Services.AddScoped<ScheduleX.Web.Services.AuthState>();
+
+//password hash 
+builder.Services.AddScoped<ScheduleX.Web.Services.PasswordHasher>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -52,3 +54,5 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+
