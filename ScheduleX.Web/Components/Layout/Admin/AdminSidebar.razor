@@ -1,5 +1,22 @@
-﻿<h3>AdminSidebar</h3>
+﻿@using Microsoft.AspNetCore.Components.Routing
 
-@code {
+<div class="admin-sidebar">
 
-}
+    <div class="logo">
+        <img src="images/logo.png" alt="ScheduleX Logo" />
+    </div>
+
+    <ul>
+        <li><NavLink href="/admin/overview" Match="NavLinkMatch.All">Dashboard</NavLink></li>
+        <li><NavLink href="/admin/departments">Departments</NavLink></li>
+        <li><NavLink href="/admin/faculty">Faculty</NavLink></li>
+        <li><NavLink href="/admin/rooms">Rooms</NavLink></li>
+        <li><NavLink href="/admin/semesters">Semesters</NavLink></li>
+        <li><NavLink href="/admin/timetable">Timetable</NavLink></li>
+    </ul>
+
+    <div class="logout-section">
+        <button class="logout-btn">Logout</button>
+    </div>
+
+</div>
