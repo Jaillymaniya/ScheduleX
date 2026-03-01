@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Components\Pages\extra\**" />
+    <Content Remove="Components\Pages\extra\**" />
+    <EmbeddedResource Remove="Components\Pages\extra\**" />
+    <None Remove="Components\Pages\extra\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageReference Include="ClosedXML" Version="0.97.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.3.9" />
@@ -21,6 +28,14 @@
   <ItemGroup>
     <ProjectReference Include="..\ScheduleX.Core\ScheduleX.Core.csproj" />
     <ProjectReference Include="..\ScheduleX.Infrastructure\ScheduleX.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Components\Pages\tt\Academic\" />
+    <Folder Include="Components\Pages\tt\Configuration\" />
+    <Folder Include="Components\Pages\tt\Generation &amp; Validation\" />
+    <Folder Include="Components\Pages\tt\Modification\" />
+    <Folder Include="Components\Pages\tt\View&amp;Export\" />
   </ItemGroup>
 
 </Project>

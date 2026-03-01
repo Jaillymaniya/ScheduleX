@@ -1,0 +1,40 @@
+﻿@* <h3>TTLayout</h3> *@
+
+@* @code { *@
+
+@* } *@
+
+
+@inherits LayoutComponentBase
+@inject ScheduleX.Web.Services.AuthState Auth
+@inject NavigationManager Nav
+
+
+<link rel="stylesheet" href="css/tt.css" />
+@code{
+    protected override void OnInitialized()
+    {
+        // If user is not logged in, block TT pages
+        if (!Auth.IsLoggedIn)
+        {
+            // replace:true clears back history entry
+            Nav.NavigateTo("/login", replace: true);
+        }
+    }
+}
+
+<div class="tt-shell">
+    <div class="tt-sidebar">
+        <TTSidebar />
+    </div>
+
+    <div class="tt-main">
+        <div class="tt-topbar">
+            <TTTopbar />
+        </div>
+
+        <main class="tt-content">
+            @Body
+        </main>
+    </div>
+</div>

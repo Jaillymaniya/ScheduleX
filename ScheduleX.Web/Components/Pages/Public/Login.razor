@@ -78,7 +78,7 @@
             Auth.SignIn(user.UserId, user.FullName, user.Role);
 
             // Nav.NavigateTo(user.Role == UserRole.Admin ? "/admin/overview" : "/tt/overview", forceLoad: true);
-            Nav.NavigateTo(user.Role == UserRole.Admin ? "/admin/overview" : "/tt/overview");
+            Nav.NavigateTo(user.Role == UserRole.Admin ? "/admin/overview" : "/tt/overview", replace: true);
         }
         catch (Exception ex)
         {

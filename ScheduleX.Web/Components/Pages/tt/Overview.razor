@@ -1,0 +1,220 @@
+﻿@* <h3>overview</h3> *@
+
+@* @code { *@
+
+@* } *@
+
+
+@page "/tt/overview"
+@* @layout TTLayout *@
+@* @using ScheduleX.Web.Components.Layout.tt *@
+@layout ScheduleX.Web.Components.Layout.tt.TTLayout
+@inject NavigationManager Nav
+
+
+<link href="css/tt.css" rel="stylesheet" />
+
+<div class="tt-page-head">
+    <div>
+        <h2 class="tt-h2">Overview</h2>
+        <p class="tt-muted">Your complete timetable workflow at one place.</p>
+    </div>
+
+    <div class="tt-head-actions">
+        <button class="tt-btn" @onclick="@(()=>Nav.NavigateTo("/tt/settings"))">Configure Settings</button>
+        <button class="tt-btn primary" @onclick="@(()=>Nav.NavigateTo("/tt/generate"))">Generate Now</button>
+    </div>
+</div>
+
+<!-- Top Cards -->
+<div class="tt-grid-4">
+    <div class="tt-card clickable" @onclick="@(()=>Nav.NavigateTo("/tt/semesters"))">
+        <div class="tt-card-top">
+            <div class="tt-card-title">Semesters</div>
+            <div class="tt-pill">FR7</div>
+        </div>
+        <div class="tt-metric">6</div>
+        <div class="tt-muted">Active: Sem 4</div>
+    </div>
+
+    <div class="tt-card clickable" @onclick="@(()=>Nav.NavigateTo("/tt/faculty"))">
+        <div class="tt-card-top">
+            <div class="tt-card-title">Faculty</div>
+            <div class="tt-pill">FR8</div>
+        </div>
+        <div class="tt-metric">18</div>
+        <div class="tt-muted">Available: 16</div>
+    </div>
+
+    <div class="tt-card clickable" @onclick="@(()=>Nav.NavigateTo("/tt/subjects"))">
+        <div class="tt-card-top">
+            <div class="tt-card-title">Subjects</div>
+            <div class="tt-pill">FR9</div>
+        </div>
+        <div class="tt-metric">34</div>
+        <div class="tt-muted">Assigned: 28</div>
+    </div>
+
+    <div class="tt-card clickable" @onclick="@(()=>Nav.NavigateTo("/tt/rooms"))">
+        <div class="tt-card-top">
+            <div class="tt-card-title">Rooms / Labs</div>
+            <div class="tt-pill">FR10</div>
+        </div>
+        <div class="tt-metric">12</div>
+        <div class="tt-muted">Labs: 4</div>
+    </div>
+</div>
+
+<!-- Middle area -->
+<div class="tt-grid-2">
+    <!-- Setup progress -->
+    <div class="tt-card">
+        <div class="tt-card-top">
+            <div class="tt-card-title">Setup Progress</div>
+            <div class="tt-muted">Complete steps to enable generation</div>
+        </div>
+
+        <div class="tt-checklist">
+            <div class="tt-check done">
+                <span class="dot"></span>
+                <div>
+                    <div class="line-title">Semesters created</div>
+                    <div class="line-sub">FR7 • Semester Management</div>
+                </div>
+                <span class="status ok">Done</span>
+            </div>
+
+            <div class="tt-check done">
+                <span class="dot"></span>
+                <div>
+                    <div class="line-title">Faculty added</div>
+                    <div class="line-sub">FR8 • Faculty Management</div>
+                </div>
+                <span class="status ok">Done</span>
+            </div>
+
+            <div class="tt-check warn">
+                <span class="dot"></span>
+                <div>
+                    <div class="line-title">Subjects added & assigned</div>
+                    <div class="line-sub">FR9 • Subject + Faculty mapping</div>
+                </div>
+                <span class="status warn">Pending</span>
+            </div>
+
+            <div class="tt-check done">
+                <span class="dot"></span>
+                <div>
+                    <div class="line-title">Rooms / labs configured</div>
+                    <div class="line-sub">FR10 • Capacity & type</div>
+                </div>
+                <span class="status ok">Done</span>
+            </div>
+
+            <div class="tt-check warn">
+                <span class="dot"></span>
+                <div>
+                    <div class="line-title">Divisions created</div>
+                    <div class="line-sub">FR11 • Strength & division allocation</div>
+                </div>
+                <span class="status warn">Pending</span>
+            </div>
+
+            <div class="tt-check warn">
+                <span class="dot"></span>
+                <div>
+                    <div class="line-title">Timetable & Break settings</div>
+                    <div class="line-sub">FR12 + FR15 • Working days / breaks</div>
+                </div>
+                <span class="status warn">Pending</span>
+            </div>
+
+            <div class="tt-check">
+                <span class="dot"></span>
+                <div>
+                    <div class="line-title">Timetable generated</div>
+                    <div class="line-sub">FR16 • Generate timetable</div>
+                </div>
+                <span class="status neutral">Not yet</span>
+            </div>
+        </div>
+
+        <div class="tt-actions-row">
+            <button class="tt-btn" @onclick="@(()=>Nav.NavigateTo("/tt/subjects"))">Fix Assignments</button>
+            <button class="tt-btn primary" @onclick="@(()=>Nav.NavigateTo("/tt/settings"))">Finish Configuration</button>
+        </div>
+    </div>
+
+    <!-- Status + alerts -->
+    <div class="tt-stack">
+        <div class="tt-card">
+            <div class="tt-card-top">
+                <div class="tt-card-title">Timetable Status</div>
+                <div class="tt-pill">FR16</div>
+            </div>
+
+            <div class="tt-status-box">
+                <div class="tt-status-icon pending"></div>
+                <div>
+                    <div class="tt-status-title">Not generated</div>
+                    <div class="tt-muted">Complete pending steps & click generate.</div>
+                </div>
+            </div>
+
+            <div class="tt-actions-row">
+                <button class="tt-btn" @onclick="@(()=>Nav.NavigateTo("/tt/view"))">Preview</button>
+                <button class="tt-btn primary" @onclick="@(()=>Nav.NavigateTo("/tt/generate"))">Generate Now</button>
+            </div>
+        </div>
+
+        <div class="tt-card">
+            <div class="tt-card-top">
+                <div class="tt-card-title">Validation Alerts</div>
+                <div class="tt-pill">FR17</div>
+            </div>
+
+            <div class="tt-alert-grid">
+                <div class="tt-alert">
+                    <div class="tt-alert-title">Faculty Conflicts</div>
+                    <div class="tt-alert-metric ok">0</div>
+                    <div class="tt-muted">Same faculty same time</div>
+                </div>
+
+                <div class="tt-alert">
+                    <div class="tt-alert-title">Room Conflicts</div>
+                    <div class="tt-alert-metric ok">0</div>
+                    <div class="tt-muted">Same room same time</div>
+                </div>
+
+                <div class="tt-alert">
+                    <div class="tt-alert-title">Weekly Limits</div>
+                    <div class="tt-alert-metric warn">2</div>
+                    <div class="tt-muted">Subject lecture limits</div>
+                </div>
+            </div>
+
+            <div class="tt-actions-row">
+                <button class="tt-btn" @onclick="@(()=>Nav.NavigateTo("/tt/validation"))">Open Validation</button>
+                <button class="tt-btn primary" @onclick="@(()=>Nav.NavigateTo("/tt/regenerate"))">Regenerate</button>
+            </div>
+        </div>
+
+
+        <!-- Quick Actions -->
+        <div class="tt-card">
+            <div class="tt-card-top">
+                <div class="tt-card-title">Quick Actions</div>
+                <div class="tt-muted">Fast access to commonly used tasks</div>
+            </div>
+
+            <div class="tt-quick">
+                <button class="tt-btn" @onclick="@(()=>Nav.NavigateTo("/tt/faculty"))">+ Add Faculty</button>
+                <button class="tt-btn" @onclick="@(()=>Nav.NavigateTo("/tt/subjects"))">+ Add Subject</button>
+                <button class="tt-btn" @onclick="@(()=>Nav.NavigateTo("/tt/rooms"))">+ Add Room/Lab</button>
+                <button class="tt-btn" @onclick="@(()=>Nav.NavigateTo("/tt/divisions"))">+ Create Division</button>
+                <button class="tt-btn primary" @onclick="@(()=>Nav.NavigateTo("/tt/export"))">Export PDF/Excel</button>
+            </div>
+        </div>
+
+    </div>
+</div>
