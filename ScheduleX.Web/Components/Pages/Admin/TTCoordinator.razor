@@ -1,0 +1,154 @@
+﻿
+@page "/admin/ttcoordinator"
+@layout ScheduleX.Web.Components.Layout.Admin.AdminLayout
+@using ScheduleX.Web.Services.Admin
+@using ScheduleX.Web.DTOs
+@using ScheduleX.Core.Entities
+@inject TTCoordinatorApiService Service
+
+<h2>TT Coordinator Registration</h2>
+
+<EditForm Model="model" OnValidSubmit="Register">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <InputText @bind-Value="model.FullName" placeholder="Full Name" />
+    </div>
+
+    <div>
+        <InputText @bind-Value="model.Username" placeholder="Username" />
+    </div>
+
+    <div>
+        <InputText @bind-Value="model.Email" placeholder="Email" />
+    </div>
+
+    <div>
+        <InputText @bind-Value="model.Phone" placeholder="Phone" />
+    </div>
+
+    <div>
+        <InputText type="password"
+                   @bind-Value="model.Password"
+                   placeholder="Password" />
+    </div>
+
+    <!-- ✅ DEPARTMENT DROPDOWN -->
+    <div>
+        <InputSelect class="form-control"
+                     @bind-Value="model.DepartmentId"
+                     @onchange="DepartmentChanged">
+
+            <option value="">-- Select Department --</option>
+
+            @foreach (var d in departments)
+            {
+                <option value="@d.DepartmentId">
+                    @d.DepartmentName
+                </option>
+            }
+        </InputSelect>
+    </div>
+
+    <!-- ✅ COURSE DROPDOWN -->
+    <div>
+        <InputSelect class="form-control"
+                     @bind-Value="model.CourseId"
+                     disabled="@(courses.Count == 0)">
+
+            <option value="">-- Select Course --</option>
+
+            @foreach (var c in courses)
+            {
+                <option value="@c.CourseId">
+                    @c.CourseName
+                </option>
+            }
+        </InputSelect>
+    </div>
+
+    <div>
+        <button type="submit">Register</button>
+    </div>
+
+</EditForm>
+
+@if (showToast)
+{
+    <div style="color:green">
+        @toastMessage
+    </div>
+}
+
+<hr />
+
+<h3>All Coordinators</h3>
+
+@foreach (var u in coordinators)
+{
+    <div>
+        @u.FullName (@u.Department?.DepartmentName)
+
+        <button @onclick="() => Toggle(u.UserId)">
+            @(u.IsActive ? "Deactivate" : "Activate")
+        </button>
+    </div>
+}
+
+@code {
+
+    RegisterTTCoordinatorDto model = new();
+    List<User> coordinators = new();
+    List<Department> departments = new();
+    List<Course> courses = new();
+
+    bool showToast = false;
+    string toastMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        coordinators = await Service.GetAllAsync();
+        departments = await Service.GetDepartmentsAsync();
+        courses = await Service.GetCoursesAsync(1);
+    }
+
+    // ✅ CORRECT METHOD SIGNATURE
+    async Task DepartmentChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int deptId))
+        {
+            model.DepartmentId = deptId;
+            courses = await Service.GetCoursesAsync(deptId);
+        }
+        else
+        {
+            courses.Clear();
+        }
+
+        model.CourseId = null;
+    }
+
+    async Task Register()
+    {
+        await Service.RegisterAsync(model);
+
+        toastMessage = "Coordinator Registered Successfully";
+        showToast = true;
+        StateHasChanged();
+
+        await Task.Delay(3000);
+
+        showToast = false;
+
+        model = new RegisterTTCoordinatorDto();
+        courses.Clear();
+        coordinators = await Service.GetAllAsync();
+    }
+
+    async Task Toggle(int id)
+    {
+        await Service.ToggleAsync(id);
+        coordinators = await Service.GetAllAsync();
+    }
+}

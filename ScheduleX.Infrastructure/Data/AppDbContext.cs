@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     //public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<Course> Courses => Set<Course>();
+    public DbSet<TTCoordinatorCourse> TTCoordinatorCourses { get; set; }
     public DbSet<Semester> Semesters => Set<Semester>();
     public DbSet<Division> Divisions => Set<Division>();
     public DbSet<Room> Rooms => Set<Room>();
@@ -41,6 +42,8 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<User>().ToTable("TblUser");
         //modelBuilder.Entity<PasswordResetToken>().ToTable("TblPasswordResetToken");
         modelBuilder.Entity<Course>().ToTable("TblCourse");
+        modelBuilder.Entity<TTCoordinatorCourse>()
+    .ToTable("TblTTCoordinatorCourse");
         modelBuilder.Entity<Semester>().ToTable("TblSemester");
         modelBuilder.Entity<Division>().ToTable("TblDivision");
         modelBuilder.Entity<Room>().ToTable("TblRoom");
@@ -119,6 +122,9 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<TimeSlot>()
             .HasIndex(x => new { x.ConfigId, x.SlotNo }).IsUnique();
+        modelBuilder.Entity<TTCoordinatorCourse>()
+    .HasIndex(x => new { x.UserId, x.CourseId })
+    .IsUnique();
 
         // Prevent duplicate entries in same division slot
         modelBuilder.Entity<TimeTableEntry>()
@@ -144,7 +150,17 @@ public class AppDbContext : DbContext
             .HasForeignKey(x => x.ParentBatchId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<TTCoordinatorCourse>()
+    .HasOne(x => x.User)
+    .WithMany(x => x.TTCoordinatorCourses)
+    .HasForeignKey(x => x.UserId)
+    .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<TTCoordinatorCourse>()
+            .HasOne(x => x.Course)
+            .WithMany(x => x.TTCoordinatorCourses)
+            .HasForeignKey(x => x.CourseId)
+            .OnDelete(DeleteBehavior.Restrict);
         // ===============================
         // ✅ PREVENT MULTIPLE CASCADE PATH
         // ===============================
