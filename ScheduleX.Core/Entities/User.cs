@@ -43,6 +43,8 @@ public class User
 
     // Nav
     //public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
+    public ICollection<TTCoordinatorCourse> TTCoordinatorCourses { get; set; }
+    = new List<TTCoordinatorCourse>();
     public ICollection<TimeTableBatch> CreatedBatches { get; set; } = new List<TimeTableBatch>();
     public ICollection<TimeTableEntryHistory> TimeTableEntryHistories { get; set; } = new List<TimeTableEntryHistory>();
     public ICollection<ExportHistory> ExportHistories { get; set; } = new List<ExportHistory>();
