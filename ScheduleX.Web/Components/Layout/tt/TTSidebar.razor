@@ -1,0 +1,49 @@
+﻿@* <h3>TTSidebar</h3> *@
+
+@* @code { *@
+
+@* } *@
+
+
+@inject NavigationManager Nav
+
+<div class="tt-nav">
+    <div class="tt-brand" @onclick="@(()=>Nav.NavigateTo("/tt/overview"))">
+        @* <div class="tt-brand-logo">SX</div> *@
+        @* <div class="tt-brand-text"> *@
+        @*     <div class="tt-brand-name">ScheduleX</div> *@
+        @*     <div class="tt-brand-role">TT Coordinator</div> *@
+        @* </div> *@
+        <div class="logo">
+            <img src="images/logo.png" alt="ScheduleX Logo" />
+        </div>
+    </div>
+
+    <div class="tt-nav-section">Dashboard</div>
+    <button class="tt-nav-item active" @onclick="@(()=>Nav.NavigateTo("/tt/overview"))">
+        Overview
+    </button>
+
+    <div class="tt-nav-section">Academic Setup</div>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/semesters"))">Semesters</button>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/faculty"))">Faculty</button>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/subjects"))">Subjects & Assign</button>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/rooms"))">Rooms/Labs</button>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/divisions"))">Divisions</button>
+
+    <div class="tt-nav-section">Configuration</div>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/settings"))">Timetable Settings</button>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/breaks"))">Break Configuration</button>
+
+    <div class="tt-nav-section">Generation</div>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/generate"))">Generate Timetable</button>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/validation"))">Conflicts / Validation</button>
+
+    <div class="tt-nav-section">View & Export</div>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/view"))">View Timetable</button>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/export"))">Export (PDF/Excel)</button>
+
+    @* <div class="tt-nav-section">Account</div> *@
+    @* <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/profile"))">Profile</button> *@
+    @* <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/change-password"))">Change Password</button> *@
+</div>

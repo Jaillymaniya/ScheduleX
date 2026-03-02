@@ -1,0 +1,226 @@
+﻿@* <h3>Profile</h3> *@
+
+@* @code { *@
+
+@* } *@
+
+@page "/tt/account/profile"
+@layout ScheduleX.Web.Components.Layout.tt.TTLayout
+
+@using Microsoft.EntityFrameworkCore
+@using System.ComponentModel.DataAnnotations
+@inject ScheduleX.Infrastructure.Data.AppDbContext Db
+@inject ScheduleX.Web.Services.AuthState Auth
+@inject NavigationManager Nav
+
+<div class="tt-page-head">
+    <div>
+        <h2 class="tt-h2">Profile</h2>
+        <p class="tt-muted">View your account information.</p>
+    </div>
+    <div class="tt-head-actions">
+        <button class="tt-btn primary" @onclick="@(()=>Nav.NavigateTo("/tt/account/change-password"))">
+            Change Password
+        </button>
+    </div>
+</div>
+
+@if (Loading)
+{
+    <div class="tt-card">Loading profile...</div>
+}
+else if (!string.IsNullOrWhiteSpace(LoadError))
+{
+    <div class="tt-card">
+        <div class="tt-alertbar error">@LoadError</div>
+    </div>
+}
+else
+{
+    <div class="tt-profile-wrapper">
+    <div class="tt-card">
+        <div class="tt-card-top">
+            <div class="tt-card-title">Account Details</div>
+            <div class="tt-muted">Role, Email and Department are managed by Admin.</div>
+        </div>
+
+        <EditForm Model="Model" OnValidSubmit="Save">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="tt-form-grid">
+
+                <!-- Editable -->
+                <div class="tt-field">
+                    <div class="tt-label">Full Name</div>
+                    <InputText class="tt-input" @bind-Value="Model.FullName" />
+                </div>
+
+                <div class="tt-field">
+                    <div class="tt-label">User Name</div>
+                    <InputText class="tt-input" @bind-Value="Model.Username" readonly/>
+                </div>
+
+                <!-- Read Only -->
+                <div class="tt-field">
+                    <div class="tt-label">Role</div>
+                    <InputText class="tt-input" @bind-Value="Model.Role" readonly />
+                </div>
+
+                <div class="tt-field">
+                    <div class="tt-label">Email</div>
+                    <InputText class="tt-input" @bind-Value="Model.Email" readonly />
+                </div>
+
+                <div class="tt-field">
+                    <div class="tt-label">Department </div>
+                    <InputText class="tt-input" @bind-Value="Model.DepartmentName" readonly />
+                </div>
+
+                <!-- Editable -->
+                <div class="tt-field">
+                    <div class="tt-label">Phone</div>
+                        <InputText class="tt-input" pattern="\d{10}" maxlength="10" @bind-Value="Model.Phone" />
+                </div>
+
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Message))
+            {
+                <div class="tt-alertbar @(MessageType)">
+                    @Message
+                </div>
+            }
+
+            <div class="tt-actions-row">
+                <button type="submit" class="tt-btn primary" disabled="@Saving">
+                    @(Saving ? "Saving..." : "Save Changes")
+                </button>
+                <button type="button" class="tt-btn" @onclick="Reload">Reset</button>
+            </div>
+        </EditForm>
+    </div>
+    </div>
+}
+
+@code {
+    bool Loading = true;
+    bool Saving = false;
+
+    string? LoadError;
+    string? Message;
+    string MessageType = "success";
+
+    ProfileVm Model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Auth.IsLoggedIn)
+        {
+            Nav.NavigateTo("/login", replace: true);
+            return;
+        }
+
+        await Load();
+    }
+
+    async Task Load()
+    {
+        Loading = true;
+        LoadError = null;
+        Message = null;
+
+        try
+        {
+            var user = await Db.Users
+                .Include(x => x.Department)   // 🔥 This loads department table
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.UserId == Auth.UserId!.Value && x.IsActive);
+
+            if (user == null)
+            {
+                LoadError = "User not found or inactive.";
+                return;
+            }
+
+            Model = new ProfileVm
+                {
+                    UserId = user.UserId,
+                    FullName = user.FullName,
+                    Username = user.Username,
+                    Role = user.Role.ToString(),
+                    Email = user.Email ?? "-",
+                    Phone = user.Phone,
+                    DepartmentName = user.Department?.DepartmentName ?? "-"
+                };
+        }
+        catch (Exception ex)
+        {
+            LoadError = ex.Message;
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    async Task Reload() => await Load();
+
+    async Task Save()
+    {
+        Saving = true;
+        Message = null;
+
+        try
+        {
+            var user = await Db.Users
+                .FirstOrDefaultAsync(x => x.UserId == Model.UserId && x.IsActive);
+
+            if (user == null)
+            {
+                MessageType = "error";
+                Message = "User not found.";
+                return;
+            }
+
+            // Only editable fields
+            user.FullName = Model.FullName!.Trim();
+            user.Phone = string.IsNullOrWhiteSpace(Model.Phone) ? null : Model.Phone.Trim();
+
+            await Db.SaveChangesAsync();
+
+            // Update auth name
+            Auth.SignIn(user.UserId, user.FullName, user.Role);
+
+            MessageType = "success";
+            Message = "Profile updated successfully ✅";
+        }
+        catch (Exception ex)
+        {
+            MessageType = "error";
+            Message = "Update failed: " + ex.Message;
+        }
+        finally
+        {
+            Saving = false;
+        }
+    }
+
+    public class ProfileVm
+    {
+        public int UserId { get; set; }
+
+        [Required]
+        public string? FullName { get; set; }
+
+        public string? Username { get; set; }
+
+        public string Role { get; set; } = "-";
+
+        public string Email { get; set; } = "-";
+
+        public string? Phone { get; set; }
+
+        public string DepartmentName { get; set; } = "-";
+    }
+}

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ScheduleX.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using ScheduleX.Infrastructure.Data;
 namespace ScheduleX.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260301112041_AddTTCoordinatorCourseMapping")]
+    partial class AddTTCoordinatorCourseMapping
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -897,14 +900,6 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.HasKey("UserId");
 
                     b.HasIndex("DepartmentId");
-
-                    b.HasIndex("Email")
-                        .IsUnique()
-                        .HasFilter("[Email] IS NOT NULL");
-
-                    b.HasIndex("Phone")
-                        .IsUnique()
-                        .HasFilter("[Phone] IS NOT NULL");
 
                     b.HasIndex("Username")
                         .IsUnique();
