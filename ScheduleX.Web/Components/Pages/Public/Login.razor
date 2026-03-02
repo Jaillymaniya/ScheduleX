@@ -1,92 +1,148 @@
 ﻿@rendermode InteractiveServer
 @page "/login"
+
+<link href="css/login.css" rel="stylesheet" />
+
 @using Microsoft.EntityFrameworkCore
-@using ScheduleX.Core.Entities
-@* @inject Timetable.Infrastructure.Data.AppDbContext Db *@
-@inject IDbContextFactory<ScheduleX.Infrastructure.Data.AppDbContext> DbFactory
+@using ScheduleX.Infrastructure.Data
+
+@inject IDbContextFactory<AppDbContext> DbFactory
 @inject ScheduleX.Web.Services.AuthState Auth
 @inject ScheduleX.Web.Services.PasswordHasher Hasher
 @inject NavigationManager Nav
-@using ScheduleX.Infrastructure.Data
-@using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<AppDbContext> DbFactory
 
-<h3>Login</h3>
+<div class="auth-container">
 
-<div class="login-box">
-    @* <input class="input" placeholder="Username" @bind="Username" /> *@
-    @* <input class="input" placeholder="Password" type="password" @bind="Password" /> *@
+    <!-- LEFT BRAND PANEL -->
+    <div class="auth-left">
+        <h1>ScheduleX</h1>
+        <h3>Timetable Generator</h3>
+        <p>
+            Smart academic scheduling for institutions, faculty,
+            and students — fast, accurate, and automated.
+        </p>
+    </div>
 
-    <input class="input" placeholder="Username"
-           @bind-value="Username" @bind-value:event="oninput" />
+    <!-- RIGHT LOGIN PANEL -->
+    <div class="auth-right">
+        <div class="login-card">
 
-    <input class="input" placeholder="Password" type="password"
-           @bind-value="Password" @bind-value:event="oninput" />
+            <h2>Sign in</h2>
+            <p class="subtitle">Access your ScheduleX dashboard</p>
 
+            <input class="input"
+                   placeholder="Username"
+                   @bind="Username"
+                   @oninput="ClearMessages" />
 
-    <button type="button" class="btn primary" @onclick="DoLogin">Login</button>
+            @if (showUserError)
+            {
+                <div class="field-error">Username is required</div>
+            }
 
-    <p>Entered Username: @Username</p>
-    <p>Entered Password: @Password</p>
+            <input type="password"
+                   class="input"
+                   placeholder="Password"
+                   @bind="Password"
+                   @oninput="ClearMessages" />
 
+            @if (showPassError)
+            {
+                <div class="field-error">Password is required</div>
+            }
 
-    @if (!string.IsNullOrWhiteSpace(Error))
-    {
-        <p style="color:red;margin-top:10px">@Error</p>
-    }
+            @if (!string.IsNullOrWhiteSpace(Error))
+            {
+                <div class="server-error">@Error</div>
+            }
+
+            <button class="btn primary"
+                    disabled="@_busy"
+                    @onclick="DoLogin">
+                @(_busy ? "Signing in..." : "Sign in")
+            </button>
+
+            <div class="forgot">
+                <a href="/forgot-password">Forgot password?</a>
+            </div>
+
+        </div>
+    </div>
+
 </div>
 
 @code {
+
     private string Username = "";
     private string Password = "";
     private string Error = "";
-
     private bool _busy;
+
+    private bool showUserError;
+    private bool showPassError;
 
     private async Task DoLogin()
     {
-        if (_busy) return;      // prevent double-click / parallel calls
+        ClearMessages();
+
+        if (string.IsNullOrWhiteSpace(Username))
+            showUserError = true;
+
+        if (string.IsNullOrWhiteSpace(Password))
+            showPassError = true;
+
+        if (showUserError || showPassError)
+            return;
+
+        if (_busy) return;
         _busy = true;
 
         try
         {
-            Error = "";
-
-            Username = (Username ?? "").Trim();
-            Password = (Password ?? "").Trim();
-
             await using var db = await DbFactory.CreateDbContextAsync();
 
+            // 🔥 FORCE CASE-SENSITIVE COMPARISON (even if DB is CI)
             var user = await db.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Username == Username && u.IsActive);
+                .FirstOrDefaultAsync(u =>
+                    EF.Functions.Collate(
+                        u.Username,
+                        "SQL_Latin1_General_CP1_CS_AS"
+                    ) == Username
+                    && u.IsActive);
 
-            if (user == null)
+            // 🔐 COMMON MESSAGE FOR BOTH CASES
+            if (user == null || !Hasher.Verify(Password, user.PasswordHash ?? ""))
             {
-                Error = "Invalid username or password.";
-                return;
-            }
-
-            var hash = (user.PasswordHash ?? "").Trim();
-
-            if (!Hasher.Verify(Password, hash))
-            {
-                Error = "Invalid username or password.";
+                Error = "Invalid credentials.";
                 return;
             }
 
             Auth.SignIn(user.UserId, user.FullName, user.Role);
 
+<<<<<<< HEAD
+            Nav.NavigateTo(
+                user.Role == UserRole.Admin
+                    ? "/admin/overview"
+                    : "/tt/overview");
+=======
             // Nav.NavigateTo(user.Role == UserRole.Admin ? "/admin/overview" : "/tt/overview", forceLoad: true);
             Nav.NavigateTo(user.Role == UserRole.Admin ? "/admin/overview" : "/tt/overview", replace: true);
         }
         catch (Exception ex)
         {
             Error = ex.Message;
+>>>>>>> 69df917c2408517ab26ef5d11c403cb0b18d4bec
         }
         finally
         {
             _busy = false;
         }
+    }
+    private void ClearMessages(ChangeEventArgs? e = null)
+    {
+        showUserError = false;
+        showPassError = false;
+        Error = "";
     }
 }
