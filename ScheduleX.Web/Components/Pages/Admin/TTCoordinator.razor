@@ -1,100 +1,108 @@
-﻿
-@page "/admin/ttcoordinator"
+﻿@page "/admin/ttcoordinator"
 @layout ScheduleX.Web.Components.Layout.Admin.AdminLayout
 @using ScheduleX.Web.Services.Admin
 @using ScheduleX.Web.DTOs
 @using ScheduleX.Core.Entities
 @inject TTCoordinatorApiService Service
 
-<h2>TT Coordinator Registration</h2>
+<div class="tt-container">
 
-<EditForm Model="model" OnValidSubmit="Register">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+    <!-- TOP BUTTON -->
+    <div class="header-section">
+        <h2 class="page-title">TT Coordinators</h2>
 
-    <div>
-        <InputText @bind-Value="model.FullName" placeholder="Full Name" />
-    </div>
-
-    <div>
-        <InputText @bind-Value="model.Username" placeholder="Username" />
-    </div>
-
-    <div>
-        <InputText @bind-Value="model.Email" placeholder="Email" />
-    </div>
-
-    <div>
-        <InputText @bind-Value="model.Phone" placeholder="Phone" />
-    </div>
-
-    <div>
-        <InputText type="password"
-                   @bind-Value="model.Password"
-                   placeholder="Password" />
-    </div>
-
-    <!-- ✅ DEPARTMENT DROPDOWN -->
-    <div>
-        <InputSelect class="form-control"
-                     @bind-Value="model.DepartmentId"
-                     @onchange="DepartmentChanged">
-
-            <option value="">-- Select Department --</option>
-
-            @foreach (var d in departments)
-            {
-                <option value="@d.DepartmentId">
-                    @d.DepartmentName
-                </option>
-            }
-        </InputSelect>
-    </div>
-
-    <!-- ✅ COURSE DROPDOWN -->
-    <div>
-        <InputSelect class="form-control"
-                     @bind-Value="model.CourseId"
-                     disabled="@(courses.Count == 0)">
-
-            <option value="">-- Select Course --</option>
-
-            @foreach (var c in courses)
-            {
-                <option value="@c.CourseId">
-                    @c.CourseName
-                </option>
-            }
-        </InputSelect>
-    </div>
-
-    <div>
-        <button type="submit">Register</button>
-    </div>
-
-</EditForm>
-
-@if (showToast)
-{
-    <div style="color:green">
-        @toastMessage
-    </div>
-}
-
-<hr />
-
-<h3>All Coordinators</h3>
-
-@foreach (var u in coordinators)
-{
-    <div>
-        @u.FullName (@u.Department?.DepartmentName)
-
-        <button @onclick="() => Toggle(u.UserId)">
-            @(u.IsActive ? "Deactivate" : "Activate")
+        <button class="btn-main"
+                @onclick="ToggleForm">
+            @(showForm ? "Close Form" : "Register Coordinator")
         </button>
     </div>
-}
+
+    <!-- REGISTRATION FORM (VISIBLE ONLY WHEN BUTTON CLICKED) -->
+    @if (showForm)
+    {
+        <div class="tt-card">
+
+            <EditForm Model="model" OnValidSubmit="Register">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-grid">
+
+                    <InputText class="form-input" @bind-Value="model.FullName" placeholder="Full Name" />
+                    <InputText class="form-input" @bind-Value="model.Username" placeholder="Username" />
+                    <InputText class="form-input" @bind-Value="model.Email" placeholder="Email" />
+                    <InputText class="form-input" @bind-Value="model.Phone" placeholder="Phone" />
+
+                    <InputText class="form-input"
+                               type="password"
+                               @bind-Value="model.Password"
+                               placeholder="Password" />
+
+                    <InputSelect class="form-input"
+                                 @bind-Value="model.DepartmentId"
+                                 @bind-Value:after="LoadCourses">
+                        <option value="">Select Department</option>
+                        @foreach (var d in departments)
+                        {
+                            <option value="@d.DepartmentId">@d.DepartmentName</option>
+                        }
+                    </InputSelect>
+
+                    <InputSelect class="form-input"
+                                 @bind-Value="model.CourseId"
+                                 disabled="@(courses.Count == 0)">
+                        <option value="">Select Course</option>
+                        @foreach (var c in courses)
+                        {
+                            <option value="@c.CourseId">@c.CourseName</option>
+                        }
+                    </InputSelect>
+
+                </div>
+
+                <button type="submit" class="btn-register">
+                    Save Coordinator
+                </button>
+            </EditForm>
+
+            @if (showToast)
+            {
+                <div class="toast-message">
+                    @toastMessage
+                </div>
+            }
+
+        </div>
+    }
+
+    <!-- LIST BELOW -->
+    <div class="tt-list-card">
+
+        @if (coordinators.Count == 0)
+        {
+            <p class="no-record">No coordinators found.</p>
+        }
+        else
+        {
+            @foreach (var u in coordinators)
+            {
+                <div class="coordinator-item">
+                    <div>
+                        <strong>@u.FullName</strong>
+                        <span class="dept-name">(@u.Department?.DepartmentName)</span>
+                    </div>
+
+                    <button class="btn-toggle"
+                            @onclick="() => Toggle(u.UserId)">
+                        @(u.IsActive ? "Deactivate" : "Activate")
+                    </button>
+                </div>
+            }
+        }
+
+    </div>
+
+</div>
 
 @code {
 
@@ -103,6 +111,7 @@
     List<Department> departments = new();
     List<Course> courses = new();
 
+    bool showForm = false;
     bool showToast = false;
     string toastMessage = "";
 
@@ -110,40 +119,51 @@
     {
         coordinators = await Service.GetAllAsync();
         departments = await Service.GetDepartmentsAsync();
-        courses = await Service.GetCoursesAsync(1);
     }
 
-    // ✅ CORRECT METHOD SIGNATURE
-    async Task DepartmentChanged(ChangeEventArgs e)
+    void ToggleForm()
     {
-        if (int.TryParse(e.Value?.ToString(), out int deptId))
+        showForm = !showForm;
+
+        if (showForm)
         {
-            model.DepartmentId = deptId;
-            courses = await Service.GetCoursesAsync(deptId);
-        }
-        else
-        {
+            model = new RegisterTTCoordinatorDto();
             courses.Clear();
         }
-
-        model.CourseId = null;
     }
 
     async Task Register()
     {
-        await Service.RegisterAsync(model);
+        try
+        {
+            await Service.RegisterAsync(model);
 
-        toastMessage = "Coordinator Registered Successfully";
-        showToast = true;
-        StateHasChanged();
+            toastMessage = "Coordinator Registered Successfully";
+            showToast = true;
+
+            coordinators = await Service.GetAllAsync();
+
+            model = new RegisterTTCoordinatorDto();
+            courses.Clear();
+        }
+        catch (Exception ex)
+        {
+            toastMessage = ex.Message;
+            showToast = true;
+        }
 
         await Task.Delay(3000);
-
         showToast = false;
+    }
 
-        model = new RegisterTTCoordinatorDto();
-        courses.Clear();
-        coordinators = await Service.GetAllAsync();
+    async Task LoadCourses()
+    {
+        if (model.DepartmentId.HasValue)
+            courses = await Service.GetCoursesAsync(model.DepartmentId.Value);
+        else
+            courses.Clear();
+
+        model.CourseId = null;
     }
 
     async Task Toggle(int id)
@@ -152,3 +172,112 @@
         coordinators = await Service.GetAllAsync();
     }
 }
+
+<style>
+
+    .tt-container {
+        max-width: 1000px;
+        margin: 40px auto;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .page-title {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .btn-main {
+        background: linear-gradient(135deg, #4e73df, #224abe);
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s ease;
+    }
+
+        .btn-main:hover {
+            transform: translateY(-2px);
+        }
+
+    .tt-card {
+        background: #ffffff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        margin-bottom: 25px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .form-input {
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #dcdcdc;
+        transition: 0.3s;
+    }
+
+        .form-input:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 2px rgba(78,115,223,0.2);
+        }
+
+    .btn-register {
+        background: #1cc88a;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .toast-message {
+        margin-top: 10px;
+        padding: 8px;
+        background: #d4edda;
+        color: #155724;
+        border-radius: 6px;
+    }
+
+    .tt-list-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+
+    .coordinator-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px;
+        background: #f8f9fc;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .btn-toggle {
+        background: #858796;
+        color: white;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .no-record {
+        color: gray;
+    }
+
+</style>

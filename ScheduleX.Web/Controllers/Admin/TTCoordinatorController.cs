@@ -69,6 +69,7 @@ public class TTCoordinatorController : ControllerBase
         _context.Users.Add(user);
 
         var mapping = new TTCoordinatorCourse
+
         {
             User = user,
             CourseId = dto.CourseId.Value

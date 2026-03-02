@@ -74,6 +74,14 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<User>()
             .HasIndex(x => x.Username).IsUnique();
 
+        modelBuilder.Entity<User>()
+        .HasIndex(u => u.Email)
+        .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Phone)
+            .IsUnique();
+
         //modelBuilder.Entity<PasswordResetToken>()
         //    .HasIndex(x => x.Token).IsUnique();
 
