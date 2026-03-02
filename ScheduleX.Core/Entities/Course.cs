@@ -7,11 +7,12 @@ public class Course
     [Key]
     public int CourseId { get; set; }
 
+
     [Required]
     public int DepartmentId { get; set; }
 
     [ForeignKey(nameof(DepartmentId))]
-    public Department Department { get; set; } = null!;
+    public Department Department { get; set; }
 
     [Required, MaxLength(100)]
     public string CourseName { get; set; } = null!;

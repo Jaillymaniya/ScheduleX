@@ -199,21 +199,64 @@
 
     void CloseForm() => showForm = false;
 
+    // async Task SaveCourse()
+    // {
+    //     if (courseModel.CourseId == 0)
+    //     {
+    //         await CourseService.CreateAsync(courseModel);
+    //         ShowToast("Course Added Successfully");
+    //     }
+    //     else
+    //     {
+    //         await CourseService.UpdateAsync(courseModel);
+    //         ShowToast("Course Updated Successfully");
+    //     }
+
+    //     showForm = false;
+    //     await LoadData();
+    // }
     async Task SaveCourse()
     {
-        if (courseModel.CourseId == 0)
+        try
         {
-            await CourseService.CreateAsync(courseModel);
-            ShowToast("Course Added Successfully");
-        }
-        else
-        {
-            await CourseService.UpdateAsync(courseModel);
-            ShowToast("Course Updated Successfully");
-        }
+            if (courseModel.DepartmentId == 0)
+            {
+                await ShowToast("Please select department");
+                return;
+            }
 
-        showForm = false;
-        await LoadData();
+            if (courseModel.CourseId == 0)
+            {
+                // await CourseService.CreateAsync(courseModel);
+
+                await CourseService.CreateAsync(new CourseCreateDto
+                    {
+                        DepartmentId = courseModel.DepartmentId,
+                        CourseName = courseModel.CourseName,
+                        CourseCode = courseModel.CourseCode
+                    });
+                await ShowToast("Course Added Successfully");
+            }
+            else
+            {
+                // await CourseService.UpdateAsync(courseModel);
+                await CourseService.UpdateAsync(courseModel.CourseId, new CourseUpdateDto
+                    {
+                        DepartmentId = courseModel.DepartmentId,
+                        CourseName = courseModel.CourseName,
+                        CourseCode = courseModel.CourseCode,
+                        IsActive = courseModel.IsActive
+                    });
+                await ShowToast("Course Updated Successfully");
+            }
+
+            showForm = false;
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            await ShowToast($"❌ {ex.Message}");
+        }
     }
 
     // void Edit(Course c)
@@ -249,10 +292,20 @@
         await LoadData();
     }
 
-    async void ShowToast(string message)
+    // async void ShowToast(string message)
+    // {
+    //     toastMessage = message;
+    //     showToast = true;
+
+    //     await Task.Delay(3000);
+    //     showToast = false;
+    //     StateHasChanged();
+    // }
+    async Task ShowToast(string message)
     {
         toastMessage = message;
         showToast = true;
+        StateHasChanged();
 
         await Task.Delay(3000);
         showToast = false;

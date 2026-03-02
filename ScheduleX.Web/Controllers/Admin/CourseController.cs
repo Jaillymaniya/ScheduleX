@@ -71,16 +71,46 @@ public class CourseController : ControllerBase
 
 
     [HttpPost]
-    public async Task<IActionResult> Create(Course course)
+    //public async Task<IActionResult> Create(Course course)
+    //{
+    //    await _repo.AddAsync(course);
+    //    return Ok();
+    //}
+    public async Task<IActionResult> Create(CourseCreateDto dto)
     {
+        var course = new Course
+        {
+            DepartmentId = dto.DepartmentId,
+            CourseName = dto.CourseName,
+            CourseCode = dto.CourseCode,
+            IsActive = true,
+            CreatedAt = DateTime.Now
+        };
+
         await _repo.AddAsync(course);
         return Ok();
     }
 
+    //[HttpPut("{id}")]
+    //public async Task<IActionResult> Update(int id, Course course)
+    //{
+    //    course.CourseId = id;
+    //    await _repo.UpdateAsync(course);
+    //    return Ok();
+    //}
+
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, Course course)
+    public async Task<IActionResult> Update(int id, CourseUpdateDto dto)
     {
-        course.CourseId = id;
+        var course = new Course
+        {
+            CourseId = id,
+            DepartmentId = dto.DepartmentId,
+            CourseName = dto.CourseName,
+            CourseCode = dto.CourseCode,
+            IsActive = dto.IsActive
+        };
+
         await _repo.UpdateAsync(course);
         return Ok();
     }
