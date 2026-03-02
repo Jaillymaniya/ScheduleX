@@ -79,7 +79,8 @@ public class CourseApiService
         var body = await res.Content.ReadAsStringAsync();
 
         if (!res.IsSuccessStatusCode)
-            throw new Exception($"Create failed ({(int)res.StatusCode}): {body}");
+            //throw new Exception($"Create failed ({(int)res.StatusCode}): {body}");
+            throw new Exception(body);
     }
 
     //public async Task UpdateAsync(Course course)
@@ -100,7 +101,8 @@ public class CourseApiService
         var body = await res.Content.ReadAsStringAsync();
 
         if (!res.IsSuccessStatusCode)
-            throw new Exception($"Update failed ({(int)res.StatusCode}): {body}");
+            //throw new Exception($"Update failed ({(int)res.StatusCode}): {body}");
+            throw new Exception(body);
     }
 
     public async Task ToggleAsync(int id)

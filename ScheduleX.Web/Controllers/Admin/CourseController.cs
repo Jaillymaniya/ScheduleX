@@ -76,19 +76,42 @@ public class CourseController : ControllerBase
     //    await _repo.AddAsync(course);
     //    return Ok();
     //}
+    //public async Task<IActionResult> Create(CourseCreateDto dto)
+    //{
+    //    var course = new Course
+    //    {
+    //        DepartmentId = dto.DepartmentId,
+    //        CourseName = dto.CourseName,
+    //        CourseCode = dto.CourseCode,
+    //        IsActive = true,
+    //        CreatedAt = DateTime.Now
+    //    };
+
+    //    await _repo.AddAsync(course);
+    //    return Ok();
+    //}
+
+    [HttpPost]
     public async Task<IActionResult> Create(CourseCreateDto dto)
     {
-        var course = new Course
+        try
         {
-            DepartmentId = dto.DepartmentId,
-            CourseName = dto.CourseName,
-            CourseCode = dto.CourseCode,
-            IsActive = true,
-            CreatedAt = DateTime.Now
-        };
+            var course = new Course
+            {
+                DepartmentId = dto.DepartmentId,
+                CourseName = dto.CourseName,
+                CourseCode = dto.CourseCode,
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            };
 
-        await _repo.AddAsync(course);
-        return Ok();
+            await _repo.AddAsync(course);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);  // ✅ return message
+        }
     }
 
     //[HttpPut("{id}")]
@@ -99,20 +122,43 @@ public class CourseController : ControllerBase
     //    return Ok();
     //}
 
+    //[HttpPut("{id}")]
+    //public async Task<IActionResult> Update(int id, CourseUpdateDto dto)
+    //{
+    //    var course = new Course
+    //    {
+    //        CourseId = id,
+    //        DepartmentId = dto.DepartmentId,
+    //        CourseName = dto.CourseName,
+    //        CourseCode = dto.CourseCode,
+    //        IsActive = dto.IsActive
+    //    };
+
+    //    await _repo.UpdateAsync(course);
+    //    return Ok();
+    //}
+
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, CourseUpdateDto dto)
     {
-        var course = new Course
+        try
         {
-            CourseId = id,
-            DepartmentId = dto.DepartmentId,
-            CourseName = dto.CourseName,
-            CourseCode = dto.CourseCode,
-            IsActive = dto.IsActive
-        };
+            var course = new Course
+            {
+                CourseId = id,
+                DepartmentId = dto.DepartmentId,
+                CourseName = dto.CourseName,
+                CourseCode = dto.CourseCode,
+                IsActive = dto.IsActive
+            };
 
-        await _repo.UpdateAsync(course);
-        return Ok();
+            await _repo.UpdateAsync(course);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);  // ✅ return message
+        }
     }
 
     [HttpPatch("{id}")]

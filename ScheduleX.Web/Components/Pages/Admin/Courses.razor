@@ -1,11 +1,4 @@
-﻿@* <h3>Courses</h3> *@
-
-@* @code { *@
-
-@* } *@
-
-
-@page "/admin/courses"
+﻿@page "/admin/courses"
 @rendermode InteractiveServer
 @layout ScheduleX.Web.Components.Layout.Admin.AdminLayout
 @using ScheduleX.Core.Entities
@@ -15,154 +8,159 @@
 
 <link href="css/course.css" rel="stylesheet" />
 
-<div class="page-container">
+<div class="cm-wrap">
 
-    <div class="page-header">
-        <h2>Course Management</h2>
+    <div class="cm-header">
+        <div>
+            <h2 class="cm-title">Course Management</h2>
+            <p class="cm-subtitle">Manage courses department-wise (Add / Edit / Activate / Deactivate)</p>
+        </div>
+    </div>
 
-        <div class="header-actions">
-            @* <select class="search-box" @bind="selectedDepartmentId" @onchange="DepartmentChanged"> *@
-            @*     <option value="0">-- All Departments --</option> *@
-            @*     @foreach (var d in departments) *@
-            @*     { *@
-            @*         <option value="@d.DepartmentId">@d.DepartmentName</option> *@
-            @*     } *@
-            @* </select> *@
-
-            <select class="search-box"
-                    @bind="selectedDepartmentId"
-                    @bind:after="LoadData">
-                <option value="0">-- All Departments --</option>
+    <div class="cm-filters">
+        <div class="cm-field">
+            <label class="cm-label">Department</label>
+            <select class="cm-select" @bind="selectedDepartmentId" @bind:after="LoadData">
+                <option value="0">All Departments</option>
                 @foreach (var d in departments)
                 {
                     <option value="@d.DepartmentId">@d.DepartmentName</option>
                 }
             </select>
+        </div>
 
-            <input class="search-box" placeholder="Search course..."
-                   @bind="searchText" />
+        <div class="cm-field cm-grow">
+            <label class="cm-label">Search</label>
+            <input class="cm-input" placeholder="Search by course name..." @bind="searchText" />
+        </div>
 
-            <button class="btn-primary" @onclick="OpenForm">
-                + Add Course
-            </button>
+        <div class="cm-actions">
+            <button class="cm-btn cm-btn-primary" @onclick="OpenForm">+ Add Course</button>
         </div>
     </div>
 
-    <div class="grid-container">
+    <div class="cm-card">
+        <div class="cm-card-head">
+            <div class="cm-card-title">Courses</div>
+            <div class="cm-meta">
+                <span class="cm-pill">Active: @courses.Count(x => x.IsActive)</span>
+                <span class="cm-pill cm-pill-gray">Inactive: @courses.Count(x => !x.IsActive)</span>
+            </div>
+        </div>
 
-        <!-- ACTIVE -->
-        <div class="card">
-            <h4>Active Courses (@courses.Count(x => x.IsActive))</h4>
-
-            <table class="styled-table">
+        <div class="cm-table-wrap">
+            <table class="cm-table">
                 <thead>
                     <tr>
-                        <th>Department</th>
-                        <th>Course</th>
-                        <th>Code</th>
-                        <th>Actions</th>
+                        <th style="width:28%">Department</th>
+                        <th style="width:32%">Course Name</th>
+                        <th style="width:15%">Code</th>
+                        <th style="width:10%">Status</th>
+                        <th style="width:15%" class="cm-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var c in courses.Where(x =>
-                    x.IsActive &&
-                    (string.IsNullOrEmpty(searchText) ||
-                     x.CourseName.Contains(searchText, StringComparison.OrdinalIgnoreCase))))
+                    string.IsNullOrWhiteSpace(searchText) ||
+                    x.CourseName.Contains(searchText, StringComparison.OrdinalIgnoreCase)))
                     {
                         <tr>
-                            @* <td>@c.Department?.DepartmentName</td> *@
-                            <td>@c.DepartmentName</td>
-                            <td>@c.CourseName</td>
-                            <td>@c.CourseCode</td>
+                            <td class="cm-muted">@c.DepartmentName</td>
+                            <td class="cm-strong">@c.CourseName</td>
+                            <td>@(string.IsNullOrWhiteSpace(c.CourseCode) ? "-" : c.CourseCode)</td>
                             <td>
-                                <button class="btn-edit" @onclick="() => Edit(c)">Edit</button>
-                                <button class="btn-danger" @onclick="() => Toggle(c.CourseId)">Deactivate</button>
+                                @if (c.IsActive)
+                                {
+                                    <span class="cm-badge cm-badge-green">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="cm-badge cm-badge-red">Inactive</span>
+                                }
                             </td>
+                            <td class="cm-right">
+                                <button class="cm-btn cm-btn-light" @onclick="() => Edit(c)">Edit</button>
+
+                                @if (c.IsActive)
+                                {
+                                    <button class="cm-btn cm-btn-danger" @onclick="() => Toggle(c.CourseId)">Deactivate</button>
+                                }
+                                else
+                                {
+                                    <button class="cm-btn cm-btn-success" @onclick="() => Toggle(c.CourseId)">Activate</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!courses.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="cm-empty">No courses found.</td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
-
-        <!-- INACTIVE -->
-        <div class="card">
-            <h4>Inactive Courses (@courses.Count(x => !x.IsActive))</h4>
-
-            <table class="styled-table">
-                <tbody>
-                    @foreach (var c in courses.Where(x =>
-                    !x.IsActive &&
-                    (string.IsNullOrEmpty(searchText) ||
-                     x.CourseName.Contains(searchText, StringComparison.OrdinalIgnoreCase))))
-                    {
-                        <tr>
-                            @* <td>@c.Department?.DepartmentName</td> *@
-
-                            <td>@c.DepartmentName</td>
-                            <td>@c.CourseName</td>
-                            <td>@c.CourseCode</td>
-                            <td>
-                                <button class="btn-success" @onclick="() => Toggle(c.CourseId)">Activate</button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-
     </div>
 </div>
 
-<!-- MODAL -->
 @if (showForm)
 {
-    <div class="modal-overlay">
-        <div class="modal-box">
-            <h3>@(courseModel.CourseId == 0 ? "Add Course" : "Edit Course")</h3>
+    <div class="cm-modal-overlay" @onclick="CloseForm">
+        <div class="cm-modal" @onclick:stopPropagation="true">
+            <div class="cm-modal-head">
+                <div class="cm-modal-title">@(courseModel.CourseId == 0 ? "Add Course" : "Edit Course")</div>
+                <button class="cm-x" type="button" @onclick="CloseForm">✕</button>
+            </div>
 
             <EditForm Model="courseModel" OnValidSubmit="SaveCourse">
                 <DataAnnotationsValidator />
-                <ValidationSummary />
+                <ValidationSummary class="cm-validation" />
 
-                <select class="form-control" @bind="courseModel.DepartmentId">
-                    <option value="0">-- Select Department --</option>
-                    @foreach (var d in departments)
-                    {
-                        <option value="@d.DepartmentId">@d.DepartmentName</option>
-                    }
-                </select>
+                <div class="cm-form-grid">
+                    <div class="cm-field">
+                        <label class="cm-label">Department</label>
+                        <select class="cm-select" @bind="courseModel.DepartmentId">
+                            <option value="0">Select Department</option>
+                            @foreach (var d in departments)
+                            {
+                                <option value="@d.DepartmentId">@d.DepartmentName</option>
+                            }
+                        </select>
+                    </div>
 
-                <InputText class="form-control"
-                           placeholder="Course Name"
-                           @bind-Value="courseModel.CourseName" />
+                    <div class="cm-field">
+                        <label class="cm-label">Course Code (optional)</label>
+                        <InputText class="cm-input" @bind-Value="courseModel.CourseCode" placeholder="e.g. MCA101" />
+                    </div>
 
-                <InputText class="form-control"
-                           placeholder="Course Code (optional)"
-                           @bind-Value="courseModel.CourseCode" />
+                    <div class="cm-field cm-span-2">
+                        <label class="cm-label">Course Name</label>
+                        <InputText class="cm-input" @bind-Value="courseModel.CourseName" placeholder="e.g. MCA" />
+                    </div>
+                </div>
 
-                <div class="modal-actions">
-                    <button type="submit" class="btn-success">Save</button>
-                    <button type="button" class="btn-cancel" @onclick="CloseForm">Cancel</button>
+                <div class="cm-modal-actions">
+                    <button type="button" class="cm-btn cm-btn-light" @onclick="CloseForm">Cancel</button>
+                    <button type="submit" class="cm-btn cm-btn-primary">
+                        @(courseModel.CourseId == 0 ? "Save Course" : "Update Course")
+                    </button>
                 </div>
             </EditForm>
         </div>
     </div>
 }
 
-<!-- TOAST -->
 @if (showToast)
 {
-    <div class="toast-container">
-        <div class="toast-message">
-            @toastMessage
-            <div class="toast-progress"></div>
-        </div>
+    <div class="cm-toast">
+        <div class="cm-toast-box">@toastMessage</div>
     </div>
 }
 
 @code {
     List<CourseDto> courses = new();
-    // List<Course> courses = new();
     List<Department> departments = new();
 
     Course courseModel = new();
@@ -187,7 +185,6 @@
             courses = await CourseService.GetByDepartmentAsync(selectedDepartmentId);
     }
 
-
     void OpenForm()
     {
         courseModel = new Course();
@@ -199,22 +196,6 @@
 
     void CloseForm() => showForm = false;
 
-    // async Task SaveCourse()
-    // {
-    //     if (courseModel.CourseId == 0)
-    //     {
-    //         await CourseService.CreateAsync(courseModel);
-    //         ShowToast("Course Added Successfully");
-    //     }
-    //     else
-    //     {
-    //         await CourseService.UpdateAsync(courseModel);
-    //         ShowToast("Course Updated Successfully");
-    //     }
-
-    //     showForm = false;
-    //     await LoadData();
-    // }
     async Task SaveCourse()
     {
         try
@@ -227,19 +208,17 @@
 
             if (courseModel.CourseId == 0)
             {
-                // await CourseService.CreateAsync(courseModel);
-
                 await CourseService.CreateAsync(new CourseCreateDto
                     {
                         DepartmentId = courseModel.DepartmentId,
                         CourseName = courseModel.CourseName,
                         CourseCode = courseModel.CourseCode
                     });
+
                 await ShowToast("Course Added Successfully");
             }
             else
             {
-                // await CourseService.UpdateAsync(courseModel);
                 await CourseService.UpdateAsync(courseModel.CourseId, new CourseUpdateDto
                     {
                         DepartmentId = courseModel.DepartmentId,
@@ -247,6 +226,7 @@
                         CourseCode = courseModel.CourseCode,
                         IsActive = courseModel.IsActive
                     });
+
                 await ShowToast("Course Updated Successfully");
             }
 
@@ -258,19 +238,6 @@
             await ShowToast($"❌ {ex.Message}");
         }
     }
-
-    // void Edit(Course c)
-    // {
-    //     courseModel = new Course
-    //     {
-    //         CourseId = c.CourseId,
-    //         DepartmentId = c.DepartmentId,
-    //         CourseName = c.CourseName,
-    //         CourseCode = c.CourseCode,
-    //         IsActive = c.IsActive
-    //     };
-    //     showForm = true;
-    // }
 
     void Edit(CourseDto c)
     {
@@ -292,22 +259,13 @@
         await LoadData();
     }
 
-    // async void ShowToast(string message)
-    // {
-    //     toastMessage = message;
-    //     showToast = true;
-
-    //     await Task.Delay(3000);
-    //     showToast = false;
-    //     StateHasChanged();
-    // }
     async Task ShowToast(string message)
     {
         toastMessage = message;
         showToast = true;
         StateHasChanged();
 
-        await Task.Delay(3000);
+        await Task.Delay(2500);
         showToast = false;
         StateHasChanged();
     }
