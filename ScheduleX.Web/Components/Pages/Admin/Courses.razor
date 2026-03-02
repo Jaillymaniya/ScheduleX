@@ -1,0 +1,261 @@
+﻿@* <h3>Courses</h3> *@
+
+@* @code { *@
+
+@* } *@
+
+
+@page "/admin/courses"
+@rendermode InteractiveServer
+@layout ScheduleX.Web.Components.Layout.Admin.AdminLayout
+@using ScheduleX.Core.Entities
+@using ScheduleX.Web.DTOs
+@inject ScheduleX.Web.Services.Admin.CourseApiService CourseService
+@inject ScheduleX.Web.Services.Admin.DepartmentApiService DepartmentService
+
+<link href="css/course.css" rel="stylesheet" />
+
+<div class="page-container">
+
+    <div class="page-header">
+        <h2>Course Management</h2>
+
+        <div class="header-actions">
+            @* <select class="search-box" @bind="selectedDepartmentId" @onchange="DepartmentChanged"> *@
+            @*     <option value="0">-- All Departments --</option> *@
+            @*     @foreach (var d in departments) *@
+            @*     { *@
+            @*         <option value="@d.DepartmentId">@d.DepartmentName</option> *@
+            @*     } *@
+            @* </select> *@
+
+            <select class="search-box"
+                    @bind="selectedDepartmentId"
+                    @bind:after="LoadData">
+                <option value="0">-- All Departments --</option>
+                @foreach (var d in departments)
+                {
+                    <option value="@d.DepartmentId">@d.DepartmentName</option>
+                }
+            </select>
+
+            <input class="search-box" placeholder="Search course..."
+                   @bind="searchText" />
+
+            <button class="btn-primary" @onclick="OpenForm">
+                + Add Course
+            </button>
+        </div>
+    </div>
+
+    <div class="grid-container">
+
+        <!-- ACTIVE -->
+        <div class="card">
+            <h4>Active Courses (@courses.Count(x => x.IsActive))</h4>
+
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Course</th>
+                        <th>Code</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in courses.Where(x =>
+                    x.IsActive &&
+                    (string.IsNullOrEmpty(searchText) ||
+                     x.CourseName.Contains(searchText, StringComparison.OrdinalIgnoreCase))))
+                    {
+                        <tr>
+                            @* <td>@c.Department?.DepartmentName</td> *@
+                            <td>@c.DepartmentName</td>
+                            <td>@c.CourseName</td>
+                            <td>@c.CourseCode</td>
+                            <td>
+                                <button class="btn-edit" @onclick="() => Edit(c)">Edit</button>
+                                <button class="btn-danger" @onclick="() => Toggle(c.CourseId)">Deactivate</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- INACTIVE -->
+        <div class="card">
+            <h4>Inactive Courses (@courses.Count(x => !x.IsActive))</h4>
+
+            <table class="styled-table">
+                <tbody>
+                    @foreach (var c in courses.Where(x =>
+                    !x.IsActive &&
+                    (string.IsNullOrEmpty(searchText) ||
+                     x.CourseName.Contains(searchText, StringComparison.OrdinalIgnoreCase))))
+                    {
+                        <tr>
+                            @* <td>@c.Department?.DepartmentName</td> *@
+
+                            <td>@c.DepartmentName</td>
+                            <td>@c.CourseName</td>
+                            <td>@c.CourseCode</td>
+                            <td>
+                                <button class="btn-success" @onclick="() => Toggle(c.CourseId)">Activate</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL -->
+@if (showForm)
+{
+    <div class="modal-overlay">
+        <div class="modal-box">
+            <h3>@(courseModel.CourseId == 0 ? "Add Course" : "Edit Course")</h3>
+
+            <EditForm Model="courseModel" OnValidSubmit="SaveCourse">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <select class="form-control" @bind="courseModel.DepartmentId">
+                    <option value="0">-- Select Department --</option>
+                    @foreach (var d in departments)
+                    {
+                        <option value="@d.DepartmentId">@d.DepartmentName</option>
+                    }
+                </select>
+
+                <InputText class="form-control"
+                           placeholder="Course Name"
+                           @bind-Value="courseModel.CourseName" />
+
+                <InputText class="form-control"
+                           placeholder="Course Code (optional)"
+                           @bind-Value="courseModel.CourseCode" />
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn-success">Save</button>
+                    <button type="button" class="btn-cancel" @onclick="CloseForm">Cancel</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<!-- TOAST -->
+@if (showToast)
+{
+    <div class="toast-container">
+        <div class="toast-message">
+            @toastMessage
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+}
+
+@code {
+    List<CourseDto> courses = new();
+    // List<Course> courses = new();
+    List<Department> departments = new();
+
+    Course courseModel = new();
+    string searchText = "";
+    int selectedDepartmentId = 0;
+
+    bool showForm = false;
+    bool showToast = false;
+    string toastMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        departments = await DepartmentService.GetAllAsync();
+        await LoadData();
+    }
+
+    async Task LoadData()
+    {
+        if (selectedDepartmentId == 0)
+            courses = await CourseService.GetAllAsync();
+        else
+            courses = await CourseService.GetByDepartmentAsync(selectedDepartmentId);
+    }
+
+
+    void OpenForm()
+    {
+        courseModel = new Course();
+        if (selectedDepartmentId != 0)
+            courseModel.DepartmentId = selectedDepartmentId;
+
+        showForm = true;
+    }
+
+    void CloseForm() => showForm = false;
+
+    async Task SaveCourse()
+    {
+        if (courseModel.CourseId == 0)
+        {
+            await CourseService.CreateAsync(courseModel);
+            ShowToast("Course Added Successfully");
+        }
+        else
+        {
+            await CourseService.UpdateAsync(courseModel);
+            ShowToast("Course Updated Successfully");
+        }
+
+        showForm = false;
+        await LoadData();
+    }
+
+    // void Edit(Course c)
+    // {
+    //     courseModel = new Course
+    //     {
+    //         CourseId = c.CourseId,
+    //         DepartmentId = c.DepartmentId,
+    //         CourseName = c.CourseName,
+    //         CourseCode = c.CourseCode,
+    //         IsActive = c.IsActive
+    //     };
+    //     showForm = true;
+    // }
+
+    void Edit(CourseDto c)
+    {
+        courseModel = new Course
+            {
+                CourseId = c.CourseId,
+                DepartmentId = c.DepartmentId,
+                CourseName = c.CourseName,
+                CourseCode = c.CourseCode,
+                IsActive = c.IsActive
+            };
+
+        showForm = true;
+    }
+
+    async Task Toggle(int id)
+    {
+        await CourseService.ToggleAsync(id);
+        await LoadData();
+    }
+
+    async void ShowToast(string message)
+    {
+        toastMessage = message;
+        showToast = true;
+
+        await Task.Delay(3000);
+        showToast = false;
+        StateHasChanged();
+    }
+}

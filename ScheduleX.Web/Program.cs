@@ -71,6 +71,7 @@ using Microsoft.AspNetCore.Components;
 using ScheduleX.Core.Interfaces;
 using ScheduleX.Infrastructure.Repositories;
 using ScheduleX.Web.Services.Admin;
+using Timetable.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,6 +99,8 @@ builder.Services.AddScoped(sp =>
 
 builder.Services.AddScoped<TTCoordinatorApiService>();
 builder.Services.AddScoped<DepartmentApiService>();
+builder.Services.AddScoped<CourseApiService>();
+builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 
 builder.Services.AddScoped<ScheduleX.Web.Services.AuthState>();
 builder.Services.AddScoped<ScheduleX.Web.Services.PasswordHasher>();
