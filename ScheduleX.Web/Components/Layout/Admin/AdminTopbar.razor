@@ -1,4 +1,28 @@
-﻿<div class="admin-topbar">
+﻿@* <div class="admin-topbar"> *@
+
+@*     <div class="dashboard-title"> *@
+@*         Dashboard *@
+@*     </div> *@
+
+@*     <div class="search-container"> *@
+@*         <div class="search-box"> *@
+@*             <input placeholder="Search..." /> *@
+@*         </div> *@
+@*     </div> *@
+
+@*     <div class="profile"> *@
+@*         <div class="profile-icon">A</div> *@
+@*         <span class="username">Admin</span> *@
+@*     </div> *@
+
+@* </div> *@
+
+
+
+@inject NavigationManager Nav
+@inject ScheduleX.Web.Services.AuthState Auth
+
+<div class="admin-topbar">
 
     <div class="dashboard-title">
         Dashboard
@@ -10,9 +34,50 @@
         </div>
     </div>
 
-    <div class="profile">
+    <div class="profile" @onclick="ToggleMenu">
+
         <div class="profile-icon">A</div>
         <span class="username">Admin</span>
+
+        @if (showMenu)
+        {
+            <div class="profile-dropdown">
+
+                <div class="dropdown-item"
+                     @onclick="GoToChangePassword">
+                    Change Password
+                </div>
+
+                <div class="dropdown-item logout-item"
+                     @onclick="Logout">
+                    Logout
+                </div>
+
+            </div>
+        }
+
     </div>
 
 </div>
+
+@code {
+
+    private bool showMenu = false;
+
+    private void ToggleMenu()
+    {
+        showMenu = !showMenu;
+    }
+
+    private void GoToChangePassword()
+    {
+        showMenu = false;
+        Nav.NavigateTo("/admin/change-password");
+    }
+
+    private void Logout()
+    {
+        Auth.SignOut();
+        Nav.NavigateTo("/login", true);
+    }
+}
