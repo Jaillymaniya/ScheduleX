@@ -120,19 +120,18 @@
 
             Auth.SignIn(user.UserId, user.FullName, user.Role);
 
-<<<<<<< HEAD
+
             Nav.NavigateTo(
                 user.Role == UserRole.Admin
                     ? "/admin/overview"
                     : "/tt/overview");
-=======
             // Nav.NavigateTo(user.Role == UserRole.Admin ? "/admin/overview" : "/tt/overview", forceLoad: true);
             Nav.NavigateTo(user.Role == UserRole.Admin ? "/admin/overview" : "/tt/overview", replace: true);
         }
         catch (Exception ex)
         {
             Error = ex.Message;
->>>>>>> 69df917c2408517ab26ef5d11c403cb0b18d4bec
+
         }
         finally
         {
