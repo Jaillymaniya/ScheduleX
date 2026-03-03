@@ -8,18 +8,31 @@
     align-items: center;
     margin-bottom: 20px;
 }
-
+/*
 .header-actions {
     display: flex;
     gap: 10px;
-}
+}*/
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
 .search-box {
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: 1px solid #ddd;
+    width: 400px; /* increase width */
+    padding: 12px 16px; /* increase height */
+    font-size: 15px; /* larger text */
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    transition: all 0.2s ease;
 }
 
+    .search-box:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
 .grid-container {
     display: grid;
     grid-template-columns: 1fr 1fr;

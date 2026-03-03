@@ -60,9 +60,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseAntiforgery();
+
 
 app.UseStaticFiles();   // Static files
 app.UseRouting();       // Routing first
@@ -71,7 +69,7 @@ app.UseAntiforgery();   // Must come AFTER UseRouting
 
 app.MapControllers();   // Map API controllers
 
-app.MapControllers();
+
 
 
 app.MapRazorComponents<App>()
@@ -79,5 +77,4 @@ app.MapRazorComponents<App>()
 
 app.Run();
 
-app.Run();
 

@@ -1,26 +1,131 @@
-﻿@using Microsoft.AspNetCore.Components.Routing
-@inject ScheduleX.Web.Services.AuthState Auth
+﻿@* @using Microsoft.AspNetCore.Components.Routing *@
+@* @inject ScheduleX.Web.Services.AuthState Auth *@
+@* @inject NavigationManager Nav *@
+
+@* <div class="admin-sidebar"> *@
+
+@*     <div class="logo"> *@
+@*         <img src="images/logo.png" alt="ScheduleX Logo" /> *@
+@*     </div> *@
+
+@*     <ul> *@
+@*         <li><NavLink href="/admin/overview" Match="NavLinkMatch.All">Dashboard</NavLink></li> *@
+@*         <li> *@
+@*             <NavLink href="/admin/departments"> *@
+@*                 Departments *@
+@*             </NavLink> *@
+@*         </li> *@
+@*         <li><NavLink href="/admin/courses">Courses</NavLink></li> *@
+@*         <li><NavLink href="/admin/faculty">Faculty</NavLink></li> *@
+@*         <li><NavLink href="/admin/rooms">Rooms</NavLink></li> *@
+@*         <li><NavLink href="/admin/semesters">Semesters</NavLink></li> *@
+@*         <li><NavLink href="/admin/ttcoordinator">Timetable Coordinator</NavLink></li> *@
+        
+@*     </ul> *@
+
+@*     <div class="logout-section"> *@
+@*         <button class="logout-btn" @onclick="Logout">Logout</button> *@
+@*     </div> *@
+
+@* </div> *@
+
+
+
+@* @code { *@
+@*     void Logout() *@
+@*     { *@
+@*         Auth.SignOut(); *@
+@*         Nav.NavigateTo("/login", true); *@
+@*     } *@
+@* } *@
+
+@* @using Microsoft.AspNetCore.Components.Routing *@
+@* @inject NavigationManager Nav *@
+@* @inject ScheduleX.Web.Services.AuthState Auth *@
+
+@* <div class="admin-sidebar"> *@
+
+@*     <div class="logo"> *@
+@*         <img src="images/logo.png" alt="ScheduleX Logo" /> *@
+@*         <h3 class="logo-text">ScheduleX</h3> *@
+@*     </div> *@
+
+@*     <ul> *@
+@*         <li><NavLink href="/admin/overview">Dashboard</NavLink></li> *@
+@*         <li><NavLink href="/admin/departments">Departments</NavLink></li> *@
+@*         <li><NavLink href="/admin/courses">Courses</NavLink></li> *@
+@*         <li><NavLink href="/admin/faculty">Faculty</NavLink></li> *@
+@*         <li><NavLink href="/admin/rooms">Rooms</NavLink></li> *@
+@*         <li><NavLink href="/admin/semesters">Semesters</NavLink></li> *@
+@*         <li><NavLink href="/admin/ttcoordinator">Timetable Coordinator</NavLink></li> *@
+@*     </ul> *@
+
+@*     <div class="logout-section"> *@
+@*         <button class="logout-btn" @onclick="Logout">Logout</button> *@
+@*     </div> *@
+
+@* </div> *@
+
+@* @code { *@
+@*     void Logout() *@
+@*     { *@
+@*         Auth.SignOut(); *@
+@*         Nav.NavigateTo("/login", true); *@
+@*     } *@
+@* } *@
+
+@using Microsoft.AspNetCore.Components.Routing
 @inject NavigationManager Nav
+@inject ScheduleX.Web.Services.AuthState Auth
 
 <div class="admin-sidebar">
 
     <div class="logo">
         <img src="images/logo.png" alt="ScheduleX Logo" />
+        <h3 class="logo-text">ScheduleX</h3>
     </div>
 
     <ul>
-        <li><NavLink href="/admin/overview" Match="NavLinkMatch.All">Dashboard</NavLink></li>
+        <!-- Dashboard -->
+        <li>
+            <NavLink href="/admin/overview">
+                Dashboard
+            </NavLink>
+        </li>
+
+        <!-- User Management -->
+        <li class="menu-heading">User Management</li>
+        <li>
+            <NavLink href="/admin/ttcoordinator">
+                Timetable Coordinators
+            </NavLink>
+        </li>
+
+        <!-- Academic Setup -->
+        <li class="menu-heading">Academic Setup</li>
         <li>
             <NavLink href="/admin/departments">
                 Departments
             </NavLink>
         </li>
-        <li><NavLink href="/admin/courses">Courses</NavLink></li>
-        <li><NavLink href="/admin/faculty">Faculty</NavLink></li>
-        <li><NavLink href="/admin/rooms">Rooms</NavLink></li>
-        <li><NavLink href="/admin/semesters">Semesters</NavLink></li>
-        <li><NavLink href="/admin/ttcoordinator">Timetable Coordinator</NavLink></li>
-        
+        <li>
+            <NavLink href="/admin/courses">
+                Courses
+            </NavLink>
+        </li>
+
+        <!-- Settings -->
+        <li class="menu-heading">Settings</li>
+        <li>
+            <NavLink href="/admin/profile">
+                Profile
+            </NavLink>
+        </li>
+        <li>
+            <NavLink href="/admin/change-password">
+                Change Password
+            </NavLink>
+        </li>
     </ul>
 
     <div class="logout-section">
@@ -28,8 +133,6 @@
     </div>
 
 </div>
-
-
 
 @code {
     void Logout()
