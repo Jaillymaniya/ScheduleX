@@ -28,6 +28,7 @@ builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 
 builder.Services.AddScoped<IChangePasswordRepository, ChangePasswordRepository>();
 
+builder.Services.AddScoped<IEditAdminProfileRepository, EditAdminProfileRepository>();
 
 builder.Services.AddScoped(sp =>
 {

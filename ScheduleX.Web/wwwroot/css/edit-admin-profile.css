@@ -1,0 +1,80 @@
+﻿/* Center Whole Page */
+.edit-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+}
+
+/* Card */
+.edit-card {
+    width: 600px;
+    background: #ffffff;
+    padding: 50px 45px;
+    border-radius: 25px;
+    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.08);
+}
+
+/* Title */
+.edit-title {
+    font-size: 34px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+/* Subtitle */
+.edit-subtitle {
+    text-align: center;
+    color: #6b7280;
+    margin-bottom: 40px;
+    font-size: 15px;
+}
+
+/* Form Group */
+.form-group {
+    margin-bottom: 25px;
+}
+
+/* Inputs */
+.edit-input {
+    width: 100%;
+    padding: 16px 18px;
+    border-radius: 18px;
+    border: 1px solid #e5e7eb;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+    .edit-input:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+
+/* Button */
+.edit-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 20px;
+    border: none;
+    background: linear-gradient(90deg, #2563eb, #1e40af);
+    color: white;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s ease;
+}
+
+    .edit-btn:hover {
+        box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3);
+        transform: translateY(-2px);
+    }
+
+/* Validation */
+.validation-message {
+    color: #dc2626;
+    font-size: 13px;
+    margin-top: 6px;
+}
