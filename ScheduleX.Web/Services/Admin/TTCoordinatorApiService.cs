@@ -139,6 +139,15 @@ public class TTCoordinatorApiService
         _emailService = emailService;
     }
 
+    //public async Task<List<User>> GetAllAsync()
+    //{
+    //    using var context = await _factory.CreateDbContextAsync();
+
+    //    return await context.Users
+    //        .Where(x => x.Role == UserRole.TTCoordinator)
+    //        .Include(x => x.Department)
+    //        .ToListAsync();
+    //}
     public async Task<List<User>> GetAllAsync()
     {
         using var context = await _factory.CreateDbContextAsync();
@@ -146,6 +155,8 @@ public class TTCoordinatorApiService
         return await context.Users
             .Where(x => x.Role == UserRole.TTCoordinator)
             .Include(x => x.Department)
+            .Include(x => x.TTCoordinatorCourses)
+                .ThenInclude(tc => tc.Course)
             .ToListAsync();
     }
 

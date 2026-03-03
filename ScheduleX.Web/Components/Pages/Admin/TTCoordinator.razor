@@ -16,7 +16,17 @@
             @(showForm ? "Close Form" : "Register Coordinator")
         </button>
     </div>
-
+    @if (showToast)
+    {
+        <div class="toast-container">
+            <div class="toast-box">
+                <div class="toast-content">
+                    @toastMessage
+                </div>
+                <div class="toast-progress"></div>
+            </div>
+        </div>
+    }
     <!-- REGISTRATION FORM (VISIBLE ONLY WHEN BUTTON CLICKED) -->
     @if (showForm)
     {
@@ -65,41 +75,102 @@
                 </button>
             </EditForm>
 
-            @if (showToast)
-            {
-                <div class="toast-message">
-                    @toastMessage
-                </div>
-            }
+           
 
         </div>
     }
 
     <!-- LIST BELOW -->
+    <!-- ACTIVE COORDINATORS -->
     <div class="tt-list-card">
 
-        @if (coordinators.Count == 0)
+        <h3>Active TT Coordinators</h3>
+
+        @if (activeCoordinators.Count == 0)
         {
-            <p class="no-record">No coordinators found.</p>
+            <p class="no-record">No active coordinators found.</p>
         }
         else
         {
-            @foreach (var u in coordinators)
-            {
-                <div class="coordinator-item">
-                    <div>
-                        <strong>@u.FullName</strong>
-                        <span class="dept-name">(@u.Department?.DepartmentName)</span>
-                    </div>
-
-                    <button class="btn-toggle"
-                            @onclick="() => Toggle(u.UserId)">
-                        @(u.IsActive ? "Deactivate" : "Activate")
-                    </button>
-                </div>
-            }
+            <table class="tt-table">
+                <thead>
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Username</th>
+                        <th>Department</th>
+                        <th>Course</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in activeCoordinators)
+                    {
+                        <tr>
+                            <td>@u.FullName</td>
+                            <td>@u.Username</td>
+                            <td>@u.Department?.DepartmentName</td>
+                            <td>@u.TTCoordinatorCourses.FirstOrDefault()?.Course?.CourseName</td>
+                            <td>@u.Email</td>
+                            <td>@u.Phone</td>
+                            <td>
+                                <button class="btn-deactivate"
+                                        @onclick="() => ToggleStatus(u.UserId, false)">
+                                    Deactivate
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         }
+    </div>
 
+    <!-- INACTIVE COORDINATORS -->
+    <div class="tt-list-card mt-4">
+
+        <h3>Inactive TT Coordinators</h3>
+
+        @if (inactiveCoordinators.Count == 0)
+        {
+            <p class="no-record">No inactive coordinators found.</p>
+        }
+        else
+        {
+            <table class="tt-table">
+                <thead>
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Username</th>
+                        <th>Department</th>
+                        <th>Course</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in inactiveCoordinators)
+                    {
+                        <tr class="inactive-row">
+                            <td>@u.FullName</td>
+                            <td>@u.Username</td>
+                            <td>@u.Department?.DepartmentName</td>
+                            <td>@u.TTCoordinatorCourses.FirstOrDefault()?.Course?.CourseName</td>
+                            <td>@u.Email</td>
+                            <td>@u.Phone</td>
+                            <td>
+                                <button class="btn-activate"
+                                        @onclick="() => ToggleStatus(u.UserId, true)">
+                                    Activate
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
     </div>
 
 </div>
@@ -107,20 +178,39 @@
 @code {
 
     RegisterTTCoordinatorDto model = new();
-    List<User> coordinators = new();
+    // List<User> coordinators = new();
+    List<User> activeCoordinators = new();
+    List<User> inactiveCoordinators = new();
     List<Department> departments = new();
     List<Course> courses = new();
 
     bool showForm = false;
     bool showToast = false;
     string toastMessage = "";
+    async Task LoadData()
+    {
+        var all = await Service.GetAllAsync();
 
+        activeCoordinators = all.Where(x => x.IsActive).ToList();
+        inactiveCoordinators = all.Where(x => !x.IsActive).ToList();
+    }
     protected override async Task OnInitializedAsync()
     {
-        coordinators = await Service.GetAllAsync();
+        // coordinators = await Service.GetAllAsync();
+        await LoadData();
         departments = await Service.GetDepartmentsAsync();
     }
+    async Task ShowToast(string message)
+    {
+        toastMessage = message;
+        showToast = true;
+        StateHasChanged();
 
+        await Task.Delay(3000);
+
+        showToast = false;
+        StateHasChanged();
+    }
     void ToggleForm()
     {
         showForm = !showForm;
@@ -132,30 +222,25 @@
         }
     }
 
+   
     async Task Register()
     {
         try
         {
             await Service.RegisterAsync(model);
 
-            toastMessage = "Coordinator Registered Successfully";
-            showToast = true;
+            await LoadData();
 
-            coordinators = await Service.GetAllAsync();
+            await ShowToast("Coordinator Registered Successfully");
 
             model = new RegisterTTCoordinatorDto();
             courses.Clear();
         }
         catch (Exception ex)
         {
-            toastMessage = ex.Message;
-            showToast = true;
+            await ShowToast(ex.Message);
         }
-
-        await Task.Delay(3000);
-        showToast = false;
     }
-
     async Task LoadCourses()
     {
         if (model.DepartmentId.HasValue)
@@ -166,10 +251,18 @@
         model.CourseId = null;
     }
 
-    async Task Toggle(int id)
+    
+    async Task ToggleStatus(int id, bool activate)
     {
         await Service.ToggleAsync(id);
-        coordinators = await Service.GetAllAsync();
+
+        await LoadData();
+
+        await ShowToast(
+            activate
+                ? "Coordinator Activated Successfully"
+                : "Coordinator Deactivated Successfully"
+        );
     }
 }
 
@@ -243,12 +336,62 @@
         cursor: pointer;
     }
 
-    .toast-message {
-        margin-top: 10px;
-        padding: 8px;
-        background: #d4edda;
-        color: #155724;
-        border-radius: 6px;
+    /* ================= PROGRESS TOAST ================= */
+
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+
+    .toast-box {
+        background: #1cc88a;
+        color: white;
+        padding: 14px 18px;
+        border-radius: 10px;
+        min-width: 260px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        overflow: hidden;
+        animation: slideIn 0.3s ease forwards;
+        position: relative;
+    }
+
+    .toast-content {
+        font-weight: 500;
+    }
+
+    /* Progress bar */
+    .toast-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 4px;
+        background: rgba(255,255,255,0.8);
+        animation: progressBar 3s linear forwards;
+        width: 100%;
+    }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateX(120%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes progressBar {
+        from {
+            width: 100%;
+        }
+
+        to {
+            width: 0%;
+        }
     }
 
     .tt-list-card {
@@ -258,26 +401,59 @@
         box-shadow: 0 8px 20px rgba(0,0,0,0.05);
     }
 
-    .coordinator-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 12px;
-        background: #f8f9fc;
-        border-radius: 8px;
-        margin-bottom: 10px;
+  
+
+    .no-record {
+        color: gray;
     }
 
-    .btn-toggle {
-        background: #858796;
+    .tt-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+        .tt-table th {
+            background-color: #4e73df;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .tt-table td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tt-table tr:hover {
+            background-color: #f8f9fc;
+        }
+
+    .inactive-row {
+        opacity: 0.7;
+        background-color: #f2f2f2;
+    }
+
+    .btn-deactivate {
+        background: #e74a3b;
         color: white;
         border: none;
-        padding: 6px 14px;
+        padding: 6px 12px;
         border-radius: 6px;
         cursor: pointer;
     }
 
-    .no-record {
-        color: gray;
+    .btn-activate {
+        background: #1cc88a;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .mt-4 {
+        margin-top: 30px;
     }
 
 </style>
