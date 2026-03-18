@@ -11,6 +11,8 @@ using Timetable.Infrastructure.Repositories;
 
 using ScheduleX.Core.Interfaces.Admin;
 using ScheduleX.Infrastructure.Repositories.Admin;
+using ScheduleX.Core.Interfaces.TTCoordinator;
+using ScheduleX.Infrastructure.Repositories.TTCoordinator;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +32,8 @@ builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddScoped<IChangePasswordRepository, ChangePasswordRepository>();
 
 builder.Services.AddScoped<IEditAdminProfileRepository, EditAdminProfileRepository>();
+
+builder.Services.AddScoped<IFacultyRepository, FacultyRepository>();
 
 builder.Services.AddScoped(sp =>
 {
