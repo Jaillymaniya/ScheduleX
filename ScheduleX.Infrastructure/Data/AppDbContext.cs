@@ -151,7 +151,11 @@ public class AppDbContext : DbContext
             .WithMany(x => x.Users)
             .HasForeignKey(x => x.DepartmentId)
             .OnDelete(DeleteBehavior.Restrict);
-
+        modelBuilder.Entity<Subject>()
+    .HasOne(s => s.Course)
+    .WithMany() // or .WithMany(c => c.Subjects) if you add navigation
+    .HasForeignKey(s => s.CourseId)
+    .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<TimeTableBatch>()
             .HasOne(x => x.ParentBatch)
             .WithMany()

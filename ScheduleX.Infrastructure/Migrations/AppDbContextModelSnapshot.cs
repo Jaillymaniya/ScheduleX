@@ -470,14 +470,17 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubjectId"));
 
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CourseId1")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<byte>("Credits")
                         .HasColumnType("tinyint");
-
-                    b.Property<int>("DepartmentId")
-                        .HasColumnType("int");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -499,7 +502,9 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.HasKey("SubjectId");
 
-                    b.HasIndex("DepartmentId");
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("CourseId1");
 
                     b.HasIndex("SubjectCode")
                         .IsUnique()
@@ -866,6 +871,7 @@ namespace ScheduleX.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
 
@@ -883,8 +889,9 @@ namespace ScheduleX.Infrastructure.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<byte>("Role")
                         .HasColumnType("tinyint");
@@ -899,12 +906,10 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.HasIndex("DepartmentId");
 
                     b.HasIndex("Email")
-                        .IsUnique()
-                        .HasFilter("[Email] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("Phone")
-                        .IsUnique()
-                        .HasFilter("[Phone] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("Username")
                         .IsUnique();
@@ -1082,13 +1087,18 @@ namespace ScheduleX.Infrastructure.Migrations
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Subject", b =>
                 {
-                    b.HasOne("ScheduleX.Core.Entities.Department", "Department")
-                        .WithMany("Subjects")
-                        .HasForeignKey("DepartmentId")
+                    b.HasOne("ScheduleX.Core.Entities.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Department");
+                    b.HasOne("ScheduleX.Core.Entities.Course", null)
+                        .WithMany("Subjects")
+                        .HasForeignKey("CourseId1")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Course");
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.SubjectOffering", b =>
@@ -1321,6 +1331,8 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.Navigation("Semesters");
 
+                    b.Navigation("Subjects");
+
                     b.Navigation("TTCoordinatorCourses");
 
                     b.Navigation("TimeTableBatches");
@@ -1335,8 +1347,6 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("Rooms");
 
                     b.Navigation("ScheduleConfigs");
-
-                    b.Navigation("Subjects");
 
                     b.Navigation("TimeTableBatches");
 

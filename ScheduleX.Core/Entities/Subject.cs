@@ -14,22 +14,24 @@ public class Subject
     [Key]
     public int SubjectId { get; set; }
 
-    [Required]
-    public int DepartmentId { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "Please select course")]
+    public int CourseId { get; set; }
 
-    [ForeignKey(nameof(DepartmentId))]
-    public Department Department { get; set; } = null!;
+    [ForeignKey(nameof(CourseId))]
+    public Course Course { get; set; } = null!;
 
-    [Required, MaxLength(150)]
+    [Required(ErrorMessage = "Subject name is required")]
+    [MaxLength(150)]
     public string SubjectName { get; set; } = null!;
-
+    
     [MaxLength(30)]
     public string? SubjectCode { get; set; }
 
-    [Required]
-    public byte Credits { get; set; }
+    [Required(ErrorMessage = "Credits are required")]
+    [Range(1, 10, ErrorMessage = "Credits must be between 1-10")]
+    public int Credits { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Category is required")]
     public SubjectCategoryEnum SubjectCategory { get; set; }
 
     public bool IsElective { get; set; } = false;

@@ -32,7 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Components\Pages\tt\Academic\" />
     <Folder Include="Components\Pages\tt\Configuration\" />
     <Folder Include="Components\Pages\tt\Generation &amp; Validation\" />
     <Folder Include="Components\Pages\tt\Modification\" />

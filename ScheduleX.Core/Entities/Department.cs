@@ -22,7 +22,7 @@ public class Department
     public ICollection<Course> Courses { get; set; } = new List<Course>();
     public ICollection<Room> Rooms { get; set; } = new List<Room>();
     public ICollection<Faculty> Faculties { get; set; } = new List<Faculty>();
-    public ICollection<Subject> Subjects { get; set; } = new List<Subject>();
+   
     public ICollection<ScheduleConfig> ScheduleConfigs { get; set; } = new List<ScheduleConfig>();
     public ICollection<TimeTableBatch> TimeTableBatches { get; set; } = new List<TimeTableBatch>();
 }
