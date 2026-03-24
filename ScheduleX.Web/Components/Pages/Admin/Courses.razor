@@ -12,7 +12,7 @@
 
     <div class="cm-header">
         <div>
-            <h2 class="cm-title">Course Management</h2>
+            @* <h2 class="cm-title">Course Management</h2> *@
             <p class="cm-subtitle">Manage courses department-wise (Add / Edit / Activate / Deactivate)</p>
         </div>
     </div>
@@ -55,6 +55,7 @@
                         <th style="width:28%">Department</th>
                         <th style="width:32%">Course Name</th>
                         <th style="width:15%">Code</th>
+                        <th style="width:12%">Max Sem</th>
                         <th style="width:10%">Status</th>
                         <th style="width:15%" class="cm-right">Actions</th>
                     </tr>
@@ -68,6 +69,7 @@
                             <td class="cm-muted">@c.DepartmentName</td>
                             <td class="cm-strong">@c.CourseName</td>
                             <td>@(string.IsNullOrWhiteSpace(c.CourseCode) ? "-" : c.CourseCode)</td>
+                            <td>@c.MaxSem</td>
                             <td>
                                 @if (c.IsActive)
                                 {
@@ -96,7 +98,7 @@
                     @if (!courses.Any())
                     {
                         <tr>
-                            <td colspan="5" class="cm-empty">No courses found.</td>
+                            <td colspan="6" class="cm-empty">No courses found.</td>
                         </tr>
                     }
                 </tbody>
@@ -133,6 +135,14 @@
                     <div class="cm-field">
                         <label class="cm-label">Course Code (optional)</label>
                         <InputText class="cm-input" @bind-Value="courseModel.CourseCode" placeholder="e.g. MCA101" />
+                    </div>
+
+                    <div class="cm-field">
+                        @* <label class="cm-label">Max Semester</label> *@
+                        @* <InputNumber class="cm-input" min="1" @bind-Value="courseModel.MaxSem" /> *@
+                        <label class="cm-label">Max Semester</label>
+                        <InputNumber class="cm-input" @bind-Value="courseModel.MaxSem" min="1" step="1" />
+                        <ValidationMessage For="@(() => courseModel.MaxSem)" />
                     </div>
 
                     <div class="cm-field cm-span-2">
@@ -187,7 +197,10 @@
 
     void OpenForm()
     {
-        courseModel = new Course();
+        courseModel = new Course
+            {
+                MaxSem = 1
+            };
         if (selectedDepartmentId != 0)
             courseModel.DepartmentId = selectedDepartmentId;
 
@@ -206,13 +219,20 @@
                 return;
             }
 
+            if (courseModel.MaxSem < 1)
+            {
+                await ShowToast("Max Semester must be greater than or equal to 1");
+                return;
+            }
+
             if (courseModel.CourseId == 0)
             {
                 await CourseService.CreateAsync(new CourseCreateDto
                     {
                         DepartmentId = courseModel.DepartmentId,
                         CourseName = courseModel.CourseName,
-                        CourseCode = courseModel.CourseCode
+                        CourseCode = courseModel.CourseCode,
+						MaxSem = courseModel.MaxSem,
                     });
 
                 await ShowToast("Course Added Successfully");
@@ -224,6 +244,7 @@
                         DepartmentId = courseModel.DepartmentId,
                         CourseName = courseModel.CourseName,
                         CourseCode = courseModel.CourseCode,
+						MaxSem = courseModel.MaxSem,
                         IsActive = courseModel.IsActive
                     });
 
@@ -247,6 +268,7 @@
                 DepartmentId = c.DepartmentId,
                 CourseName = c.CourseName,
                 CourseCode = c.CourseCode,
+				MaxSem = c.MaxSem,
                 IsActive = c.IsActive
             };
 

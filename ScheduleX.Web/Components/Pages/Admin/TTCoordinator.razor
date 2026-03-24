@@ -4,17 +4,23 @@
 @using ScheduleX.Web.DTOs
 @using ScheduleX.Core.Entities
 @inject TTCoordinatorApiService Service
-
+<link href="css/ttcoordinator.css" rel="stylesheet" />
 <div class="tt-container">
 
     <!-- TOP BUTTON -->
     <div class="header-section">
-        <h2 class="page-title">TT Coordinators</h2>
+
+        <div class="search-container">
+            <input type="text"
+                   class="search-input"
+                   placeholder="Search by name, username or email..." />
+        </div>
 
         <button class="btn-main"
                 @onclick="ToggleForm">
-            @(showForm ? "Close Form" : "Register Coordinator")
+            + @(showForm ? "Close Form" : "Register Coordinator")
         </button>
+
     </div>
     @if (showToast)
     {
@@ -28,63 +34,135 @@
         </div>
     }
     <!-- REGISTRATION FORM (VISIBLE ONLY WHEN BUTTON CLICKED) -->
+    <!-- REGISTRATION FORM (VISIBLE ONLY WHEN BUTTON CLICKED) -->
     @if (showForm)
     {
         <div class="tt-card">
-
             <EditForm Model="model" OnValidSubmit="Register">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
                 <div class="form-grid">
+                    <div class="form-group">
+                        <label>Full Name <span>*</span></label>
+                        <InputText class="form-input" @bind-Value="model.FullName" placeholder="Enter full name" />
+                    </div>
 
-                    <InputText class="form-input" @bind-Value="model.FullName" placeholder="Full Name" />
-                    <InputText class="form-input" @bind-Value="model.Username" placeholder="Username" />
-                    <InputText class="form-input" @bind-Value="model.Email" placeholder="Email" />
-                    <InputText class="form-input" @bind-Value="model.Phone" placeholder="Phone" />
+                    <div class="form-group">
+                        <label>Username <span>*</span></label>
+                        <InputText class="form-input" @bind-Value="model.Username" placeholder="Enter username" />
+                    </div>
 
-                    <InputText class="form-input"
-                               type="password"
-                               @bind-Value="model.Password"
-                               placeholder="Password" />
+                    <div class="form-group">
+                        <label>Email <span>*</span></label>
+                        <InputText class="form-input" @bind-Value="model.Email" placeholder="Enter email address" type="email" />
+                    </div>
 
-                    <InputSelect class="form-input"
-                                 @bind-Value="model.DepartmentId"
-                                 @bind-Value:after="LoadCourses">
-                        <option value="">Select Department</option>
-                        @foreach (var d in departments)
-                        {
-                            <option value="@d.DepartmentId">@d.DepartmentName</option>
-                        }
-                    </InputSelect>
+                    <div class="form-group">
+                        <label>Phone <span>*</span></label>
+                        <InputText class="form-input" @bind-Value="model.Phone" placeholder="Enter phone number" />
+                    </div>
 
-                    <InputSelect class="form-input"
-                                 @bind-Value="model.CourseId"
-                                 disabled="@(courses.Count == 0)">
-                        <option value="">Select Course</option>
-                        @foreach (var c in courses)
-                        {
-                            <option value="@c.CourseId">@c.CourseName</option>
-                        }
-                    </InputSelect>
+                    <div class="form-group">
+                        <label>Password <span>*</span></label>
+                        <InputText class="form-input"
+                                   type="password"
+                                   @bind-Value="model.Password"
+                                   placeholder="Enter password" />
+                    </div>
 
+                    <div class="form-group">
+                        <label>Department <span>*</span></label>
+                        <InputSelect class="form-input"
+                                     @bind-Value="model.DepartmentId"
+                                     @bind-Value:after="LoadCourses">
+                            <option value="">Select Department</option>
+                            @foreach (var d in departments)
+                            {
+                                <option value="@d.DepartmentId">@d.DepartmentName</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Course <span>*</span></label>
+                        <InputSelect class="form-input"
+                                     @bind-Value="model.CourseId"
+                                     disabled="@(courses.Count == 0)">
+                            <option value="">Select Course</option>
+                            @foreach (var c in courses)
+                            {
+                                <option value="@c.CourseId">@c.CourseName</option>
+                            }
+                        </InputSelect>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn-register">
                     Save Coordinator
                 </button>
             </EditForm>
+        </div>
+    }
+    @* @if (showForm) *@
+    @* { *@
+    @*     <div class="tt-card"> *@
+
+    @*         <EditForm Model="model" OnValidSubmit="Register"> *@
+    @*             <DataAnnotationsValidator /> *@
+    @*             <ValidationSummary /> *@
+
+    @*             <div class="form-grid"> *@
+
+    @*                 <InputText class="form-input" @bind-Value="model.FullName" placeholder="Full Name" /> *@
+    @*                 <InputText class="form-input" @bind-Value="model.Username" placeholder="Username" /> *@
+    @*                 <InputText class="form-input" @bind-Value="model.Email" placeholder="Email" /> *@
+    @*                 <InputText class="form-input" @bind-Value="model.Phone" placeholder="Phone" /> *@
+
+    @*                 <InputText class="form-input" *@
+    @*                            type="password" *@
+    @*                            @bind-Value="model.Password" *@
+    @*                            placeholder="Password" /> *@
+
+    @*                 <InputSelect class="form-input" *@
+    @*                              @bind-Value="model.DepartmentId" *@
+    @*                              @bind-Value:after="LoadCourses"> *@
+    @*                     <option value="">Select Department</option> *@
+    @*                     @foreach (var d in departments) *@
+    @*                     { *@
+    @*                         <option value="@d.DepartmentId">@d.DepartmentName</option> *@
+    @*                     } *@
+    @*                 </InputSelect> *@
+
+    @*                 <InputSelect class="form-input" *@
+    @*                              @bind-Value="model.CourseId" *@
+    @*                              disabled="@(courses.Count == 0)"> *@
+    @*                     <option value="">Select Course</option> *@
+    @*                     @foreach (var c in courses) *@
+    @*                     { *@
+    @*                         <option value="@c.CourseId">@c.CourseName</option> *@
+    @*                     } *@
+    @*                 </InputSelect> *@
+
+    @*             </div> *@
+
+    @*             <button type="submit" class="btn-register"> *@
+    @*                 Save Coordinator *@
+    @*             </button> *@
+    @*         </EditForm> *@
 
            
 
-        </div>
-    }
+    @*     </div> *@
+    @* } *@
 
     <!-- LIST BELOW -->
     <!-- ACTIVE COORDINATORS -->
     <div class="tt-list-card">
 
-        <h3>Active TT Coordinators</h3>
+        <h3>Active TT Coordinators
+            <span class="count-badge">@activeCoordinators.Count</span>
+        </h3>
 
         @if (activeCoordinators.Count == 0)
         {
@@ -130,7 +208,9 @@
     <!-- INACTIVE COORDINATORS -->
     <div class="tt-list-card mt-4">
 
-        <h3>Inactive TT Coordinators</h3>
+        <h3>Inactive TT Coordinators
+            <span class="count-badge inactive">@inactiveCoordinators.Count</span>
+        </h3>
 
         @if (inactiveCoordinators.Count == 0)
         {
@@ -265,195 +345,3 @@
         );
     }
 }
-
-<style>
-
-    .tt-container {
-        max-width: 1000px;
-        margin: 40px auto;
-        font-family: 'Segoe UI', sans-serif;
-    }
-
-    .header-section {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .page-title {
-        margin: 0;
-        font-weight: 600;
-    }
-
-    .btn-main {
-        background: linear-gradient(135deg, #4e73df, #224abe);
-        color: white;
-        border: none;
-        padding: 10px 18px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: 0.3s ease;
-    }
-
-        .btn-main:hover {
-            transform: translateY(-2px);
-        }
-
-    .tt-card {
-        background: #ffffff;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-        margin-bottom: 25px;
-    }
-
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-        margin-bottom: 15px;
-    }
-
-    .form-input {
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #dcdcdc;
-        transition: 0.3s;
-    }
-
-        .form-input:focus {
-            border-color: #4e73df;
-            box-shadow: 0 0 0 2px rgba(78,115,223,0.2);
-        }
-
-    .btn-register {
-        background: #1cc88a;
-        color: white;
-        border: none;
-        padding: 8px 20px;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-
-    /* ================= PROGRESS TOAST ================= */
-
-    .toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-    }
-
-    .toast-box {
-        background: #1cc88a;
-        color: white;
-        padding: 14px 18px;
-        border-radius: 10px;
-        min-width: 260px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        overflow: hidden;
-        animation: slideIn 0.3s ease forwards;
-        position: relative;
-    }
-
-    .toast-content {
-        font-weight: 500;
-    }
-
-    /* Progress bar */
-    .toast-progress {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        height: 4px;
-        background: rgba(255,255,255,0.8);
-        animation: progressBar 3s linear forwards;
-        width: 100%;
-    }
-
-    @@keyframes slideIn {
-        from {
-            transform: translateX(120%);
-            opacity: 0;
-        }
-
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-
-    @@keyframes progressBar {
-        from {
-            width: 100%;
-        }
-
-        to {
-            width: 0%;
-        }
-    }
-
-    .tt-list-card {
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-    }
-
-  
-
-    .no-record {
-        color: gray;
-    }
-
-    .tt-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-    }
-
-        .tt-table th {
-            background-color: #4e73df;
-            color: white;
-            padding: 10px;
-            text-align: left;
-        }
-
-        .tt-table td {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .tt-table tr:hover {
-            background-color: #f8f9fc;
-        }
-
-    .inactive-row {
-        opacity: 0.7;
-        background-color: #f2f2f2;
-    }
-
-    .btn-deactivate {
-        background: #e74a3b;
-        color: white;
-        border: none;
-        padding: 6px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-
-    .btn-activate {
-        background: #1cc88a;
-        color: white;
-        border: none;
-        padding: 6px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-
-    .mt-4 {
-        margin-top: 30px;
-    }
-
-</style>

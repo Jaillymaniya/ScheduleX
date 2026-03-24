@@ -19,6 +19,8 @@ using ScheduleX.Infrastructure.Repositories.TTCoordinator;
 
 using ScheduleX.Core.Interfaces.Admin;
 using ScheduleX.Infrastructure.Repositories.Admin;
+using ScheduleX.Core.Interfaces.TTCoordinator;
+using ScheduleX.Infrastructure.Repositories.TTCoordinator;
 
 
 
@@ -33,7 +35,16 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddControllers();
 
+builder.Services.AddServerSideBlazor()
+    .AddCircuitOptions(options =>
+    {
+        options.DetailedErrors = true;
+    });
+
 builder.Services.AddScoped<EmailService>();
+
+builder.Services.AddScoped<ISemesterRepository, SemesterRepository>();
+
 
 // ================= ADMIN REPOSITORIES =================
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
@@ -80,6 +91,14 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAntiforgery();
+
+app.UseStaticFiles();   // Static files
+app.UseRouting();       // Routing first
+
+app.UseAntiforgery();   // Must come AFTER UseRouting
+
+app.MapControllers();   // Map API controllers
+
 
 // ================= MAP CONTROLLERS =================
 app.MapControllers();

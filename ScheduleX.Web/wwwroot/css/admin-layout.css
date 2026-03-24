@@ -1,30 +1,30 @@
 ﻿
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/*@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 body {
     margin: 0;
-}
+}*/
 
 /* Layout Wrapper */
-.admin-wrapper {
+/*.admin-wrapper {
     display: flex;
     height: 100vh;
     font-family: 'Inter', sans-serif;
     background: #f5f7fb;
-}
+}*/
 
 /* Sidebar */
-.admin-sidebar {
+/*.admin-sidebar {
     width: 260px;
     background: #1e293b;
     color: white;
     display: flex;
     flex-direction: column;
     padding: 24px 16px;
-}
+}*/
 
     /* Logo */
-    .admin-sidebar .logo {
+    /*.admin-sidebar .logo {
         display: flex;
         justify-content: center;
         margin-bottom: 32px;
@@ -32,10 +32,10 @@ body {
 
         .admin-sidebar .logo img {
             width: 140px;
-        }
+        }*/
 
     /* Navigation */
-    .admin-sidebar ul {
+    /*.admin-sidebar ul {
         list-style: none;
         padding: 0;
         margin: 0;
@@ -65,10 +65,10 @@ body {
         .admin-sidebar a.active {
             background: #3b82f6;
             color: white;
-        }
+        }*/
 
 /* Logout */
-.logout-section {
+/*.logout-section {
     margin-top: auto;
     padding-top: 16px;
     border-top: 1px solid #334155;
@@ -87,34 +87,34 @@ body {
 
     .logout-btn:hover {
         background: #dc2626;
-    }
+    }*/
 
 /* Main Area */
-.admin-main {
+/*.admin-main {
     flex: 1;
     display: flex;
     flex-direction: column;
-}
+}*/
 
 /* Topbar */
-.admin-topbar {
+/*.admin-topbar {
     background: white;
     padding: 16px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid #e5e7eb;
-}
+}*/
 
 /* Title */
-.dashboard-title {
+/*.dashboard-title {
     font-size: 20px;
     font-weight: 600;
     color: #111827;
-}
+}*/
 
 /* Search */
-.search-container {
+/*.search-container {
     flex: 1;
     max-width: 400px;
     margin: 0 24px;
@@ -131,10 +131,10 @@ body {
         background: transparent;
         width: 100%;
         outline: none;
-    }
+    }*/
 
 /* Profile */
-.profile {
+/*.profile {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -155,11 +155,248 @@ body {
 .username {
     font-size: 14px;
     font-weight: 500;
-}
+}*/
 
 /* Content */
-.admin-content {
+/*.admin-content {
     padding: 24px;
     overflow-y: auto;
     flex: 1;
+}*/
+
+/* ================= GLOBAL ================= */
+
+html {
+    height: 100%;
+    overflow-y: scroll; /* prevent layout shift */
+}
+
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ================= LAYOUT ================= */
+
+.admin-wrapper {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background: #f8fafc;
+}
+
+.admin-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* ================= SIDEBAR ================= */
+
+.admin-sidebar {
+    width: 260px;
+    background: #0f172a;
+    color: #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 18px;
+}
+
+/* Logo */
+
+.logo {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+    .logo img {
+        width: 110px;
+        margin-bottom: 8px;
+    }
+
+.logo-text {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #f1f5f9;
+}
+
+/* Navigation */
+
+.admin-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+}
+
+.menu-heading {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #64748b;
+    margin-top: 25px;
+    margin-bottom: 10px;
+    padding-left: 8px;
+}
+
+.admin-sidebar li {
+    margin-bottom: 6px;
+}
+
+.admin-sidebar a {
+    display: flex;
+    align-items: center;
+    padding: 11px 14px;
+    color: #cbd5e1;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+    .admin-sidebar a:hover {
+        background: rgba(255,255,255,0.05);
+        color: #ffffff;
+        transform: translateX(4px);
+    }
+
+    .admin-sidebar a.active {
+        background: #2563eb;
+        color: white;
+        font-weight: 500;
+    }
+
+        .admin-sidebar a.active::before {
+            content: "";
+            position: absolute;
+            left: -18px;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: #3b82f6;
+            border-radius: 0 4px 4px 0;
+        }
+
+/* Logout */
+
+.logout-section {
+    border-top: 1px solid #1e293b;
+    padding-top: 20px;
+    margin-top: 10px;
+}
+
+.logout-btn {
+    width: 100%;
+    padding: 10px;
+    background: #ef4444;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+    .logout-btn:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+    }
+
+/* ================= TOPBAR ================= */
+
+.admin-topbar {
+    background: white;
+    padding: 18px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dashboard-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* ================= PROFILE ================= */
+
+.profile-wrapper {
+    position: relative;
+}
+
+.profile-btn {
+    width: 40px;
+    height: 40px;
+    background: #1a73e8;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+    .profile-btn:hover {
+        opacity: 0.9;
+    }
+
+.profile-menu {
+    position: absolute;
+    top: 55px;
+    right: 0;
+    width: 260px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    z-index: 1000;
+    animation: fadeIn 0.15s ease-in-out;
+}
+
+.profile-item {
+    padding: 14px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+    .profile-item:hover {
+        background: #f1f3f4;
+    }
+
+.profile-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 6px 0;
+}
+
+/* ================= CONTENT ================= */
+
+.admin-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+/* ================= ANIMATION ================= */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

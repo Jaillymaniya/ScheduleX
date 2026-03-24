@@ -1,22 +1,4 @@
-﻿@* <div class="admin-topbar"> *@
-
-@*     <div class="dashboard-title"> *@
-@*         Dashboard *@
-@*     </div> *@
-
-@*     <div class="search-container"> *@
-@*         <div class="search-box"> *@
-@*             <input placeholder="Search..." /> *@
-@*         </div> *@
-@*     </div> *@
-
-@*     <div class="profile"> *@
-@*         <div class="profile-icon">A</div> *@
-@*         <span class="username">Admin</span> *@
-@*     </div> *@
-
-@* </div> *@
-
+﻿
 
 
 @* @inject NavigationManager Nav *@
@@ -81,55 +63,22 @@
 @*         Nav.NavigateTo("/login", true); *@
 @*     } *@
 @* } *@
-
-
-
-
 @inject NavigationManager Nav
 @inject ScheduleX.Web.Services.AuthState Auth
 
 <div class="admin-topbar">
 
+    <!-- Dynamic Title -->
     <div class="dashboard-title">
-        Dashboard
+        @PageTitle
     </div>
 
-    <div class="search-container">
-        <div class="search-box">
-            <input placeholder="Search..." />
+    <!-- Profile Icon -->
+    <div class="profile-wrapper">
+
+        <div class="profile-btn" @onclick="GoToProfile">
+            @UserInitial
         </div>
-    </div>
-
-    <div class="profile">
-
-        <!-- Click only on A icon -->
-        <div class="profile-icon" @onclick="ToggleMenu">
-            A
-        </div>
-
-        <span class="username">Admin</span>
-
-        @if (showMenu)
-        {
-            <div class="profile-dropdown">
-
-                <div class="dropdown-item"
-                     @onclick="GoToEditProfile">
-                    Edit Profile
-                </div>
-
-                <div class="dropdown-item"
-                     @onclick="GoToChangePassword">
-                    Change Password
-                </div>
-
-                <div class="dropdown-item logout-item"
-                     @onclick="Logout">
-                    Logout
-                </div>
-
-            </div>
-        }
 
     </div>
 
@@ -137,28 +86,56 @@
 
 @code {
 
-    private bool showMenu = false;
+    private string PageTitle = "Dashboard";
+    private string UserInitial = "A";
 
-    private void ToggleMenu()
+    protected override void OnInitialized()
     {
-        showMenu = !showMenu;
+        SetTitle();
+        SetInitial();
+
+        Nav.LocationChanged += (s, e) =>
+        {
+            SetTitle();
+            StateHasChanged();
+        };
     }
 
-    private void GoToEditProfile()
+    private void SetTitle()
     {
-        showMenu = false;
+        var uri = Nav.ToBaseRelativePath(Nav.Uri);
+        var segments = uri.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        if (segments.Length > 1)
+        {
+            var last = segments.Last();
+            PageTitle = FormatTitle(last);
+        }
+        else
+        {
+            PageTitle = "Dashboard";
+        }
+    }
+
+    private string FormatTitle(string value)
+    {
+        value = value.Replace("-", " ");
+
+        if (value.ToLower() == "ttcoordinator")
+            return "Timetable Coordinator";
+
+        return System.Globalization.CultureInfo.CurrentCulture.TextInfo
+            .ToTitleCase(value);
+    }
+
+    private void SetInitial()
+    {
+        if (!string.IsNullOrEmpty(Auth.FullName))
+            UserInitial = Auth.FullName.Substring(0, 1).ToUpper();
+    }
+
+    private void GoToProfile()
+    {
         Nav.NavigateTo("/admin/edit-profile");
-    }
-
-    private void GoToChangePassword()
-    {
-        showMenu = false;
-        Nav.NavigateTo("/admin/change-password");
-    }
-
-    private void Logout()
-    {
-        Auth.SignOut();
-        Nav.NavigateTo("/login", true);
     }
 }
