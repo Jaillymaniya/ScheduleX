@@ -36,3 +36,6 @@ public class Faculty
     public ICollection<FacultyAvailability> FacultyAvailabilities { get; set; } = new List<FacultyAvailability>();
     public ICollection<SubjectOffering> SubjectOfferings { get; set; } = new List<SubjectOffering>();
 }
+
+
+

@@ -1,1 +1,99 @@
-﻿
+﻿@page "/admin/edit-profile"
+
+@using ScheduleX.Core.Entities
+@using ScheduleX.Core.Interfaces.Admin
+@using ScheduleX.Web.Services
+@using ScheduleX.Web.Components.Layout.Admin
+
+@layout AdminLayout
+
+@inject IEditAdminProfileRepository ProfileRepository
+@inject AuthState AuthState
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<link href="css/edit-admin-profile.css" rel="stylesheet" />
+
+<div class="edit-wrapper">
+    <div class="edit-card">
+
+        <h2 class="edit-title">Edit Admin Profile</h2>
+        <p class="edit-subtitle">Update your account information</p>
+
+        <EditForm Model="userModel" OnValidSubmit="HandleUpdate">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <InputText class="edit-input"
+                           placeholder="Full Name"
+                           @bind-Value="userModel.FullName" />
+                <ValidationMessage For="@(() => userModel.FullName)" />
+            </div>
+
+            <div class="form-group">
+                <InputText class="edit-input"
+                           placeholder="Username"
+                           @bind-Value="userModel.Username" />
+                <ValidationMessage For="@(() => userModel.Username)" />
+            </div>
+
+            <div class="form-group">
+                <InputText type="email"
+                           class="edit-input"
+                           placeholder="Email"
+                           @bind-Value="userModel.Email" />
+                <ValidationMessage For="@(() => userModel.Email)" />
+            </div>
+
+            <div class="form-group">
+                <InputText type="tel"
+                           maxlength="10"
+                           class="edit-input"
+                           placeholder="Phone Number"
+                           @bind-Value="userModel.Phone" />
+                <ValidationMessage For="@(() => userModel.Phone)" />
+            </div>
+
+            <button type="submit" class="edit-btn">
+                Update Profile
+            </button>
+
+        </EditForm>
+    </div>
+</div>
+
+@code {
+
+    private User userModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!AuthState.UserId.HasValue || !AuthState.IsAdmin)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        var user = await ProfileRepository.GetAdminByIdAsync(AuthState.UserId.Value);
+
+        if (user != null)
+            userModel = user;
+    }
+
+    private async Task HandleUpdate()
+    {
+        bool result = await ProfileRepository.UpdateAdminProfileAsync(userModel);
+
+        if (result)
+        {
+            await JS.InvokeVoidAsync("alert", "Profile updated successfully!");
+            Nav.NavigateTo("/admin/overview");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Failed to update profile.");
+        }
+    }
+}
+
+
