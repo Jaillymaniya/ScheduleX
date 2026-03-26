@@ -45,6 +45,7 @@ public class CourseController : ControllerBase
             DepartmentName = c.Department?.DepartmentName ?? "",
             CourseName = c.CourseName,
             CourseCode = c.CourseCode,
+            MaxSem = c.MaxSem,
             IsActive = c.IsActive
         }).ToList();
 
@@ -63,6 +64,7 @@ public class CourseController : ControllerBase
             DepartmentName = c.Department?.DepartmentName ?? "",
             CourseName = c.CourseName,
             CourseCode = c.CourseCode,
+            MaxSem = c.MaxSem,
             IsActive = c.IsActive
         }).ToList();
 
@@ -101,6 +103,7 @@ public class CourseController : ControllerBase
                 DepartmentId = dto.DepartmentId,
                 CourseName = dto.CourseName,
                 CourseCode = dto.CourseCode,
+                MaxSem = dto.MaxSem,
                 IsActive = true,
                 CreatedAt = DateTime.Now
             };
@@ -149,6 +152,7 @@ public class CourseController : ControllerBase
                 DepartmentId = dto.DepartmentId,
                 CourseName = dto.CourseName,
                 CourseCode = dto.CourseCode,
+                MaxSem = dto.MaxSem,
                 IsActive = dto.IsActive
             };
 

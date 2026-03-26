@@ -20,6 +20,10 @@ public class Course
     [MaxLength(20)]
     public string? CourseCode { get; set; }
 
+    [Required]
+    [Range(1, 12)]
+    public int MaxSem { get; set; }
+
     public bool IsActive { get; set; } = true;
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;

@@ -25,8 +25,16 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddControllers();
 
+builder.Services.AddServerSideBlazor()
+    .AddCircuitOptions(options =>
+    {
+        options.DetailedErrors = true;
+    });
+
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+
+builder.Services.AddScoped<ISemesterRepository, SemesterRepository>();
 
 
 builder.Services.AddScoped<IChangePasswordRepository, ChangePasswordRepository>();

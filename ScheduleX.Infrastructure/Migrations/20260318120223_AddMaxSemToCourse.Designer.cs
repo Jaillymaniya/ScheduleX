@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ScheduleX.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using ScheduleX.Infrastructure.Data;
 namespace ScheduleX.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260318120223_AddMaxSemToCourse")]
+    partial class AddMaxSemToCourse
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -117,8 +120,8 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<int>("MaxSem")
-                        .HasColumnType("int");
+                    b.Property<byte>("MaxSem")
+                        .HasColumnType("tinyint");
 
                     b.HasKey("CourseId");
 
@@ -473,17 +476,14 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubjectId"));
 
-                    b.Property<int>("CourseId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CourseId1")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<byte>("Credits")
                         .HasColumnType("tinyint");
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -505,9 +505,7 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.HasKey("SubjectId");
 
-                    b.HasIndex("CourseId");
-
-                    b.HasIndex("CourseId1");
+                    b.HasIndex("DepartmentId");
 
                     b.HasIndex("SubjectCode")
                         .IsUnique()
@@ -1090,18 +1088,13 @@ namespace ScheduleX.Infrastructure.Migrations
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Subject", b =>
                 {
-                    b.HasOne("ScheduleX.Core.Entities.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId")
+                    b.HasOne("ScheduleX.Core.Entities.Department", "Department")
+                        .WithMany("Subjects")
+                        .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ScheduleX.Core.Entities.Course", null)
-                        .WithMany("Subjects")
-                        .HasForeignKey("CourseId1")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Course");
+                    b.Navigation("Department");
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.SubjectOffering", b =>
@@ -1334,8 +1327,6 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.Navigation("Semesters");
 
-                    b.Navigation("Subjects");
-
                     b.Navigation("TTCoordinatorCourses");
 
                     b.Navigation("TimeTableBatches");
@@ -1350,6 +1341,8 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("Rooms");
 
                     b.Navigation("ScheduleConfigs");
+
+                    b.Navigation("Subjects");
 
                     b.Navigation("TimeTableBatches");
 
