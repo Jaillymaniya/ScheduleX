@@ -33,8 +33,14 @@
     <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/divisions"))">Divisions</button>
 
     <div class="tt-nav-section">Configuration</div>
-    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/settings"))">Timetable Settings</button>
-    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/breaks"))">Break Configuration</button>
+    @* <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/settings"))">Timetable Settings</button> *@
+    @* <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/breaks"))">Break Configuration</button> *@
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/schedule-configuration"))">
+        Timetable Settings
+    </button>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/templates"))">
+        Timetable Templates
+    </button>
 
     <div class="tt-nav-section">Generation</div>
     <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/generate"))">Generate Timetable</button>
