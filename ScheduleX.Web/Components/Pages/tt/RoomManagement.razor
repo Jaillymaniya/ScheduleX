@@ -335,6 +335,207 @@
 
 
 @* last one *@
+@* @page "/tt/room-management" *@
+@* @layout ScheduleX.Web.Components.Layout.tt.TTLayout *@
+
+@* @using ScheduleX.Core.Entities *@
+@* @using ScheduleX.Core.Interfaces.TTCoordinator *@
+
+@* @inject IRoomRepository RoomRepo *@
+
+@* <h3>Room / Lab Management</h3> *@
+
+@* <div class="tt-card p-4 mb-4"> *@
+
+@*     <h5 class="mb-4">Add Room</h5> *@
+
+@*     <div class="row g-3"> *@
+
+@*         <!-- Room Name --> *@
+@*         <div class="col-md-6"> *@
+@*             <label>Room Name</label> *@
+@*             <input class="tt-input w-100" *@
+@*                    @bind="room.RoomName" /> *@
+@*         </div> *@
+
+@*         <!-- Room Type --> *@
+@*         <div class="col-md-6"> *@
+@*             <label>Room Type</label> *@
+@*             <select class="tt-select w-100" *@
+@*                     @bind="room.RoomType"> *@
+@*                 <option value="0">-- Select Type --</option> *@
+@*                 <option value="@RoomTypeEnum.Classroom">Classroom</option> *@
+@*                 <option value="@RoomTypeEnum.Lab">Lab</option> *@
+@*             </select> *@
+@*         </div> *@
+
+@*         <!-- Capacity --> *@
+@*         <div class="col-md-6"> *@
+@*             <label>Capacity</label> *@
+@*             <input type="number" *@
+@*                    class="tt-input w-100" *@
+@*                    @bind="room.Capacity" /> *@
+@*         </div> *@
+
+@*         <!-- Department --> *@
+@*         <div class="col-md-6"> *@
+@*             <label>Department</label> *@
+@*             <select class="tt-select w-100" *@
+@*                     @bind="room.DepartmentId"> *@
+@*                 <option value="0">-- Select Department --</option> *@
+
+@*                 @foreach (var d in departments) *@
+@*                 { *@
+@*                     <option value="@d.DepartmentId">@d.DepartmentName</option> *@
+@*                 } *@
+@*             </select> *@
+@*         </div> *@
+
+@*     </div> *@
+
+@*     <div class="mt-4"> *@
+@*         <button class="btn btn-success px-4" *@
+@*                 @onclick="SaveRoom"> *@
+@*             @(isEdit ? "Update Room" : "Save Room") *@
+@*         </button> *@
+@*     </div> *@
+
+@* </div> *@
+
+@* <hr /> *@
+
+@* <table class="table table-dark"> *@
+@*     <thead> *@
+@*         <tr> *@
+@*             <th>Name</th> *@
+@*             <th>Type</th> *@
+@*             <th>Capacity</th> *@
+@*             <th>Department</th> *@
+@*             <th>Status</th> *@
+@*             <th style="width:180px;">Actions</th> *@
+@*         </tr> *@
+@*     </thead> *@
+
+@*     <tbody> *@
+@*         @foreach (var r in rooms) *@
+@*         { *@
+@*             <tr class="@(r.IsActive ? "" : "inactive-row")"> *@
+
+@*                 <td>@r.RoomName</td> *@
+@*                 <td>@r.RoomType</td> *@
+@*                 <td>@r.Capacity</td> *@
+@*                 <td>@r.Department?.DepartmentName</td> *@
+
+@*                 <td> *@
+@*                     @if (r.IsActive) *@
+@*                     { *@
+@*                         <span class="badge bg-success">Active</span> *@
+@*                     } *@
+@*                     else *@
+@*                     { *@
+@*                         <span class="badge bg-secondary">Inactive</span> *@
+@*                     } *@
+@*                 </td> *@
+
+@*                 <!-- ✅ FIXED BUTTON SPACING --> *@
+@*                 <td> *@
+@*                     <div style="display: flex; gap: 10px;"> *@
+
+@*                         <!-- EDIT --> *@
+@*                         <button class="btn btn-info btn-sm" *@
+@*                                 disabled="@(!r.IsActive)" *@
+@*                                 @onclick="() => EditRoom(r)"> *@
+@*                             Edit *@
+@*                         </button> *@
+
+@*                         <!-- TOGGLE --> *@
+@*                         @if (r.IsActive) *@
+@*                         { *@
+@*                             <button class="btn btn-danger btn-sm" *@
+@*                                     @onclick="() => DeactivateRoom(r.RoomId)"> *@
+@*                                 Deactivate *@
+@*                             </button> *@
+@*                         } *@
+@*                         else *@
+@*                         { *@
+@*                             <button class="btn btn-success btn-sm" *@
+@*                                     @onclick="() => ActivateRoom(r.RoomId)"> *@
+@*                                 Activate *@
+@*                             </button> *@
+@*                         } *@
+
+@*                     </div> *@
+@*                 </td> *@
+
+@*             </tr> *@
+@*         } *@
+@*     </tbody> *@
+@* </table> *@
+
+@* @code { *@
+
+@*     private Room room = new(); *@
+@*     private List<Room> rooms = new(); *@
+@*     private List<Department> departments = new(); *@
+
+@*     private bool isEdit = false; *@
+
+@*     protected override async Task OnInitializedAsync() *@
+@*     { *@
+@*         departments = await RoomRepo.GetDepartmentsAsync(); *@
+@*         rooms = await RoomRepo.GetAllRoomsAsync(); *@
+@*     } *@
+
+@*     private async Task SaveRoom() *@
+@*     { *@
+@*         if (room.DepartmentId == 0) *@
+@*             return; *@
+
+@*         if (isEdit) *@
+@*             await RoomRepo.UpdateRoomAsync(room); *@
+@*         else *@
+@*             await RoomRepo.AddRoomAsync(room); *@
+
+@*         room = new Room(); *@
+@*         isEdit = false; *@
+
+@*         rooms = await RoomRepo.GetAllRoomsAsync(); *@
+@*     } *@
+
+@*     private void EditRoom(Room r) *@
+@*     { *@
+@*         if (!r.IsActive) return; *@
+
+@*         room = new Room *@
+@*             { *@
+@*                 RoomId = r.RoomId, *@
+@*                 RoomName = r.RoomName, *@
+@*                 RoomType = r.RoomType, *@
+@*                 Capacity = r.Capacity, *@
+@*                 DepartmentId = r.DepartmentId *@
+@*             }; *@
+
+@*         isEdit = true; *@
+@*     } *@
+
+@*     private async Task DeactivateRoom(int id) *@
+@*     { *@
+@*         await RoomRepo.DeactivateRoomAsync(id); *@
+@*         rooms = await RoomRepo.GetAllRoomsAsync(); *@
+@*     } *@
+
+@*     private async Task ActivateRoom(int id) *@
+@*     { *@
+@*         await RoomRepo.ActivateRoomAsync(id); *@
+@*         rooms = await RoomRepo.GetAllRoomsAsync(); *@
+@*     } *@
+@* } *@
+
+
+
+
+
+@* new css *@
 @page "/tt/room-management"
 @layout ScheduleX.Web.Components.Layout.tt.TTLayout
 
@@ -343,45 +544,45 @@
 
 @inject IRoomRepository RoomRepo
 
-<h3>Room / Lab Management</h3>
+<link href="css/room.css" rel="stylesheet" />
 
-<div class="tt-card p-4 mb-4">
+<h3 class="mb-4">Room / Lab Management</h3>
+
+<!-- ================= FORM ================= -->
+<div class="tt-card">
 
     <h5 class="mb-4">Add Room</h5>
 
-    <div class="row g-3">
+    <!-- ROW 1 -->
+    <div class="tt-form-row">
 
-        <!-- Room Name -->
-        <div class="col-md-6">
+        <div class="tt-form-group">
             <label>Room Name</label>
-            <input class="tt-input w-100"
-                   @bind="room.RoomName" />
+            <input class="tt-input" @bind="room.RoomName" />
         </div>
 
-        <!-- Room Type -->
-        <div class="col-md-6">
+        <div class="tt-form-group">
             <label>Room Type</label>
-            <select class="tt-select w-100"
-                    @bind="room.RoomType">
+            <select class="tt-select" @bind="room.RoomType">
                 <option value="0">-- Select Type --</option>
                 <option value="@RoomTypeEnum.Classroom">Classroom</option>
                 <option value="@RoomTypeEnum.Lab">Lab</option>
             </select>
         </div>
 
-        <!-- Capacity -->
-        <div class="col-md-6">
+    </div>
+
+    <!-- ROW 2 -->
+    <div class="tt-form-row">
+
+        <div class="tt-form-group">
             <label>Capacity</label>
-            <input type="number"
-                   class="tt-input w-100"
-                   @bind="room.Capacity" />
+            <input type="number" class="tt-input" @bind="room.Capacity" />
         </div>
 
-        <!-- Department -->
-        <div class="col-md-6">
+        <div class="tt-form-group">
             <label>Department</label>
-            <select class="tt-select w-100"
-                    @bind="room.DepartmentId">
+            <select class="tt-select" @bind="room.DepartmentId">
                 <option value="0">-- Select Department --</option>
 
                 @foreach (var d in departments)
@@ -393,84 +594,82 @@
 
     </div>
 
-    <div class="mt-4">
-        <button class="btn btn-success px-4"
-                @onclick="SaveRoom">
-            @(isEdit ? "Update Room" : "Save Room")
-        </button>
-    </div>
+    <!-- BUTTON -->
+    <button class="btn btn-success tt-btn"
+            @onclick="SaveRoom">
+        @(isEdit ? "Update Room" : "Save Room")
+    </button>
 
 </div>
 
 <hr />
 
-<table class="table table-dark">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Capacity</th>
-            <th>Department</th>
-            <th>Status</th>
-            <th style="width:180px;">Actions</th>
-        </tr>
-    </thead>
+<!-- ================= TABLE ================= -->
+<div class="tt-table-container">
 
-    <tbody>
-        @foreach (var r in rooms)
-        {
-            <tr class="@(r.IsActive ? "" : "inactive-row")">
-
-                <td>@r.RoomName</td>
-                <td>@r.RoomType</td>
-                <td>@r.Capacity</td>
-                <td>@r.Department?.DepartmentName</td>
-
-                <td>
-                    @if (r.IsActive)
-                    {
-                        <span class="badge bg-success">Active</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Inactive</span>
-                    }
-                </td>
-
-                <!-- ✅ FIXED BUTTON SPACING -->
-                <td>
-                    <div style="display: flex; gap: 10px;">
-
-                        <!-- EDIT -->
-                        <button class="btn btn-info btn-sm"
-                                disabled="@(!r.IsActive)"
-                                @onclick="() => EditRoom(r)">
-                            Edit
-                        </button>
-
-                        <!-- TOGGLE -->
-                        @if (r.IsActive)
-                        {
-                            <button class="btn btn-danger btn-sm"
-                                    @onclick="() => DeactivateRoom(r.RoomId)">
-                                Deactivate
-                            </button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-success btn-sm"
-                                    @onclick="() => ActivateRoom(r.RoomId)">
-                                Activate
-                            </button>
-                        }
-
-                    </div>
-                </td>
-
+    <table class="tt-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Capacity</th>
+                <th>Department</th>
+                <th>Status</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+
+        <tbody>
+            @foreach (var r in rooms)
+            {
+                <tr class="@(r.IsActive ? "" : "inactive-row")">
+
+                    <!-- EXACT MATCH (6 columns) -->
+                    <td>@r.RoomName</td>
+                    <td>@r.RoomType</td>
+                    <td>@r.Capacity</td>
+                    <td>@r.Department?.DepartmentName</td>
+
+                    <td>
+                        <span class="badge @(r.IsActive ? "bg-success" : "bg-secondary")">
+                            @(r.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </td>
+
+                    <td>
+                        <div class="action-buttons">
+
+                            <!-- EDIT -->
+                            <button class="btn btn-info"
+                                    disabled="@(!r.IsActive)"
+                                    @onclick="() => EditRoom(r)">
+                                Edit
+                            </button>
+
+                            <!-- ACTIVE / DEACTIVE -->
+                            @if (r.IsActive)
+                            {
+                                <button class="btn btn-danger"
+                                        @onclick="() => DeactivateRoom(r.RoomId)">
+                                    Deactivate
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-success"
+                                        @onclick="() => ActivateRoom(r.RoomId)">
+                                    Activate
+                                </button>
+                            }
+
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
 
 @code {
 
@@ -488,7 +687,7 @@
 
     private async Task SaveRoom()
     {
-        if (room.DepartmentId == 0)
+        if (room.DepartmentId == 0 || room.RoomType == 0)
             return;
 
         if (isEdit)

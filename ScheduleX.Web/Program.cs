@@ -55,6 +55,7 @@ builder.Services.AddScoped<IEditAdminProfileRepository, EditAdminProfileReposito
 // ================= TT COORDINATOR REPOSITORIES =================
 builder.Services.AddScoped<IFacultyRepository, FacultyRepository>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();   // ROOM MANAGEMENT
+builder.Services.AddScoped<IDivisionService, DivisionService>();
 
 // ================= HTTP CLIENT =================
 builder.Services.AddScoped(sp =>
