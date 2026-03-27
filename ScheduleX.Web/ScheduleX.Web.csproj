@@ -31,8 +31,4 @@
     <ProjectReference Include="..\ScheduleX.Infrastructure\ScheduleX.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Components\Pages\tt\Configuration\" />
-  </ItemGroup>
-
 </Project>
