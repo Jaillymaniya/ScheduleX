@@ -16,6 +16,7 @@
        @bind="searchText" />
 
 <div class="mb-3">
+        <div class="btn-section">
     <button class="btn btn-success me-2" @onclick="ShowManualForm">
         Add Subject
     </button>
@@ -23,6 +24,7 @@
     <button class="btn btn-warning" @onclick="ShowCsvForm">
         Upload CSV
     </button>
+    </div>
 </div>
 
 @if (isUploading)
@@ -97,7 +99,7 @@
                 </div>
 
             </div>
-
+            <div class="btn-section">
             <button type="submit" class="btn btn-success me-2">
                 @(isEditMode ? "Update" : "Save")
             </button>
@@ -105,7 +107,7 @@
             <button type="button" class="btn btn-secondary" @onclick="CloseForm">
                 Close
             </button>
-
+            </div>
         </EditForm>
     </div>
 }
@@ -124,7 +126,7 @@
         <InputFile OnChange="OnFileSelected" />
 
         <br />
-
+            <div class="btn-section">
         <button class="btn btn-success mt-2"
                 @onclick="ProcessCsv"
                 disabled="@(!isFileSelected)">
@@ -135,6 +137,7 @@
                 @onclick="CloseForm">
             Close
         </button>
+        </div>
     </div>
 }
 

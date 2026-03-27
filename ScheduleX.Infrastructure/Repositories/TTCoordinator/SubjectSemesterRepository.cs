@@ -69,7 +69,15 @@ public class SubjectSemesterRepository : ISubjectSemesterRepository
             .ThenBy(x => x.Semester.SemesterNo)   // optional sorting
             .ToListAsync();
     }
-
+    public async Task<List<Course>> GetCoursesForCoordinatorAsync(int userId)
+    {
+        return await _context.TTCoordinatorCourses
+            .Include(x => x.Course)
+            .Where(x => x.UserId == userId && x.Course.IsActive)
+            .Select(x => x.Course)
+            .Distinct()
+            .ToListAsync();
+    }
     public async Task<(bool, string)> AddAsync(SubjectSemester model)
     {
         var exists = await _context.SubjectSemesters
@@ -78,7 +86,12 @@ public class SubjectSemesterRepository : ISubjectSemesterRepository
 
         if (exists)
             return (false, "Duplicate mapping");
+        // prevent cross-course insert
+        var subject = await _context.Subjects.FindAsync(model.SubjectId);
+        var semester = await _context.Semesters.FindAsync(model.SemesterId);
 
+        if (subject.CourseId != semester.CourseId)
+            return (false, "Subject and Semester must belong to same course");
         _context.SubjectSemesters.Add(model);
         await _context.SaveChangesAsync();
 
@@ -112,6 +125,20 @@ public class SubjectSemesterRepository : ISubjectSemesterRepository
             data.IsActive = false;
             await _context.SaveChangesAsync();
         }
+    }
+    public async Task<List<SubjectSemester>> GetByCoordinatorAsync(int userId)
+    {
+        return await _context.SubjectSemesters
+            .Include(x => x.Subject)
+            .Include(x => x.Semester)
+                .ThenInclude(s => s.Course)
+            .Where(x => _context.TTCoordinatorCourses
+                .Any(tc => tc.UserId == userId &&
+                           tc.CourseId == x.Semester.CourseId &&
+                           tc.Course.IsActive))
+            .OrderByDescending(x => x.IsActive)
+            .ThenBy(x => x.Semester.SemesterNo)
+            .ToListAsync();
     }
     public async Task ActivateAsync(int id)
     {

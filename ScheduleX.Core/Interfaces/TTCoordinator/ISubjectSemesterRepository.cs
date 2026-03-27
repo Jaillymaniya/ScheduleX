@@ -10,7 +10,8 @@ public interface ISubjectSemesterRepository
     Task<List<Semester>> GetAllSemestersAsync();
     Task<List<Subject>> GetAllSubjectsAsync();
     Task<List<SubjectSemester>> GetAllAsync();
-
+    Task<List<SubjectSemester>> GetByCoordinatorAsync(int userId);
+    Task<List<Course>> GetCoursesForCoordinatorAsync(int userId);
     Task<(bool, string)> AddAsync(SubjectSemester model);
     Task<(bool, string)> BulkInsertAsync(List<SubjectSemester> list);
     Task UpdateAsync(SubjectSemester model);

@@ -5,7 +5,7 @@
 @using ScheduleX.Core.Entities
 @using ScheduleX.Core.Interfaces.TTCoordinator
 @using SubjectSemesterEntity = ScheduleX.Core.Entities.SubjectSemester
-
+@inject ScheduleX.Web.Services.AuthState Auth
 @inject ISubjectSemesterRepository Repo
 @inject IJSRuntime JS
 @inject NavigationManager Nav
@@ -18,19 +18,10 @@
     ← Back
 </button>
 
-<!-- COURSE DROPDOWN -->
-<select class="tt-input w-100 mb-3"
-        @bind="courseId"
-        @bind:after="LoadDropdowns">
-    <option value="0">Select Course</option>
-    @foreach (var c in courses)
-    {
-        <option value="@c.CourseId">@c.CourseName</option>
-    }
-</select>
+
 
 <!-- BUTTONS -->
-<div class="mb-3">
+<div class="btn-section">
     <button class="btn btn-success me-2" @onclick="ShowManual">Add Manual</button>
     <button class="btn btn-warning" @onclick="ShowCsv">Upload CSV</button>
 </div>
@@ -46,17 +37,36 @@
 <!-- ================= MANUAL FORM ================= -->
 @if (showManual)
 {
-    <div class="tt-card p-4 mb-4">
+    <div class="tt-card p-4 mb-5">
 
         <EditForm Model="model" OnValidSubmit="Save">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
-            <div class="row">
+            <div class="subject-grid">
 
-                <div class="col-md-6 mb-3">
+                <!-- COURSE -->
+                <div class="form-field">
+                    <label>Course</label>
+                    @if (!courses.Any())
+                    {
+                        <p class="text-warning">No courses assigned to you</p>
+                    }
+                    <select class="tt-select"
+                            @bind="courseId"
+                            @bind:after="LoadDropdowns">
+                        <option value="0">Select Course</option>
+                        @foreach (var c in courses)
+                        {
+                            <option value="@c.CourseId">@c.CourseName</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- SEMESTER -->
+                <div class="form-field">
                     <label>Semester</label>
-                    <select class="tt-select w-100" @bind="model.SemesterId">
+                    <select class="tt-select" @bind="model.SemesterId">
                         <option value="0">Select Semester</option>
                         @foreach (var s in semesters)
                         {
@@ -65,9 +75,10 @@
                     </select>
                 </div>
 
-                <div class="col-md-6 mb-3">
+                <!-- SUBJECT -->
+                <div class="form-field">
                     <label>Subject</label>
-                    <select class="tt-select w-100" @bind="model.SubjectId">
+                    <select class="tt-select" @bind="model.SubjectId">
                         <option value="0">Select Subject</option>
                         @foreach (var s in subjects)
                         {
@@ -77,10 +88,10 @@
                 </div>
 
             </div>
-
+            <div class="btn-section">
             <button class="btn btn-success me-2">Save</button>
             <button type="button" class="btn btn-secondary" @onclick="CloseForm">Close</button>
-
+            </div>
         </EditForm>
     </div>
 }
@@ -99,7 +110,7 @@
         <InputFile OnChange="OnFileSelected" />
 
         <br />
-
+        <div class="btn-section">
         <button class="btn btn-success mt-2"
                 @onclick="ProcessCsv"
                 disabled="@(!isFileSelected)">
@@ -109,9 +120,10 @@
         <button class="btn btn-secondary mt-2 ms-2" @onclick="CloseForm">
             Close
         </button>
+        </div>
     </div>
 }
-
+<div class="section-divider"></div>
 <!-- ================= TABLE ================= -->
 <div class="tt-card p-3">
     <table class="table table-dark table-hover">
@@ -126,54 +138,75 @@
 
         <tbody>
 
-            <!-- ACTIVE -->
-            <tr class="table-section">
-                <td colspan="4">Active Records</td>
-            </tr>
-
-            @foreach (var item in list.Where(x => x.IsActive))
+            @if (!list.Any())
             {
                 <tr>
-                    <td>@item.Semester.Course.CourseName</td>
-                    <td>@item.Semester.SemesterNo</td>
-                    <td>@item.Subject.SubjectName</td>
-                    <td>
-                        <button class="btn btn-sm btn-info me-1"
-                                @onclick="() => Edit(item)">
-                            Edit
-                        </button>
-
-                        <button class="btn btn-sm btn-danger"
-                                @onclick="() => Deactivate(item.SubjectSemesterId)">
-                            Deactivate
-                        </button>
+                    <td colspan="4" class="text-center text-warning">
+                        No records found
                     </td>
                 </tr>
             }
-
-            <!-- INACTIVE -->
-            <tr class="table-section">
-                <td colspan="4">Inactive Records</td>
-            </tr>
-
-            @foreach (var item in list.Where(x => !x.IsActive))
+            else
             {
-                <tr class="opacity-50">
-                    <td>@item.Semester.Course.CourseName</td>
-                    <td>@item.Semester.SemesterNo</td>
-                    <td>@item.Subject.SubjectName</td>
-                    <td>
-                        <button class="btn btn-sm btn-info me-1"
-                                @onclick="() => Edit(item)">
-                            Edit
-                        </button>
+                <!-- ACTIVE -->
+                @* <tr class="table-section"> *@
+                @*     <td colspan="4">Active Records</td> *@
+                @* </tr> *@
 
-                        <button class="btn btn-sm btn-success"
-                                @onclick="() => Activate(item.SubjectSemesterId)">
-                            Activate
-                        </button>
-                    </td>
-                </tr>
+                @foreach (var item in list.Where(x => x.IsActive))
+                {
+                    <tr>
+                        <td>@item.Semester.Course.CourseName</td>
+                        <td>Semester @item.Semester.SemesterNo</td>
+                        <td>@item.Subject.SubjectName</td>
+
+                        <td>
+                            <div class="action-group">
+
+                                <button class="btn btn-sm btn-info"
+                                        @onclick="() => Edit(item)">
+                                     Edit
+                                </button>
+
+                                <button class="btn btn-sm btn-danger"
+                                        @onclick="() => Deactivate(item.SubjectSemesterId)">
+                                     Deactivate
+                                </button>
+
+                            </div>
+                        </td>
+                    </tr>
+                }
+
+                <!-- INACTIVE -->
+                @* <tr class="table-section"> *@
+                @*     <td colspan="4">Inactive Records</td> *@
+                @* </tr> *@
+
+                @foreach (var item in list.Where(x => !x.IsActive))
+                {
+                    <tr class="opacity-50">
+                        <td>@item.Semester.Course.CourseName</td>
+                        <td>Semester @item.Semester.SemesterNo</td>
+                        <td>@item.Subject.SubjectName</td>
+
+                        <td>
+                            <div class="action-group">
+
+                                <button class="btn btn-sm btn-info"
+                                        disabled>
+                                     Edit
+                                </button>
+
+                                <button class="btn btn-sm btn-success"
+                                        @onclick="() => Activate(item.SubjectSemesterId)">
+                                     Activate
+                                </button>
+
+                            </div>
+                        </td>
+                    </tr>
+                }
             }
 
         </tbody>
@@ -197,10 +230,21 @@
     IBrowserFile? file;
     bool isFileSelected;
 
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     list = await Repo.GetAllAsync();
+    //     courses = await Repo.GetCoursesAsync(1);
+    // }
     protected override async Task OnInitializedAsync()
     {
-        list = await Repo.GetAllAsync();
-        courses = await Repo.GetCoursesAsync(1);
+        if (!Auth.IsLoggedIn) return;
+
+        var userId = Auth.UserId!.Value;
+
+        list = await Repo.GetByCoordinatorAsync(userId);
+
+        // 🔥 ONLY ASSIGNED COURSES
+        courses = await Repo.GetCoursesForCoordinatorAsync(userId);
     }
 
     void GoBack() => Nav.NavigateTo("/tt/academic/subject-mapping");
@@ -244,14 +288,16 @@
     async Task Deactivate(int id)
     {
         await Repo.SoftDeleteAsync(id);
-        list = await Repo.GetAllAsync();
+        var userId = Auth.UserId!.Value;
+        list = await Repo.GetByCoordinatorAsync(userId);
         await ShowToast("Deactivated", "warning");
     }
 
     async Task Activate(int id)
     {
         await Repo.ActivateAsync(id);
-        list = await Repo.GetAllAsync();
+        var userId = Auth.UserId!.Value;
+        list = await Repo.GetByCoordinatorAsync(userId);
         await ShowToast("Activated", "success");
     }
     async Task Save()
@@ -283,7 +329,8 @@
             if (!result.Item1) return;
         }
 
-        list = await Repo.GetAllAsync();
+        var userId = Auth.UserId!.Value;
+        list = await Repo.GetByCoordinatorAsync(userId);
 
         model = new();
         isEditMode = false;
@@ -299,7 +346,8 @@
     {
         await Repo.SoftDeleteAsync(id);
 
-        list = await Repo.GetAllAsync();
+        var userId = Auth.UserId!.Value;
+        list = await Repo.GetByCoordinatorAsync(userId);
 
         await ShowToast("Deactivated", "warning");
     }
@@ -439,10 +487,13 @@
         int row = 1;
 
         // 🔥 Load ALL DATA (not course filtered)
-        var allCourses = await Repo.GetCoursesAsync(1); // department based
-        var allSemesters = await Repo.GetAllSemestersAsync();   // 🔥 create this
-        var allSubjects = await Repo.GetAllSubjectsAsync();     // 🔥 create this
+        // var allCourses = await Repo.GetCoursesAsync(1); department based
+        var userId = Auth.UserId!.Value;
 
+        var allowedCourses = await Repo.GetCoursesForCoordinatorAsync(userId);
+        var allSemesters = await Repo.GetAllSemestersAsync();
+        var allSubjects = await Repo.GetAllSubjectsAsync();
+        
         while ((line = await reader.ReadLineAsync()) != null)
         {
             if (header)
@@ -471,12 +522,12 @@
 
             // ❌ Course Validation
             // ❌ Course Validation (ACTIVE)
-            var course = allCourses.FirstOrDefault(c =>
-                c.CourseName.Trim().Equals(courseName, StringComparison.OrdinalIgnoreCase));
+            var course = allowedCourses.FirstOrDefault(c =>
+     c.CourseName.Trim().Equals(courseName, StringComparison.OrdinalIgnoreCase));
 
             if (course == null)
             {
-                await ShowToast($"Row {row}: Course '{courseName}' not found OR inactive", "danger");
+                await ShowToast($"Row {row}: Course not allowed or inactive", "danger");
                 isUploading = false;
                 return;
             }
