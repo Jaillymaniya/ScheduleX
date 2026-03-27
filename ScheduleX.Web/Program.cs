@@ -44,7 +44,8 @@ builder.Services.AddScoped<IEditAdminProfileRepository, EditAdminProfileReposito
 builder.Services.AddScoped<IFacultyRepository, FacultyRepository>();
 
 builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
-
+builder.Services.AddScoped<ISubjectSemesterRepository, SubjectSemesterRepository>();
+builder.Services.AddScoped<ISubjectFacultyRepository, SubjectFacultyRepository>();
 builder.Services.AddScoped(sp =>
 {
     var navigation = sp.GetRequiredService<NavigationManager>();

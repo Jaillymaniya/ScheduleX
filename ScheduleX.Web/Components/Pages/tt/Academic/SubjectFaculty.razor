@@ -1,0 +1,273 @@
+﻿@page "/tt/subject-faculty"
+@layout ScheduleX.Web.Components.Layout.tt.TTLayout
+
+@using System.IO
+@using System.Text
+@using ScheduleX.Core.Entities
+@using ScheduleX.Core.Interfaces.TTCoordinator
+@using ScheduleX.Web.DTOs
+
+@using SubjectFacultyEntity = ScheduleX.Core.Entities.SubjectFaculty
+@using SubjectSemesterEntity = ScheduleX.Core.Entities.SubjectSemester
+
+@inject ISubjectFacultyRepository Repo
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+
+<link href="css/subjectfaculty.css" rel="stylesheet" />
+
+<h3 class="mb-3">Subject ↔ Faculty (Division-wise)</h3>
+
+<button class="btn btn-secondary mb-3" @onclick="GoBack">← Back</button>
+
+@if (isLoading)
+{
+    <div class="loader"></div>
+}
+
+<!-- COURSE -->
+<select class="tt-input w-100" @bind="courseId">
+    <option value="0">Select Course</option>
+    @foreach (var c in courses)
+    {
+        <option value="@c.CourseId">@c.CourseName</option>
+    }
+</select>
+
+<!-- SEMESTER -->
+<select class="tt-input w-100 mt-2" @onchange="OnSemesterChange">
+    <option value="0">Select Semester</option>
+    @foreach (var s in semesters)
+    {
+        <option value="@s.SemesterId">Sem @s.SemesterNo</option>
+    }
+</select>
+
+<div class="mb-3 mt-2">
+    <button class="btn btn-success me-2" @onclick="ShowForm">Add Manual</button>
+    <button class="btn btn-warning" @onclick="() => showCsv = true">Upload CSV</button>
+</div>
+
+<!-- CSV -->
+@if (showCsv)
+{
+    <div class="tt-card">
+        <button class="btn btn-info mb-2" @onclick="DownloadTemplate">Download Template</button>
+        <InputFile OnChange="OnFileSelected" />
+        <button class="btn btn-success mt-2" @onclick="ProcessCsv">Insert</button>
+    </div>
+}
+
+<!-- FORM -->
+@if (showManual)
+{
+    <div class="tt-card">
+
+        <select class="tt-input" @bind="model.SubjectSemesterId">
+            <option value="0">Select Subject</option>
+            @foreach (var s in subjectSemesters)
+            {
+                <option value="@s.SubjectSemesterId">@s.Subject.SubjectName</option>
+            }
+        </select>
+
+        <select class="tt-input mt-2" @bind="model.DivisionId">
+            <option value="0">Select Division</option>
+            @foreach (var d in divisions)
+            {
+                <option value="@d.DivisionId">@d.DivisionName</option>
+            }
+        </select>
+
+        <select class="tt-input mt-2" @bind="model.FacultyId">
+            <option value="0">Select Faculty</option>
+            @foreach (var f in faculties)
+            {
+                <option value="@f.FacultyId">@f.FacultyName</option>
+            }
+        </select>
+
+        <button class="btn btn-success mt-2" @onclick="Save">Save</button>
+        <button class="btn btn-secondary mt-2" @onclick="CloseForm">Cancel</button>
+    </div>
+}
+
+<!-- TABLE -->
+<div class="tt-card">
+    <table class="table table-dark table-hover">
+        <thead>
+            <tr>
+                <th>Course</th>
+                <th>Sem</th>
+                <th>Division</th>
+                <th>Subject</th>
+                <th>Faculty</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var item in list.OrderByDescending(x => x.IsActive))
+            {
+                <tr class="@(item.IsActive ? "" : "opacity-50")">
+                    <td>@item.SubjectSemester.Semester.Course.CourseName</td>
+                    <td>@item.SubjectSemester.Semester.SemesterNo</td>
+                    <td>@item.Division.DivisionName</td>
+                    <td>@item.SubjectSemester.Subject.SubjectName</td>
+                    <td>@item.Faculty.FacultyName</td>
+
+                    <td>@(item.IsActive ? "Active" : "Inactive")</td>
+
+                    <td>
+                        <button class="btn btn-info btn-sm me-1" @onclick="() => Edit(item)">Edit</button>
+
+                        <button class="btn btn-sm @(item.IsActive ? "btn-danger":"btn-success")"
+                                @onclick="() => Toggle(item.SubjectFacultyId)">
+                            @(item.IsActive ? "Deactivate" : "Activate")
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+
+    List<Course> courses = new();
+    List<Semester> semesters = new();
+    List<Division> divisions = new();
+    List<SubjectSemesterEntity> subjectSemesters = new();
+    List<Faculty> faculties = new();
+    List<SubjectFacultyEntity> list = new();
+
+    SubjectFacultyEntity model = new();
+
+    IBrowserFile? file;
+
+    bool showManual, showCsv, isLoading;
+
+    int courseId, semesterId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uid = HttpContextAccessor.HttpContext?.Session.GetString("UserId");
+
+        if (!string.IsNullOrEmpty(uid))
+            courses = await Repo.GetCoursesByCoordinator(Convert.ToInt32(uid));
+
+        list = await Repo.GetAllAsync();
+    }
+
+    async Task OnSemesterChange(ChangeEventArgs e)
+    {
+        semesterId = Convert.ToInt32(e.Value);
+
+        divisions = await Repo.GetDivisions(semesterId);
+        subjectSemesters = await Repo.GetSubjectSemesters(semesterId);
+        faculties = await Repo.GetFaculties(courseId);
+    }
+
+    void ShowForm()
+    {
+        model = new SubjectFacultyEntity();
+        showManual = true;
+    }
+
+    void CloseForm() => showManual = false;
+
+    void Edit(SubjectFacultyEntity item)
+    {
+        model = new SubjectFacultyEntity
+            {
+                SubjectFacultyId = item.SubjectFacultyId,
+                SubjectSemesterId = item.SubjectSemesterId,
+                DivisionId = item.DivisionId,
+                FacultyId = item.FacultyId
+            };
+
+        showManual = true;
+    }
+
+    async Task Save()
+    {
+        if (model.SubjectSemesterId == 0 || model.DivisionId == 0 || model.FacultyId == 0)
+        {
+            await ShowToast("All fields required", "danger");
+            return;
+        }
+
+        var result = await Repo.AddAsync(model);
+
+        await ShowToast(result.Item2, result.Item1 ? "success" : "danger");
+
+        list = await Repo.GetAllAsync();
+        showManual = false;
+    }
+
+    async Task Toggle(int id)
+    {
+        await Repo.ToggleAsync(id);
+        list = await Repo.GetAllAsync();
+    }
+
+    void OnFileSelected(InputFileChangeEventArgs e) => file = e.File;
+
+    async Task ProcessCsv()
+    {
+        if (file == null)
+        {
+            await ShowToast("Select CSV file", "danger");
+            return;
+        }
+
+        using var reader = new StreamReader(file.OpenReadStream());
+
+        bool first = true;
+
+        while (!reader.EndOfStream)
+        {
+            var line = await reader.ReadLineAsync();
+
+            if (first)
+            {
+                first = false;
+                continue;
+            }
+
+            var data = line.Split(',');
+
+            var faculty = await Repo.GetFacultyByEmail(data[4]);
+
+            if (faculty == null)
+            {
+                await ShowToast("Invalid faculty email", "danger");
+                return;
+            }
+
+            await Repo.AddAsync(new SubjectFacultyEntity
+                {
+                    FacultyId = faculty.FacultyId
+                });
+        }
+
+        await ShowToast("CSV Uploaded", "success");
+    }
+
+    async Task DownloadTemplate()
+    {
+        var csv = "CourseName,SemesterNo,SubjectName,DivisionName,FacultyEmail\n";
+        var bytes = Encoding.UTF8.GetBytes(csv);
+
+        await JS.InvokeVoidAsync("downloadFile", "template.csv", bytes);
+    }
+
+    async Task ShowToast(string msg, string type)
+    {
+        await JS.InvokeVoidAsync("showToast", msg, type);
+    }
+
+    void GoBack() => Navigation.NavigateTo("/tt/mapping-dashboard");
+}

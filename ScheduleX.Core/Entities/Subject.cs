@@ -41,5 +41,9 @@ public class Subject
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     // Nav
-    public ICollection<SubjectOffering> SubjectOfferings { get; set; } = new List<SubjectOffering>();
+    //public ICollection<SubjectOffering> SubjectOfferings { get; set; } = new List<SubjectOffering>();
+    public ICollection<SubjectSemester> SubjectSemesters { get; set; } = new List<SubjectSemester>();
+    public ICollection<SubjectFaculty> SubjectFaculties { get; set; } = new List<SubjectFaculty>();
+    public ICollection<SubjectLectureConfig> SubjectLectureConfigs { get; set; } = new List<SubjectLectureConfig>();
+    public ICollection<SubjectRoomConfig> SubjectRoomConfigs { get; set; } = new List<SubjectRoomConfig>();
 }

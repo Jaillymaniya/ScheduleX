@@ -1,0 +1,27 @@
+﻿.mapping-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.mapping-card {
+    background: linear-gradient(145deg, #0f1b2d, #14263d);
+    border: 1px solid #1f3a5f;
+    border-radius: 12px;
+    padding: 25px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+    .mapping-card:hover {
+        transform: translateY(-5px);
+        border-color: #00d4ff;
+    }
+
+    .mapping-card h5 {
+        color: #00d4ff;
+    }
+
+    .mapping-card p {
+        color: #ccc;
+    }

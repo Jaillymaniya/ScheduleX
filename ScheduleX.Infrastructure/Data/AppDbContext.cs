@@ -20,7 +20,11 @@ public class AppDbContext : DbContext
     public DbSet<Faculty> Faculties => Set<Faculty>();
     public DbSet<FacultyAvailability> FacultyAvailabilities => Set<FacultyAvailability>();
     public DbSet<Subject> Subjects => Set<Subject>();
-    public DbSet<SubjectOffering> SubjectOfferings => Set<SubjectOffering>();
+    //public DbSet<SubjectOffering> SubjectOfferings => Set<SubjectOffering>();
+    public DbSet<SubjectSemester> SubjectSemesters => Set<SubjectSemester>();
+    public DbSet<SubjectFaculty> SubjectFaculties => Set<SubjectFaculty>();
+    public DbSet<SubjectLectureConfig> SubjectLectureConfigs => Set<SubjectLectureConfig>();
+    public DbSet<SubjectRoomConfig> SubjectRoomConfigs => Set<SubjectRoomConfig>();
     public DbSet<ScheduleConfig> ScheduleConfigs => Set<ScheduleConfig>();
     public DbSet<BreakRule> BreakRules => Set<BreakRule>();
     public DbSet<TimeTableTemplate> TimeTableTemplates => Set<TimeTableTemplate>();
@@ -51,7 +55,11 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Faculty>().ToTable("TblFaculty");
         modelBuilder.Entity<FacultyAvailability>().ToTable("TblFacultyAvailability");
         modelBuilder.Entity<Subject>().ToTable("TblSubject");
-        modelBuilder.Entity<SubjectOffering>().ToTable("TblSubjectOffering");
+        //modelBuilder.Entity<SubjectOffering>().ToTable("TblSubjectOffering");
+        modelBuilder.Entity<SubjectSemester>().ToTable("TblSubjectSemester");
+        modelBuilder.Entity<SubjectFaculty>().ToTable("TblSubjectFaculty");
+        modelBuilder.Entity<SubjectLectureConfig>().ToTable("TblSubjectLectureConfig");
+        modelBuilder.Entity<SubjectRoomConfig>().ToTable("TblSubjectRoomConfig");
         modelBuilder.Entity<ScheduleConfig>().ToTable("TblScheduleConfig");
         modelBuilder.Entity<BreakRule>().ToTable("TblBreakRule");
         modelBuilder.Entity<TimeTableTemplate>().ToTable("TblTimeTableTemplate");
@@ -110,9 +118,26 @@ public class AppDbContext : DbContext
             .HasIndex(x => x.SubjectCode).IsUnique()
             .HasFilter("[SubjectCode] IS NOT NULL");
 
-        modelBuilder.Entity<SubjectOffering>()
-            .HasIndex(x => new { x.SemesterId, x.SubjectId }).IsUnique();
+        //modelBuilder.Entity<SubjectOffering>()
+        //    .HasIndex(x => new { x.SemesterId, x.SubjectId }).IsUnique();
+        modelBuilder.Entity<SubjectSemester>()
+    .HasIndex(x => new { x.SubjectId, x.SemesterId })
+    .IsUnique();
 
+        // ✅ SubjectFaculty (division-wise unique)
+        modelBuilder.Entity<SubjectFaculty>()
+            .HasIndex(x => new { x.SubjectSemesterId, x.DivisionId })
+            .IsUnique();
+
+        // ✅ Lecture config (one per subject-semester)
+        modelBuilder.Entity<SubjectLectureConfig>()
+            .HasIndex(x => x.SubjectSemesterId)
+            .IsUnique();
+
+        // ✅ Room config (one per subject-semester)
+        modelBuilder.Entity<SubjectRoomConfig>()
+            .HasIndex(x => x.SubjectSemesterId)
+            .IsUnique();
         modelBuilder.Entity<BreakRule>()
             .HasIndex(x => new { x.ConfigId, x.BreakNo }).IsUnique();
 
@@ -152,27 +177,48 @@ public class AppDbContext : DbContext
             .HasForeignKey(x => x.DepartmentId)
             .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<Subject>()
-    .HasOne(s => s.Course)
-    .WithMany() // or .WithMany(c => c.Subjects) if you add navigation
-    .HasForeignKey(s => s.CourseId)
-    .OnDelete(DeleteBehavior.Restrict);
+            .HasOne(s => s.Course)
+            .WithMany() // or .WithMany(c => c.Subjects) if you add navigation
+            .HasForeignKey(s => s.CourseId)
+            .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<TimeTableBatch>()
             .HasOne(x => x.ParentBatch)
             .WithMany()
             .HasForeignKey(x => x.ParentBatchId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<TTCoordinatorCourse>()
-    .HasOne(x => x.User)
-    .WithMany(x => x.TTCoordinatorCourses)
-    .HasForeignKey(x => x.UserId)
-    .OnDelete(DeleteBehavior.Restrict);
+    modelBuilder.Entity<TTCoordinatorCourse>()
+        .HasOne(x => x.User)
+        .WithMany(x => x.TTCoordinatorCourses)
+        .HasForeignKey(x => x.UserId)
+        .OnDelete(DeleteBehavior.Restrict);
+    modelBuilder.Entity<SubjectFaculty>()
+        .HasOne(x => x.SubjectSemester)
+        .WithMany()
+        .HasForeignKey(x => x.SubjectSemesterId);
 
-        modelBuilder.Entity<TTCoordinatorCourse>()
-            .HasOne(x => x.Course)
-            .WithMany(x => x.TTCoordinatorCourses)
-            .HasForeignKey(x => x.CourseId)
-            .OnDelete(DeleteBehavior.Restrict);
+    modelBuilder.Entity<SubjectFaculty>()
+        .HasOne(x => x.Division)
+        .WithMany(d => d.SubjectFaculties) // ✅ FIXED
+        .HasForeignKey(x => x.DivisionId);
+
+    modelBuilder.Entity<SubjectFaculty>()
+        .HasOne(x => x.SubjectSemester)
+        .WithMany(s => s.SubjectFaculties) // ✅ FIXED
+        .HasForeignKey(x => x.SubjectSemesterId);
+    modelBuilder.Entity<SubjectLectureConfig>()
+        .HasOne(x => x.SubjectSemester)
+        .WithMany(s => s.LectureConfigs) // ✅
+        .HasForeignKey(x => x.SubjectSemesterId);
+    modelBuilder.Entity<SubjectRoomConfig>()
+        .HasOne(x => x.SubjectSemester)
+        .WithMany(s => s.RoomConfigs) // ✅
+        .HasForeignKey(x => x.SubjectSemesterId);
+    modelBuilder.Entity<TTCoordinatorCourse>()
+        .HasOne(x => x.Course)
+        .WithMany(x => x.TTCoordinatorCourses)
+        .HasForeignKey(x => x.CourseId)
+        .OnDelete(DeleteBehavior.Restrict);
         // ===============================
         // ✅ PREVENT MULTIPLE CASCADE PATH
         // ===============================

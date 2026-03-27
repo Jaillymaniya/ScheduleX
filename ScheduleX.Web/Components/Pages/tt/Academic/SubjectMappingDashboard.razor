@@ -1,0 +1,39 @@
+﻿@page "/tt/academic/subject-mapping"
+
+@layout ScheduleX.Web.Components.Layout.tt.TTLayout
+@inject NavigationManager Nav
+
+<link href="css/mapping-buttons.css" rel="stylesheet" />
+
+<h3 class="mb-4">Subject Mapping Settings</h3>
+
+<div class="mapping-grid">
+
+    <div class="mapping-card" @onclick="GoSemester">
+        <h5>SUBJECT ↔ SEMESTER</h5>
+        <p>Assign subjects to semesters</p>
+    </div>
+
+    <div class="mapping-card" @onclick="GoFaculty">
+        <h5>SUBJECT ↔ FACULTY</h5>
+        <p>Assign faculty to subjects</p>
+    </div>
+
+    <div class="mapping-card" @onclick="GoLecture">
+        <h5>LECTURE CONFIG</h5>
+        <p>Set theory & practical lectures</p>
+    </div>
+
+    <div class="mapping-card" @onclick="GoRoom">
+        <h5>ROOM CONFIG</h5>
+        <p>Assign rooms/labs</p>
+    </div>
+
+</div>
+
+@code {
+    void GoSemester() => Nav.NavigateTo("/tt/subject-semester");
+    void GoFaculty() => Nav.NavigateTo("/tt/subject-faculty");
+    void GoLecture() => Nav.NavigateTo("/tt/lecture-config");
+    void GoRoom() => Nav.NavigateTo("/tt/room-config");
+}

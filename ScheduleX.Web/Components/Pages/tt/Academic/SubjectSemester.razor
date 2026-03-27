@@ -1,0 +1,563 @@
+﻿@page "/tt/subject-semester"
+@layout ScheduleX.Web.Components.Layout.tt.TTLayout
+
+@using System.Text
+@using ScheduleX.Core.Entities
+@using ScheduleX.Core.Interfaces.TTCoordinator
+@using SubjectSemesterEntity = ScheduleX.Core.Entities.SubjectSemester
+
+@inject ISubjectSemesterRepository Repo
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<link href="css/subject-semester.css?v=2" rel="stylesheet" />
+
+<h3 class="mb-4">Subject ↔ Semester Mapping</h3>
+
+<button class="btn btn-secondary mb-3" @onclick="GoBack">
+    ← Back
+</button>
+
+<!-- COURSE DROPDOWN -->
+<select class="tt-input w-100 mb-3"
+        @bind="courseId"
+        @bind:after="LoadDropdowns">
+    <option value="0">Select Course</option>
+    @foreach (var c in courses)
+    {
+        <option value="@c.CourseId">@c.CourseName</option>
+    }
+</select>
+
+<!-- BUTTONS -->
+<div class="mb-3">
+    <button class="btn btn-success me-2" @onclick="ShowManual">Add Manual</button>
+    <button class="btn btn-warning" @onclick="ShowCsv">Upload CSV</button>
+</div>
+
+<!-- PROGRESS -->
+@if (isUploading)
+{
+    <div class="progress-container mb-3">
+        <div class="progress-bar" style="width:@progress%"></div>
+    </div>
+}
+
+<!-- ================= MANUAL FORM ================= -->
+@if (showManual)
+{
+    <div class="tt-card p-4 mb-4">
+
+        <EditForm Model="model" OnValidSubmit="Save">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+                    <label>Semester</label>
+                    <select class="tt-select w-100" @bind="model.SemesterId">
+                        <option value="0">Select Semester</option>
+                        @foreach (var s in semesters)
+                        {
+                            <option value="@s.SemesterId">Sem @s.SemesterNo</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Subject</label>
+                    <select class="tt-select w-100" @bind="model.SubjectId">
+                        <option value="0">Select Subject</option>
+                        @foreach (var s in subjects)
+                        {
+                            <option value="@s.SubjectId">@s.SubjectName</option>
+                        }
+                    </select>
+                </div>
+
+            </div>
+
+            <button class="btn btn-success me-2">Save</button>
+            <button type="button" class="btn btn-secondary" @onclick="CloseForm">Close</button>
+
+        </EditForm>
+    </div>
+}
+
+<!-- ================= CSV ================= -->
+@if (showCsv)
+{
+    <div class="tt-card p-4 mb-4">
+
+        <h5>Upload CSV</h5>
+
+        <button class="btn btn-info mb-2" @onclick="DownloadTemplate">
+            Download Template
+        </button>
+
+        <InputFile OnChange="OnFileSelected" />
+
+        <br />
+
+        <button class="btn btn-success mt-2"
+                @onclick="ProcessCsv"
+                disabled="@(!isFileSelected)">
+            Insert Data
+        </button>
+
+        <button class="btn btn-secondary mt-2 ms-2" @onclick="CloseForm">
+            Close
+        </button>
+    </div>
+}
+
+<!-- ================= TABLE ================= -->
+<div class="tt-card p-3">
+    <table class="table table-dark table-hover">
+        <thead>
+            <tr>
+                <th>Course</th>
+                <th>Semester</th>
+                <th>Subject</th>
+                <th width="120">Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <!-- ACTIVE -->
+            <tr class="table-section">
+                <td colspan="4">Active Records</td>
+            </tr>
+
+            @foreach (var item in list.Where(x => x.IsActive))
+            {
+                <tr>
+                    <td>@item.Semester.Course.CourseName</td>
+                    <td>@item.Semester.SemesterNo</td>
+                    <td>@item.Subject.SubjectName</td>
+                    <td>
+                        <button class="btn btn-sm btn-info me-1"
+                                @onclick="() => Edit(item)">
+                            Edit
+                        </button>
+
+                        <button class="btn btn-sm btn-danger"
+                                @onclick="() => Deactivate(item.SubjectSemesterId)">
+                            Deactivate
+                        </button>
+                    </td>
+                </tr>
+            }
+
+            <!-- INACTIVE -->
+            <tr class="table-section">
+                <td colspan="4">Inactive Records</td>
+            </tr>
+
+            @foreach (var item in list.Where(x => !x.IsActive))
+            {
+                <tr class="opacity-50">
+                    <td>@item.Semester.Course.CourseName</td>
+                    <td>@item.Semester.SemesterNo</td>
+                    <td>@item.Subject.SubjectName</td>
+                    <td>
+                        <button class="btn btn-sm btn-info me-1"
+                                @onclick="() => Edit(item)">
+                            Edit
+                        </button>
+
+                        <button class="btn btn-sm btn-success"
+                                @onclick="() => Activate(item.SubjectSemesterId)">
+                            Activate
+                        </button>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+@code {
+
+    List<Course> courses = new();
+    List<Semester> semesters = new();
+    List<Subject> subjects = new();
+    List<SubjectSemesterEntity> list = new();
+
+    SubjectSemesterEntity model = new();
+
+    int courseId;
+    bool showManual, showCsv;
+    bool isUploading;
+    int progress;
+    bool isEditMode = false;
+    IBrowserFile? file;
+    bool isFileSelected;
+
+    protected override async Task OnInitializedAsync()
+    {
+        list = await Repo.GetAllAsync();
+        courses = await Repo.GetCoursesAsync(1);
+    }
+
+    void GoBack() => Nav.NavigateTo("/tt/academic/subject-mapping");
+
+    async Task LoadDropdowns()
+    {
+        semesters = await Repo.GetSemestersByCourse(courseId);
+        subjects = await Repo.GetSubjectsByCourse(courseId);
+    }
+
+    void ShowManual()
+    {
+        showManual = true;
+        showCsv = false;
+    }
+
+    void ShowCsv()
+    {
+        showCsv = true;
+        showManual = false;
+    }
+
+    void CloseForm()
+    {
+        showManual = false;
+        showCsv = false;
+    }
+    void Edit(SubjectSemesterEntity s)
+    {
+        model = new SubjectSemesterEntity
+            {
+                SubjectSemesterId = s.SubjectSemesterId,
+                SubjectId = s.SubjectId,
+                SemesterId = s.SemesterId
+            };
+
+        isEditMode = true;
+        showManual = true;
+    }
+
+    async Task Deactivate(int id)
+    {
+        await Repo.SoftDeleteAsync(id);
+        list = await Repo.GetAllAsync();
+        await ShowToast("Deactivated", "warning");
+    }
+
+    async Task Activate(int id)
+    {
+        await Repo.ActivateAsync(id);
+        list = await Repo.GetAllAsync();
+        await ShowToast("Activated", "success");
+    }
+    async Task Save()
+    {
+        if (model.SubjectId == 0)
+        {
+            await ShowToast("Please select Subject", "danger");
+            return;
+        }
+
+        if (model.SemesterId == 0)
+        {
+            await ShowToast("Please select Semester", "danger");
+            return;
+        }
+
+        if (isEditMode)
+        {
+            await Repo.UpdateAsync(model);
+            await ShowToast("Updated successfully", "success");
+        }
+        else
+        {
+            model.SubjectSemesterId = 0;
+            var result = await Repo.AddAsync(model);
+
+            await ShowToast(result.Item2, result.Item1 ? "success" : "danger");
+
+            if (!result.Item1) return;
+        }
+
+        list = await Repo.GetAllAsync();
+
+        model = new();
+        isEditMode = false;
+        showManual = false;
+    }
+
+    void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        file = e.File;
+        isFileSelected = true;
+    }
+    async Task Delete(int id)
+    {
+        await Repo.SoftDeleteAsync(id);
+
+        list = await Repo.GetAllAsync();
+
+        await ShowToast("Deactivated", "warning");
+    }
+    // async Task ProcessCsv()
+    // {
+    //     if (file == null) return;
+
+    //     isUploading = true;
+    //     progress = 0;
+
+    //     var listCsv = new List<SubjectSemesterEntity>();
+
+    //     using var reader = new StreamReader(file.OpenReadStream());
+
+    //     string? line;
+    //     bool header = true;
+    //     int row = 1;
+
+    //     while ((line = await reader.ReadLineAsync()) != null)
+    //     {
+    //         if (header)
+    //         {
+    //             header = false;
+    //             continue;
+    //         }
+
+    //         row++;
+
+    //         if (string.IsNullOrWhiteSpace(line))
+    //             continue;
+
+    //         var data = line.Split(',');
+
+    //         ❌ Column count error
+    //         if (data.Length < 3)
+    //         {
+    //             await ShowToast($"Row {row}: Missing columns (Expected: CourseName, SemesterNo, SubjectName)", "danger");
+    //             isUploading = false;
+    //             return;
+    //         }
+
+    //         string courseName = data[0]?.Trim() ?? "";
+    //         string semText = data[1]?.Trim() ?? "";
+    //         string subjectName = data[2]?.Trim() ?? "";
+
+    //         ❌ Course validation
+    //         if (string.IsNullOrWhiteSpace(courseName))
+    //         {
+    //             await ShowToast($"Row {row}: CourseName is required", "danger");
+    //             isUploading = false;
+    //             return;
+    //         }
+
+    //         ❌ Semester validation
+    //         if (!byte.TryParse(semText, out var semNo))
+    //         {
+    //             await ShowToast($"Row {row}: Invalid SemesterNo '{semText}'", "danger");
+    //             isUploading = false;
+    //             return;
+    //         }
+
+    //         var sem = semesters.FirstOrDefault(s => s.SemesterNo == semNo);
+
+    //         if (sem == null)
+    //         {
+    //             await ShowToast($"Row {row}: Semester '{semNo}' not found for selected course", "danger");
+    //             isUploading = false;
+    //             return;
+    //         }
+
+    //         ❌ Subject validation
+    //         if (string.IsNullOrWhiteSpace(subjectName))
+    //         {
+    //             await ShowToast($"Row {row}: SubjectName is required", "danger");
+    //             isUploading = false;
+    //             return;
+    //         }
+
+    //         var sub = subjects.FirstOrDefault(s =>
+    //             s.SubjectName.Trim().Equals(subjectName, StringComparison.OrdinalIgnoreCase));
+
+    //         if (sub == null)
+    //         {
+    //             await ShowToast($"Row {row}: Subject '{subjectName}' not found", "danger");
+    //             isUploading = false;
+    //             return;
+    //         }
+
+    //         ❌ Duplicate in CSV
+    //         if (listCsv.Any(x => x.SubjectId == sub.SubjectId && x.SemesterId == sem.SemesterId))
+    //         {
+    //             await ShowToast($"Row {row}: Duplicate entry in CSV (Subject + Semester)", "warning");
+    //             continue; skip duplicate, not stop
+    //         }
+
+    //         listCsv.Add(new SubjectSemesterEntity
+    //             {
+    //                 SemesterId = sem.SemesterId,
+    //                 SubjectId = sub.SubjectId
+    //             });
+
+    //         progress = Math.Min(80, progress + 5);
+    //         await Task.Delay(1);
+    //         StateHasChanged();
+    //     }
+
+    //     ❌ No valid data
+    //     if (!listCsv.Any())
+    //     {
+    //         await ShowToast("No valid records found in CSV", "danger");
+    //         isUploading = false;
+    //         return;
+    //     }
+
+    //     var result = await Repo.BulkInsertAsync(listCsv);
+
+    //     progress = 100;
+
+    //     await ShowToast(result.Item2, result.Item1 ? "success" : "danger");
+
+    //     list = await Repo.GetAllAsync();
+    //     isUploading = false;
+    // }
+    async Task ProcessCsv()
+    {
+        if (file == null) return;
+
+        isUploading = true;
+        progress = 0;
+
+        var listCsv = new List<SubjectSemesterEntity>();
+
+        using var reader = new StreamReader(file.OpenReadStream());
+
+        string? line;
+        bool header = true;
+        int row = 1;
+
+        // 🔥 Load ALL DATA (not course filtered)
+        var allCourses = await Repo.GetCoursesAsync(1); // department based
+        var allSemesters = await Repo.GetAllSemestersAsync();   // 🔥 create this
+        var allSubjects = await Repo.GetAllSubjectsAsync();     // 🔥 create this
+
+        while ((line = await reader.ReadLineAsync()) != null)
+        {
+            if (header)
+            {
+                header = false;
+                continue;
+            }
+
+            row++;
+
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            var data = line.Split(',');
+
+            if (data.Length < 3)
+            {
+                await ShowToast($"Row {row}: Missing columns", "danger");
+                isUploading = false;
+                return;
+            }
+
+            string courseName = data[0]?.Trim() ?? "";
+            string semText = data[1]?.Trim() ?? "";
+            string subjectName = data[2]?.Trim() ?? "";
+
+            // ❌ Course Validation
+            // ❌ Course Validation (ACTIVE)
+            var course = allCourses.FirstOrDefault(c =>
+                c.CourseName.Trim().Equals(courseName, StringComparison.OrdinalIgnoreCase));
+
+            if (course == null)
+            {
+                await ShowToast($"Row {row}: Course '{courseName}' not found OR inactive", "danger");
+                isUploading = false;
+                return;
+            }
+
+            // ❌ Semester Validation
+            if (!byte.TryParse(semText, out var semNo))
+            {
+                await ShowToast($"Row {row}: Invalid Semester '{semText}'", "danger");
+                isUploading = false;
+                return;
+            }
+
+            // ❌ Semester Validation (ACTIVE + Course match)
+            var sem = allSemesters.FirstOrDefault(s =>
+                s.SemesterNo == semNo &&
+                s.CourseId == course.CourseId);
+
+            if (sem == null)
+            {
+                await ShowToast($"Row {row}: Semester '{semNo}' not active for course '{courseName}'", "danger");
+                isUploading = false;
+                return;
+            }
+
+            // ❌ Subject Validation
+            // ❌ Subject Validation (ACTIVE + Course match)
+            var sub = allSubjects.FirstOrDefault(s =>
+                s.SubjectName.Trim().Equals(subjectName, StringComparison.OrdinalIgnoreCase) &&
+                s.CourseId == course.CourseId);
+
+            if (sub == null)
+            {
+                await ShowToast($"Row {row}: Subject '{subjectName}' not active in course '{courseName}'", "danger");
+                isUploading = false;
+                return;
+            }
+
+            // ❌ Duplicate check (CSV)
+            if (listCsv.Any(x => x.SubjectId == sub.SubjectId && x.SemesterId == sem.SemesterId))
+            {
+                await ShowToast($"Row {row}: Duplicate in CSV", "warning");
+                continue;
+            }
+
+            listCsv.Add(new SubjectSemesterEntity
+                {
+                    SemesterId = sem.SemesterId,
+                    SubjectId = sub.SubjectId
+                });
+
+            progress = Math.Min(80, progress + 5);
+            await Task.Delay(1);
+            StateHasChanged();
+        }
+
+        if (!listCsv.Any())
+        {
+            await ShowToast("No valid data found", "danger");
+            isUploading = false;
+            return;
+        }
+
+        var result = await Repo.BulkInsertAsync(listCsv);
+
+        progress = 100;
+
+        await ShowToast(result.Item2, result.Item1 ? "success" : "danger");
+
+        list = await Repo.GetAllAsync();
+        isUploading = false;
+    }
+    private async Task DownloadTemplate()
+    {
+        var csv = "CourseName,SemesterNo,SubjectName\n";
+        var bytes = Encoding.UTF8.GetBytes(csv);
+
+        await JS.InvokeVoidAsync("downloadFile", "SubjectSemester.csv", bytes);
+    }
+
+    async Task ShowToast(string msg, string type)
+    {
+        await JS.InvokeVoidAsync("showToast", msg, type);
+    }
+}
