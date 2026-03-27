@@ -12,8 +12,8 @@ using ScheduleX.Infrastructure.Data;
 namespace ScheduleX.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260226160224_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260323075726_AddSemInCourse")]
+    partial class AddSemInCourse
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace ScheduleX.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Timetable.Core.Entities.BatchTemplateSnapshot", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.BatchTemplateSnapshot", b =>
                 {
                     b.Property<int>("SnapshotId")
                         .ValueGeneratedOnAdd()
@@ -56,7 +56,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblBatchTemplateSnapshot", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.BreakRule", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.BreakRule", b =>
                 {
                     b.Property<int>("BreakRuleId")
                         .ValueGeneratedOnAdd()
@@ -94,7 +94,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblBreakRule", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Course", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Course", b =>
                 {
                     b.Property<int>("CourseId")
                         .ValueGeneratedOnAdd()
@@ -120,6 +120,9 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<int>("MaxSem")
+                        .HasColumnType("int");
+
                     b.HasKey("CourseId");
 
                     b.HasIndex("CourseCode")
@@ -131,7 +134,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblCourse", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Department", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Department", b =>
                 {
                     b.Property<int>("DepartmentId")
                         .ValueGeneratedOnAdd()
@@ -166,7 +169,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblDepartment", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Division", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Division", b =>
                 {
                     b.Property<int>("DivisionId")
                         .ValueGeneratedOnAdd()
@@ -199,7 +202,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblDivision", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.DivisionRoomAllocation", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.DivisionRoomAllocation", b =>
                 {
                     b.Property<int>("AllocationId")
                         .ValueGeneratedOnAdd()
@@ -240,7 +243,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblDivisionRoomAllocation", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.ExportHistory", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.ExportHistory", b =>
                 {
                     b.Property<int>("ExportId")
                         .ValueGeneratedOnAdd()
@@ -274,7 +277,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblExportHistory", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Faculty", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Faculty", b =>
                 {
                     b.Property<int>("FacultyId")
                         .ValueGeneratedOnAdd()
@@ -322,7 +325,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblFaculty", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.FacultyAvailability", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.FacultyAvailability", b =>
                 {
                     b.Property<int>("AvailabilityId")
                         .ValueGeneratedOnAdd()
@@ -355,7 +358,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblFacultyAvailability", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Room", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Room", b =>
                 {
                     b.Property<int>("RoomId")
                         .ValueGeneratedOnAdd()
@@ -393,7 +396,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblRoom", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.ScheduleConfig", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.ScheduleConfig", b =>
                 {
                     b.Property<int>("ConfigId")
                         .ValueGeneratedOnAdd()
@@ -437,7 +440,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblScheduleConfig", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Semester", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Semester", b =>
                 {
                     b.Property<int>("SemesterId")
                         .ValueGeneratedOnAdd()
@@ -465,7 +468,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblSemester", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Subject", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Subject", b =>
                 {
                     b.Property<int>("SubjectId")
                         .ValueGeneratedOnAdd()
@@ -473,13 +476,16 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubjectId"));
 
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CourseId1")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<byte>("Credits")
-                        .HasColumnType("tinyint");
-
-                    b.Property<int>("DepartmentId")
+                    b.Property<int>("Credits")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsActive")
@@ -502,7 +508,9 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.HasKey("SubjectId");
 
-                    b.HasIndex("DepartmentId");
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("CourseId1");
 
                     b.HasIndex("SubjectCode")
                         .IsUnique()
@@ -511,7 +519,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblSubject", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.SubjectOffering", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectOffering", b =>
                 {
                     b.Property<int>("OfferingId")
                         .ValueGeneratedOnAdd()
@@ -558,7 +566,34 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblSubjectOffering", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeSlot", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TTCoordinatorCourse", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("UserId", "CourseId")
+                        .IsUnique();
+
+                    b.ToTable("TblTTCoordinatorCourse", (string)null);
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeSlot", b =>
                 {
                     b.Property<int>("TimeSlotId")
                         .ValueGeneratedOnAdd()
@@ -597,7 +632,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblTimeSlot", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeTableBatch", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeTableBatch", b =>
                 {
                     b.Property<int>("BatchId")
                         .ValueGeneratedOnAdd()
@@ -659,7 +694,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblTimeTableBatch", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeTableBatchSemester", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeTableBatchSemester", b =>
                 {
                     b.Property<int>("BatchSemesterId")
                         .ValueGeneratedOnAdd()
@@ -686,7 +721,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblTimeTableBatchSemester", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeTableEntry", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeTableEntry", b =>
                 {
                     b.Property<int>("EntryId")
                         .ValueGeneratedOnAdd()
@@ -749,7 +784,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblTimeTableEntry", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeTableEntryHistory", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeTableEntryHistory", b =>
                 {
                     b.Property<int>("HistoryId")
                         .ValueGeneratedOnAdd()
@@ -791,7 +826,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblTimeTableEntryHistory", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeTableTemplate", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeTableTemplate", b =>
                 {
                     b.Property<int>("TemplateId")
                         .ValueGeneratedOnAdd()
@@ -827,7 +862,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.ToTable("TblTimeTableTemplate", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.User", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.User", b =>
                 {
                     b.Property<int>("UserId")
                         .ValueGeneratedOnAdd()
@@ -842,6 +877,7 @@ namespace ScheduleX.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
 
@@ -859,8 +895,9 @@ namespace ScheduleX.Infrastructure.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<byte>("Role")
                         .HasColumnType("tinyint");
@@ -874,21 +911,27 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.HasIndex("DepartmentId");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Phone")
+                        .IsUnique();
+
                     b.HasIndex("Username")
                         .IsUnique();
 
                     b.ToTable("TblUser", (string)null);
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.BatchTemplateSnapshot", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.BatchTemplateSnapshot", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.TimeTableBatch", "TimeTableBatch")
+                    b.HasOne("ScheduleX.Core.Entities.TimeTableBatch", "TimeTableBatch")
                         .WithOne("BatchTemplateSnapshot")
-                        .HasForeignKey("Timetable.Core.Entities.BatchTemplateSnapshot", "BatchId")
+                        .HasForeignKey("ScheduleX.Core.Entities.BatchTemplateSnapshot", "BatchId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.TimeTableTemplate", "TimeTableTemplate")
+                    b.HasOne("ScheduleX.Core.Entities.TimeTableTemplate", "TimeTableTemplate")
                         .WithMany("TemplateSnapshots")
                         .HasForeignKey("TemplateId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -899,9 +942,9 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("TimeTableTemplate");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.BreakRule", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.BreakRule", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.ScheduleConfig", "ScheduleConfig")
+                    b.HasOne("ScheduleX.Core.Entities.ScheduleConfig", "ScheduleConfig")
                         .WithMany("BreakRules")
                         .HasForeignKey("ConfigId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -910,9 +953,9 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("ScheduleConfig");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Course", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Course", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.Department", "Department")
+                    b.HasOne("ScheduleX.Core.Entities.Department", "Department")
                         .WithMany("Courses")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -921,9 +964,9 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Division", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Division", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.Semester", "Semester")
+                    b.HasOne("ScheduleX.Core.Entities.Semester", "Semester")
                         .WithMany("Divisions")
                         .HasForeignKey("SemesterId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -932,21 +975,21 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("Semester");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.DivisionRoomAllocation", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.DivisionRoomAllocation", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.Division", "Division")
+                    b.HasOne("ScheduleX.Core.Entities.Division", "Division")
                         .WithMany("DivisionRoomAllocations")
                         .HasForeignKey("DivisionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.Room", "Room")
+                    b.HasOne("ScheduleX.Core.Entities.Room", "Room")
                         .WithMany("DivisionRoomAllocations")
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.Semester", "Semester")
+                    b.HasOne("ScheduleX.Core.Entities.Semester", "Semester")
                         .WithMany("DivisionRoomAllocations")
                         .HasForeignKey("SemesterId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -959,21 +1002,21 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("Semester");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.ExportHistory", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.ExportHistory", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.TimeTableBatch", "TimeTableBatch")
+                    b.HasOne("ScheduleX.Core.Entities.TimeTableBatch", "TimeTableBatch")
                         .WithMany("ExportHistories")
                         .HasForeignKey("BatchId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.User", "ExportedByUser")
+                    b.HasOne("ScheduleX.Core.Entities.User", "ExportedByUser")
                         .WithMany("ExportHistories")
                         .HasForeignKey("ExportedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.BatchTemplateSnapshot", "BatchTemplateSnapshot")
+                    b.HasOne("ScheduleX.Core.Entities.BatchTemplateSnapshot", "BatchTemplateSnapshot")
                         .WithMany()
                         .HasForeignKey("TemplateSnapshotId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -986,9 +1029,9 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("TimeTableBatch");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Faculty", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Faculty", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.Department", "Department")
+                    b.HasOne("ScheduleX.Core.Entities.Department", "Department")
                         .WithMany("Faculties")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -997,9 +1040,9 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.FacultyAvailability", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.FacultyAvailability", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.Faculty", "Faculty")
+                    b.HasOne("ScheduleX.Core.Entities.Faculty", "Faculty")
                         .WithMany("FacultyAvailabilities")
                         .HasForeignKey("FacultyId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1008,9 +1051,9 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("Faculty");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Room", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Room", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.Department", "Department")
+                    b.HasOne("ScheduleX.Core.Entities.Department", "Department")
                         .WithMany("Rooms")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1019,14 +1062,14 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.ScheduleConfig", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.ScheduleConfig", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.Course", "Course")
+                    b.HasOne("ScheduleX.Core.Entities.Course", "Course")
                         .WithMany("ScheduleConfigs")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Timetable.Core.Entities.Department", "Department")
+                    b.HasOne("ScheduleX.Core.Entities.Department", "Department")
                         .WithMany("ScheduleConfigs")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1037,9 +1080,9 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Semester", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Semester", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.Course", "Course")
+                    b.HasOne("ScheduleX.Core.Entities.Course", "Course")
                         .WithMany("Semesters")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1048,32 +1091,37 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("Course");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Subject", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Subject", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.Department", "Department")
-                        .WithMany("Subjects")
-                        .HasForeignKey("DepartmentId")
+                    b.HasOne("ScheduleX.Core.Entities.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Department");
+                    b.HasOne("ScheduleX.Core.Entities.Course", null)
+                        .WithMany("Subjects")
+                        .HasForeignKey("CourseId1")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Course");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.SubjectOffering", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectOffering", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.Faculty", "Faculty")
+                    b.HasOne("ScheduleX.Core.Entities.Faculty", "Faculty")
                         .WithMany("SubjectOfferings")
                         .HasForeignKey("FacultyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.Semester", "Semester")
+                    b.HasOne("ScheduleX.Core.Entities.Semester", "Semester")
                         .WithMany("SubjectOfferings")
                         .HasForeignKey("SemesterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.Subject", "Subject")
+                    b.HasOne("ScheduleX.Core.Entities.Subject", "Subject")
                         .WithMany("SubjectOfferings")
                         .HasForeignKey("SubjectId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1086,14 +1134,33 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("Subject");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeSlot", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TTCoordinatorCourse", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.BreakRule", "BreakRule")
+                    b.HasOne("ScheduleX.Core.Entities.Course", "Course")
+                        .WithMany("TTCoordinatorCourses")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ScheduleX.Core.Entities.User", "User")
+                        .WithMany("TTCoordinatorCourses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeSlot", b =>
+                {
+                    b.HasOne("ScheduleX.Core.Entities.BreakRule", "BreakRule")
                         .WithMany("TimeSlots")
                         .HasForeignKey("BreakRuleId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Timetable.Core.Entities.ScheduleConfig", "ScheduleConfig")
+                    b.HasOne("ScheduleX.Core.Entities.ScheduleConfig", "ScheduleConfig")
                         .WithMany("TimeSlots")
                         .HasForeignKey("ConfigId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1104,38 +1171,38 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("ScheduleConfig");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeTableBatch", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeTableBatch", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.ScheduleConfig", "ScheduleConfig")
+                    b.HasOne("ScheduleX.Core.Entities.ScheduleConfig", "ScheduleConfig")
                         .WithMany("TimeTableBatches")
                         .HasForeignKey("ConfigId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.Course", "Course")
+                    b.HasOne("ScheduleX.Core.Entities.Course", "Course")
                         .WithMany("TimeTableBatches")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.User", "CreatedByUser")
+                    b.HasOne("ScheduleX.Core.Entities.User", "CreatedByUser")
                         .WithMany("CreatedBatches")
                         .HasForeignKey("CreatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.Department", "Department")
+                    b.HasOne("ScheduleX.Core.Entities.Department", "Department")
                         .WithMany("TimeTableBatches")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.TimeTableBatch", "ParentBatch")
+                    b.HasOne("ScheduleX.Core.Entities.TimeTableBatch", "ParentBatch")
                         .WithMany()
                         .HasForeignKey("ParentBatchId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Timetable.Core.Entities.TimeTableTemplate", "TimeTableTemplate")
+                    b.HasOne("ScheduleX.Core.Entities.TimeTableTemplate", "TimeTableTemplate")
                         .WithMany("TimeTableBatches")
                         .HasForeignKey("TemplateId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1154,15 +1221,15 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("TimeTableTemplate");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeTableBatchSemester", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeTableBatchSemester", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.TimeTableBatch", "TimeTableBatch")
+                    b.HasOne("ScheduleX.Core.Entities.TimeTableBatch", "TimeTableBatch")
                         .WithMany("BatchSemesters")
                         .HasForeignKey("BatchId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.Semester", "Semester")
+                    b.HasOne("ScheduleX.Core.Entities.Semester", "Semester")
                         .WithMany("BatchSemesters")
                         .HasForeignKey("SemesterId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1173,37 +1240,37 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("TimeTableBatch");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeTableEntry", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeTableEntry", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.TimeTableBatch", "TimeTableBatch")
+                    b.HasOne("ScheduleX.Core.Entities.TimeTableBatch", "TimeTableBatch")
                         .WithMany("TimeTableEntries")
                         .HasForeignKey("BatchId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.Division", "Division")
+                    b.HasOne("ScheduleX.Core.Entities.Division", "Division")
                         .WithMany("TimeTableEntries")
                         .HasForeignKey("DivisionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.SubjectOffering", "SubjectOffering")
+                    b.HasOne("ScheduleX.Core.Entities.SubjectOffering", "SubjectOffering")
                         .WithMany("TimeTableEntries")
                         .HasForeignKey("OfferingId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Timetable.Core.Entities.Room", "Room")
+                    b.HasOne("ScheduleX.Core.Entities.Room", "Room")
                         .WithMany("TimeTableEntries")
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Timetable.Core.Entities.Semester", "Semester")
+                    b.HasOne("ScheduleX.Core.Entities.Semester", "Semester")
                         .WithMany("TimeTableEntries")
                         .HasForeignKey("SemesterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.TimeSlot", "TimeSlot")
+                    b.HasOne("ScheduleX.Core.Entities.TimeSlot", "TimeSlot")
                         .WithMany("TimeTableEntries")
                         .HasForeignKey("TimeSlotId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1222,21 +1289,21 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("TimeTableBatch");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeTableEntryHistory", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeTableEntryHistory", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.TimeTableBatch", "TimeTableBatch")
+                    b.HasOne("ScheduleX.Core.Entities.TimeTableBatch", "TimeTableBatch")
                         .WithMany()
                         .HasForeignKey("BatchId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.User", "ChangedByUser")
+                    b.HasOne("ScheduleX.Core.Entities.User", "ChangedByUser")
                         .WithMany("TimeTableEntryHistories")
                         .HasForeignKey("ChangedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Timetable.Core.Entities.TimeTableEntry", "TimeTableEntry")
+                    b.HasOne("ScheduleX.Core.Entities.TimeTableEntry", "TimeTableEntry")
                         .WithMany("Histories")
                         .HasForeignKey("EntryId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1249,9 +1316,9 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("TimeTableEntry");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.User", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.User", b =>
                 {
-                    b.HasOne("Timetable.Core.Entities.Department", "Department")
+                    b.HasOne("ScheduleX.Core.Entities.Department", "Department")
                         .WithMany("Users")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -1259,21 +1326,25 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.BreakRule", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.BreakRule", b =>
                 {
                     b.Navigation("TimeSlots");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Course", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Course", b =>
                 {
                     b.Navigation("ScheduleConfigs");
 
                     b.Navigation("Semesters");
 
+                    b.Navigation("Subjects");
+
+                    b.Navigation("TTCoordinatorCourses");
+
                     b.Navigation("TimeTableBatches");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Department", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Department", b =>
                 {
                     b.Navigation("Courses");
 
@@ -1283,35 +1354,33 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.Navigation("ScheduleConfigs");
 
-                    b.Navigation("Subjects");
-
                     b.Navigation("TimeTableBatches");
 
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Division", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Division", b =>
                 {
                     b.Navigation("DivisionRoomAllocations");
 
                     b.Navigation("TimeTableEntries");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Faculty", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Faculty", b =>
                 {
                     b.Navigation("FacultyAvailabilities");
 
                     b.Navigation("SubjectOfferings");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Room", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Room", b =>
                 {
                     b.Navigation("DivisionRoomAllocations");
 
                     b.Navigation("TimeTableEntries");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.ScheduleConfig", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.ScheduleConfig", b =>
                 {
                     b.Navigation("BreakRules");
 
@@ -1320,7 +1389,7 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("TimeTableBatches");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Semester", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Semester", b =>
                 {
                     b.Navigation("BatchSemesters");
 
@@ -1333,22 +1402,22 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("TimeTableEntries");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.Subject", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.Subject", b =>
                 {
                     b.Navigation("SubjectOfferings");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.SubjectOffering", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectOffering", b =>
                 {
                     b.Navigation("TimeTableEntries");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeSlot", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeSlot", b =>
                 {
                     b.Navigation("TimeTableEntries");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeTableBatch", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeTableBatch", b =>
                 {
                     b.Navigation("BatchSemesters");
 
@@ -1359,23 +1428,25 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("TimeTableEntries");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeTableEntry", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeTableEntry", b =>
                 {
                     b.Navigation("Histories");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.TimeTableTemplate", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.TimeTableTemplate", b =>
                 {
                     b.Navigation("TemplateSnapshots");
 
                     b.Navigation("TimeTableBatches");
                 });
 
-            modelBuilder.Entity("Timetable.Core.Entities.User", b =>
+            modelBuilder.Entity("ScheduleX.Core.Entities.User", b =>
                 {
                     b.Navigation("CreatedBatches");
 
                     b.Navigation("ExportHistories");
+
+                    b.Navigation("TTCoordinatorCourses");
 
                     b.Navigation("TimeTableEntryHistories");
                 });

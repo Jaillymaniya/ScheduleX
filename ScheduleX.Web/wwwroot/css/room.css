@@ -1,89 +1,53 @@
-﻿/*.room-form {
+﻿
+
+/* ================= PAGE ================= */
+/*body {
+    background: #020617;
+    color: white;
+}*/
+
+/* ================= MAIN CONTAINER (NEW) ================= */
+/*.tt-container {
+    width: 80%;
+    margin: 0 auto;
+}*/
+
+/* ================= CARD ================= */
+/*.tt-card {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border-radius: 16px;
+    border: 1px solid #334155;
+    padding: 25px;
+    margin-bottom: 25px;
+}*/
+
+/* ================= DIVIDER (NEW) ================= */
+/*.tt-divider {
+    height: 1px;
+    background: #334155;
+    margin: 30px 0;
+}*/
+
+/* ================= TABLE CARD (NEW) ================= */
+/*.tt-table-card {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border-radius: 16px;
+    border: 1px solid #334155;
+    padding: 20px;
+}*/
+
+/* ================= FORM ================= */
+/*.tt-form-row {
+    display: flex;
+    gap: 20px;
     margin-bottom: 20px;
 }
 
-    .room-form input,
-    .room-form select {
-        padding: 6px;
-        margin-right: 10px;
-    }
-
-.room-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-    .room-table th,
-    .room-table td {
-        border: 1px solid #ddd;
-        padding: 8px;
-    }
-*/
-
-/*.tt-card {
-    background: linear-gradient(145deg, #0f172a, #1e293b);
-    border-radius: 12px;
-    border: 1px solid #334155;
-}
-
-.tt-input, .tt-select {
-    background-color: #0f172a;
-    border: 1px solid #334155;
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
-}
-
-    .tt-input:focus, .tt-select:focus {
-        outline: none;
-        border-color: #22c55e;
-    }
-
-label {
-    color: #cbd5f5;
-    margin-bottom: 5px;
-    display: block;
-}
-
-.inactive-row {
-    opacity: 0.5;
-    background-color: #1e293b;
-}
-
-.btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+.tt-form-group {
+    flex: 1;
 }*/
 
-
-/* CARD CONTAINER */
-/*.tt-card {
-    background: linear-gradient(145deg, #0f172a, #1e293b);
-    border-radius: 14px;
-    border: 1px solid #334155;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-}*/
-
-/* INPUT + SELECT */
-/*.tt-input,
-.tt-select {
-    background-color: #0f172a;
-    border: 1px solid #334155;
-    color: #e2e8f0;
-    padding: 10px 12px;
-    border-radius: 8px;
-    transition: all 0.2s ease-in-out;
-}*/
-
-    /* FOCUS EFFECT */
-    /*.tt-input:focus,
-    .tt-select:focus {
-        outline: none;
-        border-color: #22c55e;
-        box-shadow: 0 0 0 1px #22c55e;
-    }*/
-
-/* LABEL */
+/* ================= LABEL ================= */
 /*label {
     color: #cbd5f5;
     font-size: 14px;
@@ -91,100 +55,146 @@ label {
     display: block;
 }*/
 
-/* TABLE IMPROVEMENT */
-/*.table {
+/* ================= INPUT ================= */
+/*.tt-input,
+.tt-select {
+    width: 100%;
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    padding: 12px;
     border-radius: 10px;
-    overflow: hidden;
+    transition: 0.3s;
+}*/
+
+    /* ================= FOCUS ================= */
+    /*.tt-input:focus,
+    .tt-select:focus {
+        outline: none;
+        border-color: #22c55e;
+        box-shadow: 0 0 6px #22c55e40;
+    }*/
+
+/* ================= BUTTON ================= */
+/*.btn-success {
+    background: #22c55e;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
 }
 
-    .table th {
+.btn-info {
+    background: #06b6d4;
+    border: none;
+}
+
+.btn-danger {
+    background: #ef4444;
+    border: none;
+}
+
+.btn-secondary {
+    background: #334155;
+}*/
+
+/* ================= TABLE (UPDATED) ================= */
+/*.tt-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .tt-table th {
         background-color: #1e293b;
         color: #e2e8f0;
-        font-weight: 600;
+        padding: 14px;
+        border-bottom: 1px solid #334155;
     }
 
-    .table td {
-        vertical-align: middle;
+    .tt-table td {
+        padding: 14px;
+        border-bottom: 1px solid #334155;
     }*/
 
-    /* ROW HOVER EFFECT */
-    /*.table tbody tr:hover {
+    /* ================= ROW ================= */
+    /*.tt-table tbody tr:hover {
         background-color: #1e293b;
-        transition: 0.2s;
     }*/
 
-/* INACTIVE ROW */
+/* ================= STATUS ================= */
+/*.badge {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+}*/
+
+/* ================= INACTIVE ================= */
 /*.inactive-row {
     opacity: 0.5;
-    background-color: #020617;
 }*/
 
-/* BUTTON SPACING */
-/*.btn-sm {
-    margin-right: 6px;
+/* ================= ACTION BUTTONS ================= */
+/*.action-buttons {
+    display: flex;
+    gap: 12px;
 }*/
 
-/* DISABLED BUTTON */
+/* ================= DISABLED ================= */
 /*.btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
 }*/
 
-/* STATUS BADGE */
-/*.badge {
-    padding: 6px 10px;
-    font-size: 12px;
-    border-radius: 6px;
-}*/
 
-/* RESPONSIVE FIX */
-/*@media (max-width: 768px) {
-    .tt-input,
-    .tt-select {
-        font-size: 14px;
-        padding: 8px;
-    }
-}*/
 
-/* BUTTON GROUP SPACING */
-/*.btn-group-space button {
-    margin-right: 8px;
+
+
+
+/* ================= PAGE ================= */
+body {
+    background: #020617;
+    color: white;
 }
 
-    .btn-group-space button:last-child {
-        margin-right: 0;
-    }*/
-
-
-
+/* ================= MAIN CONTAINER ================= */
+.tt-container {
+    width: 80%;
+    margin: 0 auto;
+}
 
 /* ================= CARD ================= */
 .tt-card {
     background: linear-gradient(145deg, #0f172a, #1e293b);
-    border-radius: 14px;
+    border-radius: 16px;
     border: 1px solid #334155;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+/* ================= DIVIDER ================= */
+.tt-divider {
+    height: 1px;
+    background: #334155;
+    margin: 30px 0;
+}
+
+/* ================= TABLE CARD ================= */
+.tt-table-card {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border-radius: 16px;
+    border: 1px solid #334155;
     padding: 20px;
 }
 
-/* ================= INPUT / SELECT ================= */
-.tt-input,
-.tt-select {
-    background-color: #0f172a;
-    border: 1px solid #334155;
-    color: #e2e8f0;
-    padding: 10px 12px;
-    border-radius: 8px;
-    width: 100%;
-    transition: all 0.2s ease-in-out;
+/* ================= FORM ================= */
+.tt-form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
 }
 
-    .tt-input:focus,
-    .tt-select:focus {
-        outline: none;
-        border-color: #22c55e;
-        box-shadow: 0 0 0 1px #22c55e;
-    }
+.tt-form-group {
+    flex: 1;
+}
 
 /* ================= LABEL ================= */
 label {
@@ -194,68 +204,104 @@ label {
     display: block;
 }
 
-/* ================= TABLE ================= */
-.table {
+/* ================= INPUT ================= */
+.tt-input,
+.tt-select {
+    width: 100%;
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    padding: 12px;
     border-radius: 10px;
-    overflow: hidden;
 }
 
-    .table th {
-        background-color: #1e293b;
-        color: #e2e8f0;
-        font-weight: 600;
+    .tt-input:focus,
+    .tt-select:focus {
+        outline: none;
+        border-color: #22c55e;
+        box-shadow: 0 0 6px #22c55e40;
     }
 
-    .table td {
+/* ================= BUTTON ================= */
+.btn {
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    border: none;
+    width: auto !important;
+    display: inline-block !important;
+}
+
+/* Button Colors */
+.btn-info {
+    background: #06b6d4;
+    color: #022c22;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-success {
+    background: #16a34a;
+    color: white;
+}
+
+/* ================= TABLE ================= */
+.tt-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .tt-table th {
+        background-color: #1e293b;
+        padding: 14px;
+        border-bottom: 1px solid #334155;
+    }
+
+    .tt-table td {
+        padding: 14px;
+        border-bottom: 1px solid #334155;
+    }
+
+    .tt-table tbody tr:hover {
+        background-color: #1e293b;
+    }
+
+    /* ================= FIX ALIGNMENT ================= */
+    .tt-table th,
+    .tt-table td {
+        text-align: left;
         vertical-align: middle;
     }
 
-    /* ================= ROW HOVER ================= */
-    .table tbody tr:hover {
-        background-color: #1e293b;
-        transition: 0.2s;
-    }
+        /* FIX ACTION COLUMN */
+        .tt-table th:last-child,
+        .tt-table td:last-child {
+            width: 220px;
+        }
 
-/* ================= INACTIVE ROW ================= */
+/* ================= STATUS ================= */
+.badge {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+/* ================= INACTIVE ================= */
 .inactive-row {
     opacity: 0.5;
-    background-color: #020617;
 }
 
-/* ================= BUTTON GROUP ================= */
+/* ================= ACTION BUTTONS ================= */
 .action-buttons {
     display: flex;
-    gap: 10px; /* 🔥 MAIN SPACING FIX */
-}
-
-/* ================= BUTTON ================= */
-.btn-sm {
-    min-width: 80px;
+    gap: 10px;
 }
 
 /* ================= DISABLED ================= */
 .btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
-}
-
-/* ================= STATUS BADGE ================= */
-.badge {
-    padding: 6px 10px;
-    font-size: 12px;
-    border-radius: 6px;
-}
-
-/* ================= RESPONSIVE ================= */
-@media (max-width: 768px) {
-    .tt-input,
-    .tt-select {
-        font-size: 14px;
-        padding: 8px;
-    }
-
-    .action-buttons {
-        flex-direction: column;
-        gap: 6px;
-    }
 }

@@ -12,8 +12,8 @@ using ScheduleX.Infrastructure.Data;
 namespace ScheduleX.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260301112041_AddTTCoordinatorCourseMapping")]
-    partial class AddTTCoordinatorCourseMapping
+    [Migration("20260326163230_UpdateSubjectSemesterStructure")]
+    partial class UpdateSubjectSemesterStructure
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -119,6 +119,9 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<int>("MaxSem")
+                        .HasColumnType("int");
 
                     b.HasKey("CourseId");
 
@@ -473,13 +476,16 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubjectId"));
 
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CourseId1")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<byte>("Credits")
-                        .HasColumnType("tinyint");
-
-                    b.Property<int>("DepartmentId")
+                    b.Property<int>("Credits")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsActive")
@@ -502,13 +508,94 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.HasKey("SubjectId");
 
-                    b.HasIndex("DepartmentId");
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("CourseId1");
 
                     b.HasIndex("SubjectCode")
                         .IsUnique()
                         .HasFilter("[SubjectCode] IS NOT NULL");
 
                     b.ToTable("TblSubject", (string)null);
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectFaculty", b =>
+                {
+                    b.Property<int>("SubjectFacultyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubjectFacultyId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DivisionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FacultyId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("SubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubjectSemesterId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SubjectFacultyId");
+
+                    b.HasIndex("DivisionId");
+
+                    b.HasIndex("FacultyId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.HasIndex("SubjectSemesterId", "DivisionId")
+                        .IsUnique();
+
+                    b.ToTable("TblSubjectFaculty", (string)null);
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectLectureConfig", b =>
+                {
+                    b.Property<int>("SubjectLectureConfigId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubjectLectureConfigId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<byte?>("PracticalBlockSize")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte>("PracticalLecturesPerWeek")
+                        .HasColumnType("tinyint");
+
+                    b.Property<int?>("SubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubjectSemesterId")
+                        .HasColumnType("int");
+
+                    b.Property<byte>("TheoryLecturesPerWeek")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("SubjectLectureConfigId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.HasIndex("SubjectSemesterId")
+                        .IsUnique();
+
+                    b.ToTable("TblSubjectLectureConfig", (string)null);
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.SubjectOffering", b =>
@@ -550,12 +637,79 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.HasIndex("FacultyId");
 
+                    b.HasIndex("SemesterId");
+
                     b.HasIndex("SubjectId");
 
-                    b.HasIndex("SemesterId", "SubjectId")
+                    b.ToTable("SubjectOffering");
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectRoomConfig", b =>
+                {
+                    b.Property<int>("SubjectRoomConfigId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubjectRoomConfigId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<byte?>("PreferredRoomType")
+                        .HasColumnType("tinyint");
+
+                    b.Property<int?>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubjectSemesterId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SubjectRoomConfigId");
+
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.HasIndex("SubjectSemesterId")
                         .IsUnique();
 
-                    b.ToTable("TblSubjectOffering", (string)null);
+                    b.ToTable("TblSubjectRoomConfig", (string)null);
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectSemester", b =>
+                {
+                    b.Property<int>("SubjectSemesterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubjectSemesterId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SemesterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SubjectSemesterId");
+
+                    b.HasIndex("SemesterId");
+
+                    b.HasIndex("SubjectId", "SemesterId")
+                        .IsUnique();
+
+                    b.ToTable("TblSubjectSemester", (string)null);
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.TTCoordinatorCourse", b =>
@@ -869,6 +1023,7 @@ namespace ScheduleX.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
 
@@ -886,8 +1041,9 @@ namespace ScheduleX.Infrastructure.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<byte>("Role")
                         .HasColumnType("tinyint");
@@ -900,6 +1056,12 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.HasKey("UserId");
 
                     b.HasIndex("DepartmentId");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Phone")
+                        .IsUnique();
 
                     b.HasIndex("Username")
                         .IsUnique();
@@ -1077,36 +1239,131 @@ namespace ScheduleX.Infrastructure.Migrations
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Subject", b =>
                 {
-                    b.HasOne("ScheduleX.Core.Entities.Department", "Department")
-                        .WithMany("Subjects")
-                        .HasForeignKey("DepartmentId")
+                    b.HasOne("ScheduleX.Core.Entities.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Department");
+                    b.HasOne("ScheduleX.Core.Entities.Course", null)
+                        .WithMany("Subjects")
+                        .HasForeignKey("CourseId1")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectFaculty", b =>
+                {
+                    b.HasOne("ScheduleX.Core.Entities.Division", "Division")
+                        .WithMany("SubjectFaculties")
+                        .HasForeignKey("DivisionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ScheduleX.Core.Entities.Faculty", "Faculty")
+                        .WithMany("SubjectFaculties")
+                        .HasForeignKey("FacultyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ScheduleX.Core.Entities.Subject", null)
+                        .WithMany("SubjectFaculties")
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ScheduleX.Core.Entities.SubjectSemester", "SubjectSemester")
+                        .WithMany("SubjectFaculties")
+                        .HasForeignKey("SubjectSemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Division");
+
+                    b.Navigation("Faculty");
+
+                    b.Navigation("SubjectSemester");
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectLectureConfig", b =>
+                {
+                    b.HasOne("ScheduleX.Core.Entities.Subject", null)
+                        .WithMany("SubjectLectureConfigs")
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ScheduleX.Core.Entities.SubjectSemester", "SubjectSemester")
+                        .WithMany("LectureConfigs")
+                        .HasForeignKey("SubjectSemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("SubjectSemester");
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.SubjectOffering", b =>
                 {
                     b.HasOne("ScheduleX.Core.Entities.Faculty", "Faculty")
-                        .WithMany("SubjectOfferings")
+                        .WithMany()
                         .HasForeignKey("FacultyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("ScheduleX.Core.Entities.Semester", "Semester")
-                        .WithMany("SubjectOfferings")
+                        .WithMany()
                         .HasForeignKey("SemesterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("ScheduleX.Core.Entities.Subject", "Subject")
-                        .WithMany("SubjectOfferings")
+                        .WithMany()
                         .HasForeignKey("SubjectId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Faculty");
+
+                    b.Navigation("Semester");
+
+                    b.Navigation("Subject");
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectRoomConfig", b =>
+                {
+                    b.HasOne("ScheduleX.Core.Entities.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ScheduleX.Core.Entities.Subject", null)
+                        .WithMany("SubjectRoomConfigs")
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ScheduleX.Core.Entities.SubjectSemester", "SubjectSemester")
+                        .WithMany("RoomConfigs")
+                        .HasForeignKey("SubjectSemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Room");
+
+                    b.Navigation("SubjectSemester");
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectSemester", b =>
+                {
+                    b.HasOne("ScheduleX.Core.Entities.Semester", "Semester")
+                        .WithMany("SubjectSemesters")
+                        .HasForeignKey("SemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ScheduleX.Core.Entities.Subject", "Subject")
+                        .WithMany("SubjectSemesters")
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Semester");
 
@@ -1316,6 +1573,8 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.Navigation("Semesters");
 
+                    b.Navigation("Subjects");
+
                     b.Navigation("TTCoordinatorCourses");
 
                     b.Navigation("TimeTableBatches");
@@ -1331,8 +1590,6 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.Navigation("ScheduleConfigs");
 
-                    b.Navigation("Subjects");
-
                     b.Navigation("TimeTableBatches");
 
                     b.Navigation("Users");
@@ -1342,6 +1599,8 @@ namespace ScheduleX.Infrastructure.Migrations
                 {
                     b.Navigation("DivisionRoomAllocations");
 
+                    b.Navigation("SubjectFaculties");
+
                     b.Navigation("TimeTableEntries");
                 });
 
@@ -1349,7 +1608,7 @@ namespace ScheduleX.Infrastructure.Migrations
                 {
                     b.Navigation("FacultyAvailabilities");
 
-                    b.Navigation("SubjectOfferings");
+                    b.Navigation("SubjectFaculties");
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Room", b =>
@@ -1376,19 +1635,34 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.Navigation("Divisions");
 
-                    b.Navigation("SubjectOfferings");
+                    b.Navigation("SubjectSemesters");
 
                     b.Navigation("TimeTableEntries");
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Subject", b =>
                 {
-                    b.Navigation("SubjectOfferings");
+                    b.Navigation("SubjectFaculties");
+
+                    b.Navigation("SubjectLectureConfigs");
+
+                    b.Navigation("SubjectRoomConfigs");
+
+                    b.Navigation("SubjectSemesters");
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.SubjectOffering", b =>
                 {
                     b.Navigation("TimeTableEntries");
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectSemester", b =>
+                {
+                    b.Navigation("LectureConfigs");
+
+                    b.Navigation("RoomConfigs");
+
+                    b.Navigation("SubjectFaculties");
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.TimeSlot", b =>

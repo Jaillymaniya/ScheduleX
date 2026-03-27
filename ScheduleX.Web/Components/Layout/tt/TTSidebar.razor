@@ -28,19 +28,14 @@
 
     <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/semesters"))">Semesters</button>
     <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/academic/faculty"))">Faculty</button>
-    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/subjects"))">Subjects & Assign</button>
-    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/room-management"))">Rooms/Labs</button>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/academic/subject"))">Subjects & Assign</button>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/academic/room-management"))">Rooms/Labs</button>
     <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/divisions"))">Divisions</button>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/academic/subject-mapping"))">subject mapping Settings</button>
 
     <div class="tt-nav-section">Configuration</div>
-    @* <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/settings"))">Timetable Settings</button> *@
-    @* <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/breaks"))">Break Configuration</button> *@
-    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/schedule-configuration"))">
-        Timetable Settings
-    </button>
-    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/templates"))">
-        Timetable Templates
-    </button>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/settings"))">Timetable Settings</button>
+    <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/breaks"))">Break Configuration</button>
 
     <div class="tt-nav-section">Generation</div>
     <button class="tt-nav-item" @onclick="@(()=>Nav.NavigateTo("/tt/generate"))">Generate Timetable</button>

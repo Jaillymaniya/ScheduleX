@@ -24,7 +24,8 @@ public class Semester
     // Nav
     public ICollection<Division> Divisions { get; set; } = new List<Division>();
     public ICollection<DivisionRoomAllocation> DivisionRoomAllocations { get; set; } = new List<DivisionRoomAllocation>();
-    public ICollection<SubjectOffering> SubjectOfferings { get; set; } = new List<SubjectOffering>();
+    //public ICollection<SubjectOffering> SubjectOfferings { get; set; } = new List<SubjectOffering>();
+    public ICollection<SubjectSemester> SubjectSemesters { get; set; } = new List<SubjectSemester>();
     public ICollection<TimeTableBatchSemester> BatchSemesters { get; set; } = new List<TimeTableBatchSemester>();
     public ICollection<TimeTableEntry> TimeTableEntries { get; set; } = new List<TimeTableEntry>();
 }

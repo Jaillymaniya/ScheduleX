@@ -14,22 +14,24 @@ public class Subject
     [Key]
     public int SubjectId { get; set; }
 
-    [Required]
-    public int DepartmentId { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "Please select course")]
+    public int CourseId { get; set; }
 
-    [ForeignKey(nameof(DepartmentId))]
-    public Department Department { get; set; } = null!;
+    [ForeignKey(nameof(CourseId))]
+    public Course Course { get; set; } = null!;
 
-    [Required, MaxLength(150)]
+    [Required(ErrorMessage = "Subject name is required")]
+    [MaxLength(150)]
     public string SubjectName { get; set; } = null!;
-
+    
     [MaxLength(30)]
     public string? SubjectCode { get; set; }
 
-    [Required]
-    public byte Credits { get; set; }
+    [Required(ErrorMessage = "Credits are required")]
+    [Range(1, 10, ErrorMessage = "Credits must be between 1-10")]
+    public int Credits { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Category is required")]
     public SubjectCategoryEnum SubjectCategory { get; set; }
 
     public bool IsElective { get; set; } = false;
@@ -39,5 +41,9 @@ public class Subject
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     // Nav
-    public ICollection<SubjectOffering> SubjectOfferings { get; set; } = new List<SubjectOffering>();
+    //public ICollection<SubjectOffering> SubjectOfferings { get; set; } = new List<SubjectOffering>();
+    public ICollection<SubjectSemester> SubjectSemesters { get; set; } = new List<SubjectSemester>();
+    public ICollection<SubjectFaculty> SubjectFaculties { get; set; } = new List<SubjectFaculty>();
+    public ICollection<SubjectLectureConfig> SubjectLectureConfigs { get; set; } = new List<SubjectLectureConfig>();
+    public ICollection<SubjectRoomConfig> SubjectRoomConfigs { get; set; } = new List<SubjectRoomConfig>();
 }

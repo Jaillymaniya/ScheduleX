@@ -12,8 +12,8 @@ using ScheduleX.Infrastructure.Data;
 namespace ScheduleX.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260302035130_AddUniqueEmailPhoneIndex")]
-    partial class AddUniqueEmailPhoneIndex
+    [Migration("20260326171435_AddSemesterStudentStrength")]
+    partial class AddSemesterStudentStrength
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -119,6 +119,9 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<int>("MaxSem")
+                        .HasColumnType("int");
 
                     b.HasKey("CourseId");
 
@@ -463,6 +466,30 @@ namespace ScheduleX.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("TblSemester", (string)null);
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.SemesterStudentStrength", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SemesterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalStudents")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SemesterId");
+
+                    b.ToTable("SemesterStudentStrengths");
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Subject", b =>
@@ -869,6 +896,7 @@ namespace ScheduleX.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
 
@@ -886,8 +914,9 @@ namespace ScheduleX.Infrastructure.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<byte>("Role")
                         .HasColumnType("tinyint");
@@ -902,12 +931,10 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.HasIndex("DepartmentId");
 
                     b.HasIndex("Email")
-                        .IsUnique()
-                        .HasFilter("[Email] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("Phone")
-                        .IsUnique()
-                        .HasFilter("[Phone] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("Username")
                         .IsUnique();
@@ -1081,6 +1108,17 @@ namespace ScheduleX.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.SemesterStudentStrength", b =>
+                {
+                    b.HasOne("ScheduleX.Core.Entities.Semester", "Semester")
+                        .WithMany()
+                        .HasForeignKey("SemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Semester");
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Subject", b =>

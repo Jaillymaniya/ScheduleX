@@ -30,6 +30,7 @@ public class Course
 
     // Nav
     public ICollection<Semester> Semesters { get; set; } = new List<Semester>();
+    public ICollection<Subject> Subjects { get; set; } = new List<Subject>();
     public ICollection<TTCoordinatorCourse> TTCoordinatorCourses { get; set; }
     = new List<TTCoordinatorCourse>();
     public ICollection<ScheduleConfig> ScheduleConfigs { get; set; } = new List<ScheduleConfig>();

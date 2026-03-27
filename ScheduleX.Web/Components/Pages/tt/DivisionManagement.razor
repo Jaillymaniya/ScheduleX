@@ -1,0 +1,207 @@
+﻿
+
+@page "/tt/division-management"
+@layout ScheduleX.Web.Components.Layout.tt.TTLayout
+
+@using ScheduleX.Core.Entities
+@using Microsoft.EntityFrameworkCore
+@using ScheduleX.Infrastructure.Data
+
+@inject AppDbContext Context
+
+<link href="css/room.css" rel="stylesheet" />
+
+<h3 class="mb-4">Division Management</h3>
+
+<!-- ================= FORM ================= -->
+<div class="tt-card">
+
+    <h5 class="mb-4">Add Division</h5>
+
+    <div class="tt-form-row">
+
+        <div class="tt-form-group">
+            <label>Division Name</label>
+            <input class="tt-input" @bind="division.DivisionName" />
+        </div>
+
+        <div class="tt-form-group">
+            <label>Semester</label>
+            <select class="tt-select" @bind="division.SemesterId">
+                <option value="0">-- Select Semester --</option>
+
+                @foreach (var s in semesters)
+                {
+                    <option value="@s.SemesterId">
+                        Semester @s.SemesterNo
+                    </option>
+                }
+            </select>
+        </div>
+
+    </div>
+
+    <div class="tt-form-row">
+
+        <div class="tt-form-group">
+            <label>Student Strength</label>
+            <input type="number" class="tt-input" @bind="division.StudentStrength" />
+        </div>
+
+    </div>
+
+    <button class="btn btn-success tt-btn"
+            @onclick="SaveDivision">
+        @(isEdit ? "Update Division" : "Save Division")
+    </button>
+
+</div>
+
+<hr />
+
+<!-- ================= TABLE ================= -->
+<div class="tt-table-container">
+
+    <table class="tt-table">
+        <thead>
+            <tr>
+                <th>Division</th>
+                <th>Semester</th>
+                <th>Students</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var d in divisions)
+            {
+                <tr class="@(d.IsActive ? "" : "inactive-row")">
+
+                    <td>@d.DivisionName</td>
+                    <td>@d.Semester?.SemesterNo</td>
+                    <td>@d.StudentStrength</td>
+
+                    <td>
+                        <span class="badge @(d.IsActive ? "bg-success" : "bg-secondary")">
+                            @(d.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </td>
+
+                    <td>
+                        <div class="action-buttons">
+
+                            <button class="btn btn-info"
+                                    disabled="@(!d.IsActive)"
+                                    @onclick="() => EditDivision(d)">
+                                Edit
+                            </button>
+
+                            @if (d.IsActive)
+                            {
+                                <button class="btn btn-danger"
+                                        @onclick="() => DeactivateDivision(d.DivisionId)">
+                                    Deactivate
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-success"
+                                        @onclick="() => ActivateDivision(d.DivisionId)">
+                                    Activate
+                                </button>
+                            }
+
+                        </div>
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
+
+@code {
+
+    private Division division = new();
+    private List<Division> divisions = new();
+    private List<Semester> semesters = new();
+
+    private bool isEdit = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        semesters = await Context.Semesters.ToListAsync();
+
+        divisions = await Context.Divisions
+            .Include(d => d.Semester)
+            .ToListAsync();
+    }
+
+    // ✅ FIXED SAVE
+    private async Task SaveDivision()
+    {
+        if (division.SemesterId == 0 ||
+            string.IsNullOrWhiteSpace(division.DivisionName) ||
+            division.StudentStrength <= 0)
+        {
+            return;
+        }
+
+        // 🔥 KEY FIX: only add for new
+        if (!isEdit)
+        {
+            division.IsActive = true;
+            division.CreatedAt = DateTime.Now;
+
+            Context.Divisions.Add(division);
+        }
+
+        await Context.SaveChangesAsync();
+
+        division = new Division();
+        isEdit = false;
+
+        divisions = await Context.Divisions
+            .Include(d => d.Semester)
+            .ToListAsync();
+    }
+
+    // ✅ FIXED EDIT
+    private void EditDivision(Division d)
+    {
+        if (!d.IsActive) return;
+
+        division = d;   // ⭐ IMPORTANT FIX
+        isEdit = true;
+    }
+
+    private async Task DeactivateDivision(int id)
+    {
+        var d = await Context.Divisions.FindAsync(id);
+        if (d != null)
+        {
+            d.IsActive = false;
+            await Context.SaveChangesAsync();
+        }
+
+        divisions = await Context.Divisions
+            .Include(x => x.Semester)
+            .ToListAsync();
+    }
+
+    private async Task ActivateDivision(int id)
+    {
+        var d = await Context.Divisions.FindAsync(id);
+        if (d != null)
+        {
+            d.IsActive = true;
+            await Context.SaveChangesAsync();
+        }
+
+        divisions = await Context.Divisions
+            .Include(x => x.Semester)
+            .ToListAsync();
+    }
+}
