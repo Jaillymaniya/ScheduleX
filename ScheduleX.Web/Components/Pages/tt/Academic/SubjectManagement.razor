@@ -1,24 +1,22 @@
 ﻿@page "/tt/academic/subject"
 @layout ScheduleX.Web.Components.Layout.tt.TTLayout
-
+@inject ScheduleX.Web.Services.AuthState Auth
 @using SubjectEntity = ScheduleX.Core.Entities.Subject
 @using ScheduleX.Core.Entities
 @using ScheduleX.Web.DTOs
 @inject ISubjectRepository Repo
 @inject IJSRuntime JS
 
-<link href="css/subject.css?v=1.0" rel="stylesheet" />
-
+<link href="/css/subject.css?v=2.0" rel="stylesheet" />
+<div class="subject-page">
 <h3 class="mb-4">Subject Management</h3>
 
-<!-- 🔍 SEARCH -->
 <input class="tt-input w-100 mb-3"
        placeholder="Search subject..."
        @bind="searchText" />
 
-<!-- BUTTONS -->
 <div class="mb-3">
-    <button type="button" class="btn btn-success me-2" @onclick="ShowManualForm">
+    <button class="btn btn-success me-2" @onclick="ShowManualForm">
         Add Subject
     </button>
 
@@ -27,7 +25,6 @@
     </button>
 </div>
 
-<!-- 🔷 PROGRESS -->
 @if (isUploading)
 {
     <div class="progress-container mb-3">
@@ -39,7 +36,6 @@
 @if (showManualForm)
 {
     <div class="tt-card p-4 mb-4">
-
         <h5>@(isEditMode ? "Edit Subject" : "Add Subject")</h5>
 
         <EditForm Model="model" OnValidSubmit="SaveSubject">
@@ -48,23 +44,24 @@
 
             <div class="row">
 
-                <!-- NAME -->
                 <div class="col-md-6 mb-3">
                     <label>Name</label>
                     <InputText class="tt-input w-100"
                                @bind-Value="model.SubjectName" />
                 </div>
 
-                <!-- CODE -->
                 <div class="col-md-6 mb-3">
                     <label>Code</label>
                     <InputText class="tt-input w-100"
                                @bind-Value="model.SubjectCode" />
                 </div>
 
-                <!-- COURSE -->
                 <div class="col-md-6 mb-3">
                     <label>Course</label>
+                        @if (!courses.Any())
+                        {
+                            <p class="text-warning">No courses assigned to you</p>
+                        }
                     <select class="tt-select w-100"
                             @bind="model.CourseId">
                         <option value="0">Select Course</option>
@@ -75,14 +72,13 @@
                     </select>
                 </div>
 
-                <!-- CREDITS -->
                 <div class="col-md-6 mb-3">
                     <label>Credits</label>
-                    <InputNumber TValue="int" class="tt-input w-100"
+                    <InputNumber TValue="int"
+                                 class="tt-input w-100"
                                  @bind-Value="model.Credits" />
                 </div>
 
-                <!-- CATEGORY -->
                 <div class="col-md-6 mb-3">
                     <label>Category</label>
                     <select class="tt-select w-100"
@@ -93,7 +89,6 @@
                     </select>
                 </div>
 
-                <!-- ELECTIVE -->
                 <div class="col-md-6 mb-3">
                     <label>
                         <InputCheckbox @bind-Value="model.IsElective" />
@@ -165,35 +160,44 @@
                     <td>@s.SubjectCode</td>
                     <td>@s.Course?.CourseName</td>
                     <td>@s.Credits</td>
-                    <td>@(s.IsActive ? "Active" : "Inactive")</td>
-
                     <td>
-                        <button class="btn btn-sm btn-info me-1"
-                                @onclick="() => EditSubject(s)">
-                            Edit
-                        </button>
-
-                        @if (s.IsActive)
-                        {
-                            <button class="btn btn-sm btn-danger"
-                                    @onclick="() => Delete(s.SubjectId)">
-                                Deactivate
-                            </button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-sm btn-success"
-                                    @onclick="() => Activate(s.SubjectId)">
-                                Activate
-                            </button>
-                        }
+                        <span class="status-badge @(s.IsActive ? "active" : "inactive")">
+                            @(s.IsActive ? "Active" : "Inactive")
+                        </span>
                     </td>
+
+                        <td>
+                            <div class="action-group">
+
+                                <button class="btn btn-sm btn-info"
+                                        disabled="@(!s.IsActive)"
+                                        @onclick="() => EditSubject(s)">
+                                    Edit
+                                </button>
+
+                                @if (s.IsActive)
+                                {
+                                    <button class="btn btn-sm btn-danger"
+                                            @onclick="() => Delete(s.SubjectId)">
+                                        Deactivate
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-success"
+                                            @onclick="() => Activate(s.SubjectId)">
+                                        Activate
+                                    </button>
+                                }
+
+                            </div>
+                        </td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
-
+</div>
 @code {
 
     private List<SubjectEntity> subjects = new();
@@ -216,6 +220,8 @@
     private bool isUploading = false;
     private int progress = 0;
 
+    private int userId;
+
     private IEnumerable<SubjectEntity> filteredSubjects =>
         subjects.Where(s =>
             string.IsNullOrEmpty(searchText) ||
@@ -223,8 +229,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!Auth.IsLoggedIn)
+            return;
+
+        userId = Auth.UserId!.Value; // 🔥 CORRECT WAY
         await LoadData();
-        courses = await Repo.GetCoursesAsync();
+        courses = await Repo.GetCoursesForCoordinatorAsync(userId);
     }
 
     private async Task LoadData()
@@ -265,9 +275,9 @@
             return;
         }
 
-        if (model.CourseId == 0)
+        if (!courses.Any(c => c.CourseId == model.CourseId))
         {
-            await ShowToast("Select course", "danger");
+            await ShowToast("Invalid Course Selection", "danger");
             return;
         }
 
@@ -321,98 +331,13 @@
         isFileSelected = true;
     }
 
-    // private async Task ProcessCsv()
-    // {
-    //     if (selectedFile == null) return;
-
-    //     isUploading = true;
-    //     progress = 0;
-    //     StateHasChanged();
-
-    //     var list = new List<SubjectEntity>();
-
-    //     using var stream = selectedFile.OpenReadStream();
-    //     using var reader = new StreamReader(stream);
-
-    //     string? line;
-    //     int count = 0;
-    //     bool isFirstRow = true;
-
-    //     while ((line = await reader.ReadLineAsync()) != null)
-    //     {
-    //         🔥 Skip header row
-    //         if (isFirstRow)
-    //         {
-    //             isFirstRow = false;
-    //             continue;
-    //         }
-    //         if (string.IsNullOrWhiteSpace(line))
-    //             continue;
-
-    //         var data = line.Split(',');
-
-    //         if (data.Length < 5)
-    //             continue;
-
-    //         try
-    //         {
-    //             list.Add(new SubjectEntity
-    //                 {
-    //                     SubjectName = data[0]?.Trim(),
-    //                     SubjectCode = data[1]?.Trim(),
-    //                     Credits = int.Parse(data[2]),
-    //                     SubjectCategory = data[3].Trim().ToLower() switch
-    //                     {
-    //                         "theory" => SubjectCategoryEnum.Theory,
-    //                         "practical" => SubjectCategoryEnum.Practical,
-    //                         "both" => SubjectCategoryEnum.Both,
-    //                         _ => throw new Exception("Invalid category")
-    //                     },
-    //                     Course = new Course { CourseName = data[4]?.Trim() }
-    //                 });
-    //         }
-    //         catch { }
-
-    //         count++;
-
-    //         ✅ Smooth progress update
-    //         progress = Math.Min(70, count);
-
-    //         🔥 REQUIRED for UI update
-    //         await Task.Delay(1);
-    //         StateHasChanged();
-    //     }
-
-    //     progress = 80;
-    //     StateHasChanged();
-    //     if (!list.Any())
-    //     {
-    //         await ShowToast("No valid data found", "danger");
-    //         return;
-    //     }
-    //     var result = await Repo.BulkInsertAsync(list);
-
-    //     progress = 100;
-    //     StateHasChanged();
-
-    //     await ShowToast(result.Item2, result.Item1 ? "success" : "danger");
-
-    //     isUploading = false;
-    //     isFileSelected = false;
-
-    //     await LoadData();
-    // }
-    
-
     private async Task ProcessCsv()
     {
         if (selectedFile == null) return;
 
         isUploading = true;
         progress = 0;
-        StateHasChanged();
 
-        var dtoList = new List<SubjectCsvDto>();
         var entityList = new List<Subject>();
 
         using var stream = selectedFile.OpenReadStream();
@@ -420,7 +345,6 @@
 
         string? line;
         bool isFirstRow = true;
-        int count = 0;
 
         while ((line = await reader.ReadLineAsync()) != null)
         {
@@ -438,65 +362,24 @@
             if (data.Length < 5)
                 continue;
 
-            try
-            {
-                dtoList.Add(new SubjectCsvDto
-                    {
-                        SubjectName = data[0]?.Trim(),
-                        SubjectCode = data[1]?.Trim(),
-                        Credits = int.Parse(data[2]),
-                        Category = data[3]?.Trim(),
-                        CourseName = data[4]?.Trim()
-                    });
-            }
-            catch { }
+            if (!int.TryParse(data[2], out var credits))
+                continue;
 
-            count++;
-            progress = Math.Min(50, count);
-
-            await Task.Delay(1);
-            StateHasChanged();
-        }
-
-        // 🔥 Convert DTO → ENTITY
-        var courses = await Repo.GetCoursesAsync();
-
-        foreach (var d in dtoList)
-        {
             var course = courses.FirstOrDefault(c =>
-                c.CourseName.Trim().Equals(
-                    d.CourseName?.Trim(),
-                    StringComparison.OrdinalIgnoreCase));
+                c.CourseName.Equals(data[4]?.Trim(), StringComparison.OrdinalIgnoreCase));
 
             if (course == null)
             {
-                await ShowToast($"Invalid Course: {d.CourseName}", "danger");
+                await ShowToast($"Invalid Course: {data[4]}", "danger");
                 continue;
-            }
-
-            SubjectCategoryEnum category;
-
-            if (int.TryParse(d.Category, out var cat))
-            {
-                category = (SubjectCategoryEnum)cat;
-            }
-            else
-            {
-                category = d.Category?.Trim().ToLower() switch
-                {
-                    "theory" => SubjectCategoryEnum.Theory,
-                    "practical" => SubjectCategoryEnum.Practical,
-                    "both" => SubjectCategoryEnum.Both,
-                    _ => SubjectCategoryEnum.Theory
-                };
             }
 
             entityList.Add(new Subject
                 {
-                    SubjectName = d.SubjectName,
-                    SubjectCode = d.SubjectCode,
-                    Credits = d.Credits,
-                    SubjectCategory = category,
+                    SubjectName = data[0]?.Trim(),
+                    SubjectCode = data[1]?.Trim(),
+                    Credits = credits,
+                    SubjectCategory = SubjectCategoryEnum.Theory,
                     CourseId = course.CourseId
                 });
         }
@@ -507,13 +390,7 @@
             return;
         }
 
-        progress = 80;
-        StateHasChanged();
-
-        var result = await Repo.BulkInsertAsync(entityList);
-
-        progress = 100;
-        StateHasChanged();
+        var result = await Repo.BulkInsertAsync(entityList, userId);
 
         await ShowToast(result.Item2, result.Item1 ? "success" : "danger");
 

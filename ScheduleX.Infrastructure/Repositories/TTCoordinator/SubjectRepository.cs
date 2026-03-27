@@ -93,10 +93,63 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
                 await _context.SaveChangesAsync();
             }
         }
-
-        public async Task<(bool, string)> BulkInsertAsync(List<Subject> subjects)
+        public async Task<List<Course>> GetCoursesForCoordinatorAsync(int userId)
         {
-            var courses = await _context.Courses.ToListAsync();
+            return await _context.TTCoordinatorCourses
+                 .Include(x => x.Course)
+                .Where(x => x.UserId == userId && x.Course.IsActive)
+                .Select(x => x.Course)
+                .Distinct()
+                .ToListAsync();
+        }
+        //public async Task<(bool, string)> BulkInsertAsync(List<Subject> subjects)
+        //{
+        //    var courses = await _context.Courses.ToListAsync();
+
+        //    int row = 1;
+
+        //    foreach (var s in subjects)
+        //    {
+        //        row++;
+
+        //        // ❌ Subject Name EMPTY
+        //        if (string.IsNullOrWhiteSpace(s.SubjectName))
+        //            return (false, $"Row {row}: Subject Name is required");
+
+        //        // ❌ Subject Code EMPTY
+        //        if (string.IsNullOrWhiteSpace(s.SubjectCode))
+        //            return (false, $"Row {row}: Subject Code is required");
+
+        //        // ❌ CourseId not set
+        //        if (s.CourseId == 0)
+        //            return (false, $"Row {row}: Course is required");
+
+        //        // ❌ INVALID COURSE ID
+        //        var courseExists = courses.Any(c => c.CourseId == s.CourseId);
+
+        //        if (!courseExists)
+        //            return (false, $"Row {row}: Invalid CourseId '{s.CourseId}'");
+
+        //        // ❌ DUPLICATE CODE
+        //        if (await IsSubjectCodeExists(s.SubjectCode))
+        //            return (false, $"Row {row}: Duplicate Code '{s.SubjectCode}'");
+
+        //        // ✅ IMPORTANT: prevent EF inserting Course
+        //        s.Course = null;
+        //    }
+
+        //    await _context.Subjects.AddRangeAsync(subjects);
+        //    await _context.SaveChangesAsync();
+
+        //    return (true, "CSV Uploaded Successfully");
+        //}
+
+        public async Task<(bool, string)> BulkInsertAsync(List<Subject> subjects, int userId)
+        {
+            var allowedCourses = await _context.TTCoordinatorCourses
+                .Where(x => x.UserId == userId && x.Course.IsActive)
+                .Select(x => x.CourseId)
+                .ToListAsync();
 
             int row = 1;
 
@@ -104,29 +157,18 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
             {
                 row++;
 
-                // ❌ Subject Name EMPTY
                 if (string.IsNullOrWhiteSpace(s.SubjectName))
                     return (false, $"Row {row}: Subject Name is required");
 
-                // ❌ Subject Code EMPTY
                 if (string.IsNullOrWhiteSpace(s.SubjectCode))
                     return (false, $"Row {row}: Subject Code is required");
 
-                // ❌ CourseId not set
-                if (s.CourseId == 0)
-                    return (false, $"Row {row}: Course is required");
+                if (!allowedCourses.Contains(s.CourseId))
+                    return (false, $"Row {row}: Course not allowed for you");
 
-                // ❌ INVALID COURSE ID
-                var courseExists = courses.Any(c => c.CourseId == s.CourseId);
-
-                if (!courseExists)
-                    return (false, $"Row {row}: Invalid CourseId '{s.CourseId}'");
-
-                // ❌ DUPLICATE CODE
                 if (await IsSubjectCodeExists(s.SubjectCode))
                     return (false, $"Row {row}: Duplicate Code '{s.SubjectCode}'");
 
-                // ✅ IMPORTANT: prevent EF inserting Course
                 s.Course = null;
             }
 
