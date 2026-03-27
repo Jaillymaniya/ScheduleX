@@ -1,0 +1,261 @@
+﻿/*.room-form {
+    margin-bottom: 20px;
+}
+
+    .room-form input,
+    .room-form select {
+        padding: 6px;
+        margin-right: 10px;
+    }
+
+.room-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .room-table th,
+    .room-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+*/
+
+/*.tt-card {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border-radius: 12px;
+    border: 1px solid #334155;
+}
+
+.tt-input, .tt-select {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+    .tt-input:focus, .tt-select:focus {
+        outline: none;
+        border-color: #22c55e;
+    }
+
+label {
+    color: #cbd5f5;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.inactive-row {
+    opacity: 0.5;
+    background-color: #1e293b;
+}
+
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}*/
+
+
+/* CARD CONTAINER */
+/*.tt-card {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border-radius: 14px;
+    border: 1px solid #334155;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}*/
+
+/* INPUT + SELECT */
+/*.tt-input,
+.tt-select {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+}*/
+
+    /* FOCUS EFFECT */
+    /*.tt-input:focus,
+    .tt-select:focus {
+        outline: none;
+        border-color: #22c55e;
+        box-shadow: 0 0 0 1px #22c55e;
+    }*/
+
+/* LABEL */
+/*label {
+    color: #cbd5f5;
+    font-size: 14px;
+    margin-bottom: 6px;
+    display: block;
+}*/
+
+/* TABLE IMPROVEMENT */
+/*.table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+    .table th {
+        background-color: #1e293b;
+        color: #e2e8f0;
+        font-weight: 600;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }*/
+
+    /* ROW HOVER EFFECT */
+    /*.table tbody tr:hover {
+        background-color: #1e293b;
+        transition: 0.2s;
+    }*/
+
+/* INACTIVE ROW */
+/*.inactive-row {
+    opacity: 0.5;
+    background-color: #020617;
+}*/
+
+/* BUTTON SPACING */
+/*.btn-sm {
+    margin-right: 6px;
+}*/
+
+/* DISABLED BUTTON */
+/*.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}*/
+
+/* STATUS BADGE */
+/*.badge {
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+}*/
+
+/* RESPONSIVE FIX */
+/*@media (max-width: 768px) {
+    .tt-input,
+    .tt-select {
+        font-size: 14px;
+        padding: 8px;
+    }
+}*/
+
+/* BUTTON GROUP SPACING */
+/*.btn-group-space button {
+    margin-right: 8px;
+}
+
+    .btn-group-space button:last-child {
+        margin-right: 0;
+    }*/
+
+
+
+
+/* ================= CARD ================= */
+.tt-card {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border-radius: 14px;
+    border: 1px solid #334155;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    padding: 20px;
+}
+
+/* ================= INPUT / SELECT ================= */
+.tt-input,
+.tt-select {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    width: 100%;
+    transition: all 0.2s ease-in-out;
+}
+
+    .tt-input:focus,
+    .tt-select:focus {
+        outline: none;
+        border-color: #22c55e;
+        box-shadow: 0 0 0 1px #22c55e;
+    }
+
+/* ================= LABEL ================= */
+label {
+    color: #cbd5f5;
+    font-size: 14px;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* ================= TABLE ================= */
+.table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+    .table th {
+        background-color: #1e293b;
+        color: #e2e8f0;
+        font-weight: 600;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    /* ================= ROW HOVER ================= */
+    .table tbody tr:hover {
+        background-color: #1e293b;
+        transition: 0.2s;
+    }
+
+/* ================= INACTIVE ROW ================= */
+.inactive-row {
+    opacity: 0.5;
+    background-color: #020617;
+}
+
+/* ================= BUTTON GROUP ================= */
+.action-buttons {
+    display: flex;
+    gap: 10px; /* 🔥 MAIN SPACING FIX */
+}
+
+/* ================= BUTTON ================= */
+.btn-sm {
+    min-width: 80px;
+}
+
+/* ================= DISABLED ================= */
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ================= STATUS BADGE ================= */
+.badge {
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+    .tt-input,
+    .tt-select {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 6px;
+    }
+}

@@ -1,0 +1,658 @@
+﻿@using System.Text.Json
+@page "/tt/templates"
+@layout ScheduleX.Web.Components.Layout.tt.TTLayout
+@rendermode InteractiveServer
+
+@using System.Net.Http.Json
+@using ScheduleX.Web.DTOs
+@inject HttpClient Http
+
+<link href="css/templates.css" rel="stylesheet" />
+
+<div class="template-page">
+    <div class="template-header">
+        <div>
+            <h2>Timetable Templates</h2>
+            <p>Manage timetable template designs for add, edit, view, soft delete and default selection.</p>
+        </div>
+        <button class="tt-btn tt-btn-primary" @onclick="OpenAddForm">+ Add Template</button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="tt-alert tt-alert-success">@message</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="tt-alert tt-alert-danger">@error</div>
+    }
+
+    <div class="template-card">
+        @if (loading)
+        {
+            <p>Loading templates...</p>
+        }
+        else if (templates == null || !templates.Any())
+        {
+            <p>No templates found.</p>
+        }
+        else
+        {
+            <table class="template-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Layout</th>
+                        <th>Status</th>
+                        <th>Default</th>
+                        <th>Used In Batch</th>
+                        <th>Created</th>
+                        <th style="width:260px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in templates)
+                    {
+                        <tr>
+                            <td>@item.TemplateName</td>
+                            <td>@item.LayoutTypeName</td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="status-badge active">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge inactive">Inactive</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.IsDefault)
+                                {
+                                    <span class="status-badge default">Default</span>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
+                            <td>@item.UsedInBatchCount</td>
+                            <td>@item.CreatedAt.ToString("dd-MM-yyyy")</td>
+                            <td>
+                                <div class="action-group">
+                                    <button class="tt-btn tt-btn-sm" @onclick="() => ViewTemplate(item)">View</button>
+                                    <button class="tt-btn tt-btn-sm tt-btn-warning" @onclick="() => EditTemplate(item)">Edit</button>
+
+                                    @if (item.IsActive)
+                                    {
+                                        <button class="tt-btn tt-btn-sm tt-btn-info" @onclick="() => SetDefault(item.TemplateId)">Set Default</button>
+                                        <button class="tt-btn tt-btn-sm tt-btn-danger" @onclick="() => SoftDelete(item.TemplateId)">Soft Delete</button>
+                                    }
+                                    else
+                                    {
+                                        <button class="tt-btn tt-btn-sm tt-btn-success" @onclick="() => Restore(item.TemplateId)">Restore</button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    @if (showForm)
+    {
+        <div class="template-modal-backdrop">
+            <div class="template-modal">
+                <div class="modal-header">
+                    <h3>@(isEdit ? "Edit Template" : "Add Template")</h3>
+                    <button class="close-btn" @onclick="CloseForm">×</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-row">
+                        <label>Template Name</label>
+                        @if (isEdit)
+                        {
+                            <input class="form-control" @bind="form.TemplateName" />
+                        }
+                        else
+                        {
+                            <input class="form-control" @bind="createForm.TemplateName" />
+                        }
+                    </div>
+
+                    <div class="form-row">
+                        <label>Layout Type</label>
+                        @if (isEdit)
+                        {
+                            <select class="form-control" @bind="form.LayoutType">
+                                <option value="1">Grid</option>
+                                <option value="2">Compact</option>
+                                <option value="3">Detailed</option>
+                            </select>
+                        }
+                        else
+                        {
+                            <select class="form-control" @bind="createForm.LayoutType">
+                                <option value="1">Grid</option>
+                                <option value="2">Compact</option>
+                                <option value="3">Detailed</option>
+                            </select>
+                        }
+                    </div>
+
+                    <div class="form-row">
+                        <label>Template JSON</label>
+                        @if (isEdit)
+                        {
+                            <textarea class="form-control form-textarea" @bind="form.TemplateJson"></textarea>
+                        }
+                        else
+                        {
+                            <textarea class="form-control form-textarea" @bind="createForm.TemplateJson"></textarea>
+                        }
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="tt-btn" @onclick="CloseForm">Cancel</button>
+                    @if (isEdit)
+                    {
+                        <button class="tt-btn tt-btn-primary" @onclick="UpdateTemplate">Update</button>
+                    }
+                    else
+                    {
+                        <button class="tt-btn tt-btn-primary" @onclick="CreateTemplate">Save</button>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    @* @if (showView && selectedTemplate != null) *@
+    @* { *@
+    @*     <div class="template-modal-backdrop"> *@
+    @*         <div class="template-modal large"> *@
+    @*             <div class="modal-header"> *@
+    @*                 <h3>View Template</h3> *@
+    @*                 <button class="close-btn" @onclick="CloseView">×</button> *@
+    @*             </div> *@
+
+    @*             <div class="modal-body"> *@
+    @*                 <div class="view-grid"> *@
+    @*                     <div><strong>Name:</strong> @selectedTemplate.TemplateName</div> *@
+    @*                     <div><strong>Layout:</strong> @selectedTemplate.LayoutTypeName</div> *@
+    @*                     <div><strong>Status:</strong> @(selectedTemplate.IsActive ? "Active" : "Inactive")</div> *@
+    @*                     <div><strong>Default:</strong> @(selectedTemplate.IsDefault ? "Yes" : "No")</div> *@
+    @*                     <div><strong>Used In Batch:</strong> @selectedTemplate.UsedInBatchCount</div> *@
+    @*                     <div><strong>Created:</strong> @selectedTemplate.CreatedAt.ToString("dd-MM-yyyy hh:mm tt")</div> *@
+    @*                 </div> *@
+
+    @*                 <div class="form-row mt-3"> *@
+    @*                     <label>Template JSON</label> *@
+    @*                     <textarea class="form-control form-textarea" readonly>@selectedTemplate.TemplateJson</textarea> *@
+    @*                 </div> *@
+    @*             </div> *@
+
+    @*             <div class="modal-footer"> *@
+    @*                 <button class="tt-btn" @onclick="CloseView">Close</button> *@
+    @*             </div> *@
+    @*         </div> *@
+    @*     </div> *@
+    @* } *@
+    @if (showView && selectedTemplate != null && previewConfig != null)
+    {
+        <div class="template-modal-backdrop">
+            <div class="template-modal large preview-modal">
+                <div class="modal-header">
+                    <h3>View Template</h3>
+                    <button class="close-btn" @onclick="CloseView">×</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="view-grid">
+                        <div><strong>Name:</strong> @selectedTemplate.TemplateName</div>
+                        <div><strong>Layout:</strong> @selectedTemplate.LayoutTypeName</div>
+                        <div><strong>Status:</strong> @(selectedTemplate.IsActive ? "Active" : "Inactive")</div>
+                        <div><strong>Default:</strong> @(selectedTemplate.IsDefault ? "Yes" : "No")</div>
+                        <div><strong>Used In Batch:</strong> @selectedTemplate.UsedInBatchCount</div>
+                        <div><strong>Created:</strong> @selectedTemplate.CreatedAt.ToString("dd-MM-yyyy hh:mm tt")</div>
+                    </div>
+
+                    <div class="preview-section mt-3">
+                        <label>Template Preview</label>
+
+                        <div class="template-preview-box">
+                            <table class="preview-table" style="@GetPreviewTableStyle()">
+                                <thead>
+                                    <tr>
+                                        <th style="@GetPreviewHeaderStyle()">Time</th>
+                                        @foreach (var day in previewDays)
+                                        {
+                                            <th style="@GetPreviewHeaderStyle()">@day</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var slot in previewSlots)
+                                    {
+                                        <tr>
+                                            <td style="@GetPreviewBodyStyle()" class="time-cell">@slot.Time</td>
+
+                                            @foreach (var day in previewDays)
+                                            {
+                                                <td style="@GetPreviewBodyStyle()">
+                                                    @if (slot.IsBreak)
+                                                    {
+                                                        <div class="preview-break">Break</div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="preview-subject">@slot.SubjectName</div>
+
+                                                        @if (previewConfig.ShowSubjectCode)
+                                                        {
+                                                            <div class="preview-meta">@slot.SubjectCode</div>
+                                                        }
+
+                                                        @if (previewConfig.ShowFaculty)
+                                                        {
+                                                            <div class="preview-meta">@slot.FacultyName</div>
+                                                        }
+
+                                                        @if (previewConfig.ShowRoom)
+                                                        {
+                                                            <div class="preview-meta">@slot.RoomName</div>
+                                                        }
+                                                    }
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="form-row mt-3">
+                        <label>Template JSON</label>
+                        <textarea class="form-control form-textarea" readonly>@selectedTemplate.TemplateJson</textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="tt-btn" @onclick="CloseView">Close</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<TimeTableTemplateDto> templates = new();
+    private TimeTableTemplateDto? selectedTemplate;
+
+
+    private bool loading = true;
+    private bool showForm = false;
+    private bool showView = false;
+    private bool isEdit = false;
+
+    private string? message;
+    private string? error;
+
+    private UpdateTimeTableTemplateDto form = new();
+    private CreateTimeTableTemplateDto createForm = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTemplates();
+    }
+
+    private async Task LoadTemplates()
+    {
+        try
+        {
+            loading = true;
+            error = null;
+            message = null;
+
+            var result = await Http.GetFromJsonAsync<List<TimeTableTemplateDto>>("api/tt/templates");
+            templates = result ?? new List<TimeTableTemplateDto>();
+        }
+        catch (Exception ex)
+        {
+            error = $"Error loading templates: {ex.Message}";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void OpenAddForm()
+    {
+        isEdit = false;
+        showForm = true;
+        error = null;
+        message = null;
+
+        form = new UpdateTimeTableTemplateDto
+            {
+                LayoutType = 1,
+                IsActive = true
+            };
+
+        createForm = new CreateTimeTableTemplateDto
+            {
+                LayoutType = 1
+            };
+    }
+
+    private void EditTemplate(TimeTableTemplateDto item)
+    {
+        isEdit = true;
+        showForm = true;
+        error = null;
+        message = null;
+
+        form = new UpdateTimeTableTemplateDto
+            {
+                TemplateId = item.TemplateId,
+                TemplateName = item.TemplateName,
+                LayoutType = item.LayoutType,
+                TemplateJson = item.TemplateJson,
+                IsActive = item.IsActive
+            };
+    }
+
+    // private void ViewTemplate(TimeTableTemplateDto item)
+    // {
+    //     selectedTemplate = item;
+    //     showView = true;
+    // }
+    private void ViewTemplate(TimeTableTemplateDto item)
+    {
+        selectedTemplate = item;
+        previewConfig = ParseTemplateJson(item.TemplateJson);
+        showView = true;
+    }
+
+    private void CloseForm()
+    {
+        showForm = false;
+    }
+
+    private void CloseView()
+    {
+        showView = false;
+        selectedTemplate = null;
+        previewConfig = new TemplatePreviewConfig();
+    }
+
+    private async Task CreateTemplate()
+    {
+        try
+        {
+            error = null;
+            message = null;
+
+            var response = await Http.PostAsJsonAsync("api/tt/templates", createForm);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                message = "Template created successfully.";
+                showForm = false;
+                await LoadTemplates();
+            }
+            else
+            {
+                error = content;
+            }
+        }
+        catch (Exception ex)
+        {
+            error = $"Error creating template: {ex.Message}";
+        }
+    }
+
+    private async Task UpdateTemplate()
+    {
+        try
+        {
+            error = null;
+            message = null;
+
+            var response = await Http.PutAsJsonAsync($"api/tt/templates/{form.TemplateId}", form);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                message = "Template updated successfully.";
+                showForm = false;
+                await LoadTemplates();
+            }
+            else
+            {
+                error = content;
+            }
+        }
+        catch (Exception ex)
+        {
+            error = $"Error updating template: {ex.Message}";
+        }
+    }
+
+    private async Task SetDefault(int templateId)
+    {
+        try
+        {
+            error = null;
+            message = null;
+
+            var response = await Http.PutAsync($"api/tt/templates/{templateId}/set-default", null);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                message = "Default template updated successfully.";
+                await LoadTemplates();
+            }
+            else
+            {
+                error = content;
+            }
+        }
+        catch (Exception ex)
+        {
+            error = $"Error setting default template: {ex.Message}";
+        }
+    }
+
+    private async Task SoftDelete(int templateId)
+    {
+        try
+        {
+            error = null;
+            message = null;
+
+            var response = await Http.PutAsync($"api/tt/templates/{templateId}/soft-delete", null);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                message = "Template soft deleted successfully.";
+                await LoadTemplates();
+            }
+            else
+            {
+                error = content;
+            }
+        }
+        catch (Exception ex)
+        {
+            error = $"Error deleting template: {ex.Message}";
+        }
+    }
+
+    private async Task Restore(int templateId)
+    {
+        try
+        {
+            error = null;
+            message = null;
+
+            var response = await Http.PutAsync($"api/tt/templates/{templateId}/restore", null);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                message = "Template restored successfully.";
+                await LoadTemplates();
+            }
+            else
+            {
+                error = content;
+            }
+        }
+        catch (Exception ex)
+        {
+            error = $"Error restoring template: {ex.Message}";
+        }
+    }
+    // private TemplatePreviewConfig previewConfig = new();
+    private TemplatePreviewConfig previewConfig = new TemplatePreviewConfig();
+
+    private List<string> previewDays = new()
+{
+    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"
+};
+
+    private List<PreviewSlot> previewSlots = new()
+{
+    new PreviewSlot
+    {
+        Time = "09:00 - 10:00",
+        SubjectName = "Mathematics",
+        SubjectCode = "MAT101",
+        FacultyName = "Dr. Patel",
+        RoomName = "A-101",
+        IsBreak = false
+    },
+    new PreviewSlot
+    {
+        Time = "10:00 - 11:00",
+        SubjectName = "Programming",
+        SubjectCode = "CSE102",
+        FacultyName = "Prof. Shah",
+        RoomName = "Lab-2",
+        IsBreak = false
+    },
+    new PreviewSlot
+    {
+        Time = "11:00 - 11:20",
+        SubjectName = "",
+        SubjectCode = "",
+        FacultyName = "",
+        RoomName = "",
+        IsBreak = true
+    },
+    new PreviewSlot
+    {
+        Time = "11:20 - 12:20",
+        SubjectName = "Database",
+        SubjectCode = "DBMS201",
+        FacultyName = "Ms. Desai",
+        RoomName = "B-204",
+        IsBreak = false
+    },
+    new PreviewSlot
+    {
+        Time = "12:20 - 01:20",
+        SubjectName = "Software Engg.",
+        SubjectCode = "SE301",
+        FacultyName = "Mr. Mehta",
+        RoomName = "A-203",
+        IsBreak = false
+    }
+};
+
+    private class TemplatePreviewConfig
+    {
+        public string HeaderBg { get; set; } = "#1e293b";
+        public string HeaderText { get; set; } = "#ffffff";
+        public string BodyBg { get; set; } = "#ffffff";
+        public string BodyText { get; set; } = "#111827";
+        public string BorderColor { get; set; } = "#cbd5e1";
+        public bool ShowRoom { get; set; } = true;
+        public bool ShowFaculty { get; set; } = true;
+        public bool ShowSubjectCode { get; set; } = true;
+        public string CellPadding { get; set; } = "8px";
+        public string FontSize { get; set; } = "14px";
+    }
+
+    private class PreviewSlot
+    {
+        public string Time { get; set; } = "";
+        public string SubjectName { get; set; } = "";
+        public string SubjectCode { get; set; } = "";
+        public string FacultyName { get; set; } = "";
+        public string RoomName { get; set; } = "";
+        public bool IsBreak { get; set; }
+    }
+
+    private bool previewJsonInvalid = false;
+
+    private TemplatePreviewConfig ParseTemplateJson(string? json)
+    {
+        previewJsonInvalid = false;
+
+        if (string.IsNullOrWhiteSpace(json))
+            return new TemplatePreviewConfig();
+
+        try
+        {
+            var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
+            var parsed = JsonSerializer.Deserialize<TemplatePreviewConfig>(json, options);
+            return parsed ?? new TemplatePreviewConfig();
+        }
+        catch
+        {
+            previewJsonInvalid = true;
+            return new TemplatePreviewConfig();
+        }
+    }
+    private string GetPreviewTableStyle()
+    {
+        var fontSize = previewConfig?.FontSize ?? "14px";
+        return $"width:100%; border-collapse:collapse; font-size:{fontSize};";
+    }
+
+    private string GetPreviewHeaderStyle()
+    {
+        var headerBg = previewConfig?.HeaderBg ?? "#1e293b";
+        var headerText = previewConfig?.HeaderText ?? "#ffffff";
+        var borderColor = previewConfig?.BorderColor ?? "#cbd5e1";
+        var cellPadding = previewConfig?.CellPadding ?? "8px";
+
+        return $"background:{headerBg}; color:{headerText}; border:1px solid {borderColor}; padding:{cellPadding}; text-align:center;";
+    }
+
+    private string GetPreviewBodyStyle()
+    {
+        var bodyBg = previewConfig?.BodyBg ?? "#ffffff";
+        var bodyText = previewConfig?.BodyText ?? "#111827";
+        var borderColor = previewConfig?.BorderColor ?? "#cbd5e1";
+        var cellPadding = previewConfig?.CellPadding ?? "8px";
+
+        return $"background:{bodyBg}; color:{bodyText}; border:1px solid {borderColor}; padding:{cellPadding}; vertical-align:top; min-width:140px;";
+    }
+}

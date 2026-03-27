@@ -25,7 +25,8 @@ public class TTCourseController : ControllerBase
             {
                 CourseId = x.Course.CourseId,
                 CourseName = x.Course.CourseName,
-                MaxSem = x.Course.MaxSem
+                MaxSem = x.Course.MaxSem,
+                DepartmentId = x.Course.DepartmentId
             })
             .FirstOrDefaultAsync();
 
@@ -39,6 +40,8 @@ public class TTCourseController : ControllerBase
 public class CourseDto
 {
     public int CourseId { get; set; }
+
+    public int DepartmentId { get; set; }
     public string CourseName { get; set; } = "";
     public int MaxSem { get; set; }
 }

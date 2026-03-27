@@ -40,3 +40,4 @@ public class DepartmentController : ControllerBase
         return Ok();
     }
 }
+

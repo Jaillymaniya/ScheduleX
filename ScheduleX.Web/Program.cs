@@ -1,18 +1,28 @@
+﻿
+
+
+
 
 using ScheduleX.Web.Components;
 using Microsoft.EntityFrameworkCore;
 using ScheduleX.Infrastructure.Data;
 using Microsoft.AspNetCore.Components;
+
 using ScheduleX.Core.Interfaces;
 using ScheduleX.Infrastructure.Repositories;
+
 using ScheduleX.Web.Services.Admin;
 using Timetable.Infrastructure.Repositories;
 
+using ScheduleX.Core.Interfaces.TTCoordinator;
+using ScheduleX.Infrastructure.Repositories.TTCoordinator;
 
 using ScheduleX.Core.Interfaces.Admin;
 using ScheduleX.Infrastructure.Repositories.Admin;
 using ScheduleX.Core.Interfaces.TTCoordinator;
 using ScheduleX.Infrastructure.Repositories.TTCoordinator;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,16 +42,20 @@ builder.Services.AddServerSideBlazor()
     });
 
 builder.Services.AddScoped<EmailService>();
-builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 
 builder.Services.AddScoped<ISemesterRepository, SemesterRepository>();
 
 
+// ================= ADMIN REPOSITORIES =================
+builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<IChangePasswordRepository, ChangePasswordRepository>();
-
 builder.Services.AddScoped<IEditAdminProfileRepository, EditAdminProfileRepository>();
 
+// ================= TT COORDINATOR REPOSITORIES =================
 builder.Services.AddScoped<IFacultyRepository, FacultyRepository>();
+builder.Services.AddScoped<IRoomRepository, RoomRepository>();   // ROOM MANAGEMENT
+builder.Services.AddScoped<IScheduleConfigRepository, ScheduleConfigRepository>();
 
 builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
 builder.Services.AddScoped<ISubjectSemesterRepository, SubjectSemesterRepository>();
@@ -55,16 +69,14 @@ builder.Services.AddScoped(sp =>
     };
 });
 
+// ================= API SERVICES =================
 builder.Services.AddScoped<TTCoordinatorApiService>();
 builder.Services.AddScoped<DepartmentApiService>();
 builder.Services.AddScoped<CourseApiService>();
-builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+  // ROOM API SERVICE
 
+// ================= AUTH SERVICES =================
 builder.Services.AddScoped<ScheduleX.Web.Services.AuthState>();
-
-
-builder.Services.AddScoped<ScheduleX.Web.Services.AuthState>();
-
 builder.Services.AddScoped<ScheduleX.Web.Services.PasswordHasher>();
 
 var app = builder.Build();
@@ -77,6 +89,11 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseAntiforgery();
 
 app.UseStaticFiles();   // Static files
 app.UseRouting();       // Routing first
@@ -86,11 +103,14 @@ app.UseAntiforgery();   // Must come AFTER UseRouting
 app.MapControllers();   // Map API controllers
 
 
+// ================= MAP CONTROLLERS =================
+app.MapControllers();
 
-
+// ================= RAZOR COMPONENTS =================
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
 
 
