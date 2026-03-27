@@ -56,6 +56,7 @@ builder.Services.AddScoped<IEditAdminProfileRepository, EditAdminProfileReposito
 builder.Services.AddScoped<IFacultyRepository, FacultyRepository>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();   // ROOM MANAGEMENT
 builder.Services.AddScoped<IScheduleConfigRepository, ScheduleConfigRepository>();
+builder.Services.AddScoped<IDivisionService, DivisionService>();
 
 builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
 builder.Services.AddScoped<ISubjectSemesterRepository, SubjectSemesterRepository>();

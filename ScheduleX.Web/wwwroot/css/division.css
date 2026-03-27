@@ -1,0 +1,94 @@
+﻿/* ================= DIVISION PAGE ================= */
+
+.tt-container {
+    padding: 20px;
+    color: #f3f3f3;
+}
+
+.tt-title {
+    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 22px;
+}
+
+/* CARD */
+.tt-card {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border-radius: 14px;
+    padding: 20px;
+    border: 1px solid #334155;
+    margin-bottom: 25px;
+}
+
+/* FORM */
+.tt-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.tt-input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    background: #020617;
+    color: white;
+}
+
+/* BUTTONS */
+.tt-btn-success {
+    background: #22c55e;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+}
+
+.tt-btn-danger {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+
+.tt-btn-edit {
+    background: #06b6d4;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+
+/* TABLE */
+.tt-table-card {
+    background: #020617;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.tt-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .tt-table th {
+        background: #1e293b;
+        padding: 12px;
+    }
+
+    .tt-table td {
+        padding: 12px;
+        border-top: 1px solid #334155;
+    }
+
+/* STATUS */
+.status-active {
+    color: #22c55e;
+}
+
+.status-inactive {
+    color: #94a3b8;
+}

@@ -35,6 +35,7 @@ public class AppDbContext : DbContext
     public DbSet<TimeTableEntry> TimeTableEntries => Set<TimeTableEntry>();
     public DbSet<TimeTableEntryHistory> TimeTableEntryHistories => Set<TimeTableEntryHistory>();
     public DbSet<ExportHistory> ExportHistories => Set<ExportHistory>();
+    public DbSet<SemesterStudentStrength> SemesterStudentStrengths { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
