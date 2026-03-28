@@ -20,16 +20,30 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
 
 
 
-        public async Task<List<Subject>> GetAllAsync()
+        //public async Task<List<Subject>> GetAllAsync()
+        //{
+        //    return await _context.Subjects
+        //        .Include(s => s.Course)
+
+        //        .OrderByDescending(s => s.IsActive)
+        //        .ToListAsync();
+        //}
+
+        public async Task<List<Subject>> GetAllAsync(int userId)
         {
+            var allowedCourseIds = await _context.TTCoordinatorCourses
+                .Where(x => x.UserId == userId && x.Course.IsActive)
+                .Select(x => x.CourseId)
+                .ToListAsync();
+
             return await _context.Subjects
                 .Include(s => s.Course)
-               
+                .Where(s => allowedCourseIds.Contains(s.CourseId))
                 .OrderByDescending(s => s.IsActive)
                 .ToListAsync();
         }
 
-        
+
         public async Task<List<Course>> GetCoursesAsync()
         {
             return await _context.Courses.ToListAsync();
@@ -40,9 +54,36 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
             return await _context.Subjects
                 .AnyAsync(s => s.SubjectCode == code && (id == null || s.SubjectId != id));
         }
+        private (bool, string) ValidateCredits(Subject subject)
+        {
+            if (subject.SubjectCategory == SubjectCategoryEnum.Theory)
+            {
+                if (subject.TheoryCredits <= 0)
+                    return (false, "Theory credit required");
 
+                subject.PracticalCredits = 0;
+            }
+            else if (subject.SubjectCategory == SubjectCategoryEnum.Practical)
+            {
+                if (subject.PracticalCredits <= 0)
+                    return (false, "Practical credit required");
+
+                subject.TheoryCredits = 0;
+            }
+            else if (subject.SubjectCategory == SubjectCategoryEnum.Both)
+            {
+                if (subject.TheoryCredits <= 0 || subject.PracticalCredits <= 0)
+                    return (false, "Both credits required");
+            }
+
+            return (true, "");
+        }
         public async Task<(bool, string)> AddAsync(Subject subject)
         {
+            // ✅ Step 3 validation HERE
+            var validation = ValidateCredits(subject);
+            if (!validation.Item1)
+                return validation;
             if (await IsSubjectCodeExists(subject.SubjectCode))
                 return (false, "Duplicate Subject Code");
 
@@ -54,6 +95,10 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
 
         public async Task<(bool, string)> UpdateAsync(Subject subject)
         {
+            // ✅ Step 3 validation HERE
+            var validation = ValidateCredits(subject);
+            if (!validation.Item1)
+                return validation;
             if (await IsSubjectCodeExists(subject.SubjectCode, subject.SubjectId))
                 return (false, "Duplicate Subject Code");
 
@@ -63,8 +108,9 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
             {
                 existing.SubjectName = subject.SubjectName;
                 existing.SubjectCode = subject.SubjectCode;
-                existing.CourseId = subject.CourseId; 
-                existing.Credits = subject.Credits;
+                existing.CourseId = subject.CourseId;
+                existing.TheoryCredits = subject.TheoryCredits;
+                existing.PracticalCredits = subject.PracticalCredits;
                 existing.SubjectCategory = subject.SubjectCategory;
                 existing.IsElective = subject.IsElective;
 
@@ -156,6 +202,9 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
             foreach (var s in subjects)
             {
                 row++;
+                var validation = ValidateCredits(s);
+                if (!validation.Item1)
+                    return (false, $"Row {row}: {validation.Item2}");
 
                 if (string.IsNullOrWhiteSpace(s.SubjectName))
                     return (false, $"Row {row}: Subject Name is required");

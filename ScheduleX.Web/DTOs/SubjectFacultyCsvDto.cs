@@ -1,4 +1,5 @@
-﻿namespace ScheduleX.Web.DTOs
+﻿
+namespace ScheduleX.Web.DTOs
 {
     public class SubjectFacultyCsvDto
     {

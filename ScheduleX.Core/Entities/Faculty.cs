@@ -25,7 +25,7 @@ public class Faculty
 
     [MaxLength(20)]
     public string? Phone { get; set; }
-
+    public bool IsExternal { get; set; } = false;
     public byte? MaxLecturesPerDay { get; set; }
 
     public bool IsActive { get; set; } = true;
