@@ -40,7 +40,7 @@
             <div class="lecture-filter-row">
                 <div class="lecture-filter-box">
                     <label>Select Semester</label>
-                    <select class="form-select" @onchange="OnSemesterChanged">
+                    <select class="semester-select" @onchange="OnSemesterChanged">
                         <option value="0">-- Select Semester --</option>
                         @foreach (var sem in semesters)
                         {
@@ -51,8 +51,15 @@
                     </select>
                 </div>
 
-                <div class="lecture-filter-box lecture-filter-actions">
-                    <button class="btn btn-primary" @onclick="SaveAllAsync" disabled="@(!CanSave)">
+                @* <div class="lecture-filter-box lecture-filter-actions"> *@
+                @*     <button class="btn btn-primary" @onclick="SaveAllAsync" disabled="@(!CanSave)"> *@
+                @*         @(isSaving ? "Saving..." : "Save All") *@
+                @*     </button> *@
+                @* </div> *@
+                <div class="lecture-filter-actions">
+                    <button class="btn btn-primary lecture-save-btn"
+                            @onclick="SaveAllAsync"
+                            disabled="@(!CanSave)">
                         @(isSaving ? "Saving..." : "Save All")
                     </button>
                 </div>

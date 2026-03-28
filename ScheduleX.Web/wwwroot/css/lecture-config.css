@@ -53,13 +53,16 @@
 .lecture-filter-actions {
     display: flex;
     align-items: flex-end;
+    min-width: auto;
 }
 
 .lecture-save-btn {
-    min-width: 180px;
-    height: 44px;
-    border-radius: 12px;
+    min-width: 140px;
+    height: 42px;
+    border-radius: 10px;
     font-weight: 600;
+    padding: 0 20px;
+    white-space: nowrap;
 }
 
 .lecture-table {
@@ -144,3 +147,21 @@
         width: 100%;
     }
 }
+
+.semester-select {
+    min-width: 220px; /* increase width */
+    height: 42px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    background-color: #0f172a;
+    color: #e5e7eb;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+    .semester-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    }
