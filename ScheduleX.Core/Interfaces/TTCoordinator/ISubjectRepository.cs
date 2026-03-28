@@ -2,7 +2,7 @@
 
 public interface ISubjectRepository
 {
-    Task<List<Subject>> GetAllAsync();
+    Task<List<Subject>> GetAllAsync(int userId);
     Task<List<Course>> GetCoursesAsync();
 
     Task<(bool, string)> AddAsync(Subject subject);

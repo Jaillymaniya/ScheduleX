@@ -73,23 +73,33 @@
                         }
                     </select>
                 </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Category</label>
+                        <select class="tt-select w-100"
+                                @onchange="OnCategoryChanged">
+                            <option value="1">Theory</option>
+                            <option value="2">Practical</option>
+                            <option value="3">Both</option>
+                        </select>
+                    </div>
+                    @if (model.SubjectCategory == SubjectCategoryEnum.Theory || model.SubjectCategory == SubjectCategoryEnum.Both)
+                    {
+                        <div class="col-md-6 mb-3">
+                            <label>Theory Credits</label>
+                            <InputNumber class="tt-input w-100"
+                                         @bind-Value="model.TheoryCredits" />
+                        </div>
+                    }
 
-                <div class="col-md-6 mb-3">
-                    <label>Credits</label>
-                    <InputNumber TValue="int"
-                                 class="tt-input w-100"
-                                 @bind-Value="model.Credits" />
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label>Category</label>
-                    <select class="tt-select w-100"
-                            @bind="model.SubjectCategory">
-                        <option value="1">Theory</option>
-                        <option value="2">Practical</option>
-                        <option value="3">Both</option>
-                    </select>
-                </div>
+                    @if (model.SubjectCategory == SubjectCategoryEnum.Practical || model.SubjectCategory == SubjectCategoryEnum.Both)
+                    {
+                        <div class="col-md-6 mb-3">
+                            <label>Practical Credits</label>
+                            <InputNumber class="tt-input w-100"
+                                         @bind-Value="model.PracticalCredits" />
+                        </div>
+                    }
+               
 
                 <div class="col-md-6 mb-3">
                     <label>
@@ -162,7 +172,9 @@
                     <td>@s.SubjectName</td>
                     <td>@s.SubjectCode</td>
                     <td>@s.Course?.CourseName</td>
-                    <td>@s.Credits</td>
+                    <td>
+                            T: @s.TheoryCredits | P: @s.PracticalCredits
+                    </td>
                     <td>
                         <span class="status-badge @(s.IsActive ? "active" : "inactive")">
                             @(s.IsActive ? "Active" : "Inactive")
@@ -242,7 +254,7 @@
 
     private async Task LoadData()
     {
-        subjects = await Repo.GetAllAsync();
+        subjects = await Repo.GetAllAsync(userId);
     }
 
     private void ShowManualForm()
@@ -305,7 +317,8 @@
                 SubjectName = s.SubjectName,
                 SubjectCode = s.SubjectCode,
                 CourseId = s.CourseId,
-                Credits = s.Credits,
+                TheoryCredits = s.TheoryCredits,
+                PracticalCredits = s.PracticalCredits,
                 SubjectCategory = s.SubjectCategory,
                 IsElective = s.IsElective
             };
@@ -333,7 +346,19 @@
         selectedFile = e.File;
         isFileSelected = true;
     }
+    private void OnCategoryChanged(ChangeEventArgs e)
+    {
+        model.SubjectCategory = (SubjectCategoryEnum)Convert.ToInt32(e.Value);
 
+        if (model.SubjectCategory == SubjectCategoryEnum.Theory)
+        {
+            model.PracticalCredits = 0;
+        }
+        else if (model.SubjectCategory == SubjectCategoryEnum.Practical)
+        {
+            model.TheoryCredits = 0;
+        }
+    }
     private async Task ProcessCsv()
     {
         if (selectedFile == null) return;
@@ -362,18 +387,25 @@
 
             var data = line.Split(',');
 
-            if (data.Length < 5)
+            if (data.Length < 6)
                 continue;
 
-            if (!int.TryParse(data[2], out var credits))
+            int.TryParse(data[2], out var theory);
+            int.TryParse(data[3], out var practical);
+
+            if (!Enum.TryParse<SubjectCategoryEnum>(data[4], true, out var category))
+            {
+                await ShowToast($"Invalid Category: {data[4]}", "danger");
                 continue;
+            }
+
+           
 
             var course = courses.FirstOrDefault(c =>
-                c.CourseName.Equals(data[4]?.Trim(), StringComparison.OrdinalIgnoreCase));
-
+     c.CourseName.Equals(data[5]?.Trim(), StringComparison.OrdinalIgnoreCase));
             if (course == null)
             {
-                await ShowToast($"Invalid Course: {data[4]}", "danger");
+                await ShowToast($"Invalid Course: {data[5]}", "danger");
                 continue;
             }
 
@@ -381,8 +413,9 @@
                 {
                     SubjectName = data[0]?.Trim(),
                     SubjectCode = data[1]?.Trim(),
-                    Credits = credits,
-                    SubjectCategory = SubjectCategoryEnum.Theory,
+                    TheoryCredits = theory,
+                    PracticalCredits = practical,
+                    SubjectCategory = category,
                     CourseId = course.CourseId
                 });
         }
@@ -405,7 +438,8 @@
 
     private async Task DownloadTemplate()
     {
-        var csv = "SubjectName,SubjectCode,Credits,Category,CourseName\n";
+        var csv = "SubjectName,SubjectCode,TheoryCredits,PracticalCredits,Category,CourseName\n";
+
         var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
 
         await JS.InvokeVoidAsync("downloadFile", "SubjectTemplate.csv", bytes);

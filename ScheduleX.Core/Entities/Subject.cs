@@ -28,8 +28,13 @@ public class Subject
     public string? SubjectCode { get; set; }
 
     [Required(ErrorMessage = "Credits are required")]
-    [Range(1, 10, ErrorMessage = "Credits must be between 1-10")]
-    public int Credits { get; set; }
+   
+    // ✅ NEW FIELDS
+    [Range(0, 10, ErrorMessage = "Theory credits must be between 0-10")]
+    public int TheoryCredits { get; set; } = 0;
+
+    [Range(0, 10, ErrorMessage = "Practical credits must be between 0-10")]
+    public int PracticalCredits { get; set; } = 0;
 
     [Required(ErrorMessage = "Category is required")]
     public SubjectCategoryEnum SubjectCategory { get; set; }
@@ -39,7 +44,9 @@ public class Subject
     public bool IsActive { get; set; } = true;
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
-
+    // ✅ OPTIONAL (calculated property)
+    [NotMapped]
+    public int TotalCredits => TheoryCredits + PracticalCredits;
     // Nav
     //public ICollection<SubjectOffering> SubjectOfferings { get; set; } = new List<SubjectOffering>();
     public ICollection<SubjectSemester> SubjectSemesters { get; set; } = new List<SubjectSemester>();
