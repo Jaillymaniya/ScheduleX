@@ -41,5 +41,5 @@ public interface ISubjectFacultyRepository
 
     Task<(bool, string)> BulkInsertAsync(List<SubjectFaculty> list, int userId); // basic
 
-    
+   
 }

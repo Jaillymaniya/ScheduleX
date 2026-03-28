@@ -179,7 +179,7 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<Subject>()
             .HasOne(s => s.Course)
-            .WithMany() // or .WithMany(c => c.Subjects) if you add navigation
+            .WithMany(c => c.Subjects)  // or .WithMany(c => c.Subjects) if you add navigation
             .HasForeignKey(s => s.CourseId)
             .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<TimeTableBatch>()

@@ -1,0 +1,279 @@
+﻿
+@page "/tt/lecture-config"
+@layout ScheduleX.Web.Components.Layout.tt.TTLayout
+@rendermode InteractiveServer
+
+
+
+@using System.Net.Http.Json
+@using ScheduleX.Web.DTOs
+@inject HttpClient Http
+@inject ScheduleX.Web.Services.AuthState Auth
+
+<link href="css/lecture-config.css" rel="stylesheet" />
+
+<PageTitle>Lecture Configuration</PageTitle>
+
+<div class="lecture-config-page">
+    <div class="lecture-header">
+        <div>
+            <h2>Lecture Configuration</h2>
+            <p>Configure weekly theory and practical lectures subject-wise for the selected semester.</p>
+        </div>
+    </div>
+
+    @if (isLoadingInitial)
+    {
+        <div class="lecture-card">
+            <p>Loading lecture configuration...</p>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(loadError))
+    {
+        <div class="lecture-card">
+            <div class="alert alert-danger">@loadError</div>
+        </div>
+    }
+    else
+    {
+        <div class="lecture-card">
+            <div class="lecture-filter-row">
+                <div class="lecture-filter-box">
+                    <label>Select Semester</label>
+                    <select class="form-select" @onchange="OnSemesterChanged">
+                        <option value="0">-- Select Semester --</option>
+                        @foreach (var sem in semesters)
+                        {
+                            <option value="@sem.SemesterId" selected="@(selectedSemesterId == sem.SemesterId)">
+                                @sem.DisplayName
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="lecture-filter-box lecture-filter-actions">
+                    <button class="btn btn-primary" @onclick="SaveAllAsync" disabled="@(!CanSave)">
+                        @(isSaving ? "Saving..." : "Save All")
+                    </button>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(successMessage))
+            {
+                <div class="alert alert-success mt-3">@successMessage</div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(saveError))
+            {
+                <div class="alert alert-danger mt-3">@saveError</div>
+            }
+        </div>
+
+        <div class="lecture-card mt-3">
+            @if (isLoadingRows)
+            {
+                <p>Loading subjects...</p>
+            }
+            else if (selectedSemesterId == 0)
+            {
+                <p>Please select a semester to configure lecture settings.</p>
+            }
+            else if (rows.Count == 0)
+            {
+                <p>No subjects are mapped for the selected semester.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table lecture-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Subject</th>
+                                <th>Category</th>
+                                <th>Theory Credits</th>
+                                <th>Practical Credits</th>
+                                <th>Theory / Week</th>
+                                <th>Practical / Week</th>
+                                <th>Block Size</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in rows)
+                            {
+                                <tr>
+                                    <td>@row.SubjectCode</td>
+                                    <td>@row.SubjectName</td>
+                                    <td>
+                                        <span class="category-badge">@row.SubjectCategoryName</span>
+                                    </td>
+                                    <td>@row.TheoryCredits</td>
+                                    <td>@row.PracticalCredits</td>
+
+                                    <td>
+                                        <input type="number"
+                                               class="form-control"
+                                               value="@row.TheoryLecturesPerWeek"
+                                               readonly />
+                                    </td>
+
+                                    <td>
+                                        <input type="number"
+                                               class="form-control"
+                                               value="@row.PracticalLecturesPerWeek"
+                                               readonly />
+                                    </td>
+
+                                    <td>
+                                        <input type="number"
+                                               min="1"
+                                               max="5"
+                                               class="form-control"
+                                               @bind="row.PracticalBlockSize"
+                                               disabled="@(row.PracticalLecturesPerWeek <= 0)" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<LectureConfigSemesterDto> semesters = new();
+    private List<LectureConfigRowDto> rows = new();
+
+    private int selectedSemesterId;
+    private bool isLoadingInitial = true;
+    private bool isLoadingRows = false;
+    private bool isSaving = false;
+
+    private string? loadError;
+    private string? saveError;
+    private string? successMessage;
+
+    private bool CanSave => selectedSemesterId > 0 && rows.Count > 0 && !isSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            loadError = null;
+            successMessage = null;
+
+            var userId = Auth.UserId;
+            if (userId <= 0)
+            {
+                loadError = "User session not found. Please login again.";
+                return;
+            }
+
+            var result = await Http.GetFromJsonAsync<List<LectureConfigSemesterDto>>(
+                $"api/tt/lectureconfig/semesters/{userId}");
+
+            semesters = result ?? new();
+
+            if (semesters.Count > 0)
+            {
+                selectedSemesterId = semesters[0].SemesterId;
+                await LoadRowsAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            loadError = ex.Message;
+        }
+        finally
+        {
+            isLoadingInitial = false;
+        }
+    }
+
+    private async Task OnSemesterChanged(ChangeEventArgs e)
+    {
+        successMessage = null;
+        saveError = null;
+
+        if (int.TryParse(e.Value?.ToString(), out var semesterId))
+        {
+            selectedSemesterId = semesterId;
+            await LoadRowsAsync();
+        }
+    }
+
+    private async Task LoadRowsAsync()
+    {
+        rows.Clear();
+        saveError = null;
+        successMessage = null;
+
+        if (selectedSemesterId <= 0)
+            return;
+
+        try
+        {
+            isLoadingRows = true;
+
+            var userId = Auth.UserId;
+            var result = await Http.GetFromJsonAsync<List<LectureConfigRowDto>>(
+                $"api/tt/lectureconfig/rows/{selectedSemesterId}?userId={userId}");
+
+            rows = result ?? new();
+        }
+        catch (Exception ex)
+        {
+            saveError = ex.Message;
+        }
+        finally
+        {
+            isLoadingRows = false;
+        }
+    }
+
+    private async Task SaveAllAsync()
+    {
+        if (!CanSave)
+            return;
+
+        saveError = null;
+        successMessage = null;
+
+        try
+        {
+            isSaving = true;
+
+            var request = new SaveLectureConfigRequestDto
+                {
+                    UserId = Auth.UserId ?? 0,
+                    SemesterId = selectedSemesterId,
+                    Rows = rows
+                };
+
+            var response = await Http.PostAsJsonAsync("api/tt/lectureconfig/save", request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                successMessage = "Lecture configuration saved successfully.";
+                await LoadRowsAsync();
+            }
+            else
+            {
+                saveError = string.IsNullOrWhiteSpace(content)
+                    ? "Failed to save lecture configuration."
+                    : content;
+            }
+        }
+        catch (Exception ex)
+        {
+            saveError = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}

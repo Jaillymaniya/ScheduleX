@@ -503,9 +503,6 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CourseId1")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -536,8 +533,6 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.HasKey("SubjectId");
 
                     b.HasIndex("CourseId");
-
-                    b.HasIndex("CourseId1");
 
                     b.HasIndex("SubjectCode")
                         .IsUnique()
@@ -1278,15 +1273,10 @@ namespace ScheduleX.Infrastructure.Migrations
             modelBuilder.Entity("ScheduleX.Core.Entities.Subject", b =>
                 {
                     b.HasOne("ScheduleX.Core.Entities.Course", "Course")
-                        .WithMany()
+                        .WithMany("Subjects")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("ScheduleX.Core.Entities.Course", null)
-                        .WithMany("Subjects")
-                        .HasForeignKey("CourseId1")
-                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Course");
                 });
