@@ -127,16 +127,18 @@ public class AppDbContext : DbContext
     .HasIndex(x => new { x.SubjectId, x.SemesterId })
     .IsUnique();
 
-        // ✅ SubjectFaculty (division-wise unique)
         modelBuilder.Entity<SubjectFaculty>()
-            .HasIndex(x => new { x.SubjectSemesterId, x.DivisionId })
-            .IsUnique();
+    .HasIndex(x => new { x.SubjectSemesterId, x.DivisionId, x.TeachingType })
+    .IsUnique();
 
         // ✅ Lecture config (one per subject-semester)
         modelBuilder.Entity<SubjectLectureConfig>()
             .HasIndex(x => x.SubjectSemesterId)
             .IsUnique();
 
+        modelBuilder.Entity<ExternalFacultyPermission>()
+            .HasIndex(x => new { x.FacultyId, x.DepartmentId })
+            .IsUnique();
         // ✅ Room config (one per subject-semester)
         modelBuilder.Entity<SubjectRoomConfig>()
             .HasIndex(x => x.SubjectSemesterId)

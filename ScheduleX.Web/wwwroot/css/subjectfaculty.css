@@ -61,7 +61,18 @@
         box-shadow: 0 0 6px #00d4ff;
         outline: none;
     }
+.form-field label {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
 
+.tt-select {
+    margin-bottom: 12px;
+}
+
+.tt-card h5 {
+    margin-bottom: 15px;
+}
 /* ================= BUTTON ================= */
 .btn {
     border-radius: 10px;
@@ -147,7 +158,21 @@
     .table-dark tr:hover {
         background: rgba(255,255,255,0.03);
     }
+.form-field {
+    margin-bottom: 16px;
+}
 
+.subject-grid {
+    gap: 24px;
+}
+
+.tt-card {
+    padding: 25px;
+}
+
+.btn-section {
+    margin-top: 20px;
+}
 /* ================= SECTION ================= */
 .table-section td {
     background: #1b2e4a;

@@ -25,7 +25,9 @@ public class SubjectFaculty
 
     [ForeignKey(nameof(FacultyId))]
     public Faculty Faculty { get; set; } = null!;
-
+    [Required]
+    public SubjectCategoryEnum TeachingType { get; set; }
+    // 1 = Theory, 2 = Practical
     public bool IsActive { get; set; } = true;
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
