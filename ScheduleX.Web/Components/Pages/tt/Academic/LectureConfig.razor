@@ -134,9 +134,10 @@
                                     <td>
                                         <input type="number"
                                                min="1"
-                                               max="5"
+                                               max="@Math.Min(row.PracticalLecturesPerWeek, lecturesPerDay)"
                                                class="form-control"
                                                @bind="row.PracticalBlockSize"
+                                               @oninput="() => ValidateBlockSize(row)"
                                                disabled="@(row.PracticalLecturesPerWeek <= 0)" />
                                     </td>
                                 </tr>
@@ -157,6 +158,7 @@
     private bool isLoadingInitial = true;
     private bool isLoadingRows = false;
     private bool isSaving = false;
+    private int lecturesPerDay = 0;
 
     private string? loadError;
     private string? saveError;
@@ -225,10 +227,15 @@
             isLoadingRows = true;
 
             var userId = Auth.UserId;
-            var result = await Http.GetFromJsonAsync<List<LectureConfigRowDto>>(
-                $"api/tt/lectureconfig/rows/{selectedSemesterId}?userId={userId}");
+            // var result = await Http.GetFromJsonAsync<List<LectureConfigRowDto>>(
+            //     $"api/tt/lectureconfig/rows/{selectedSemesterId}?userId={userId}");
 
-            rows = result ?? new();
+            // rows = result ?? new();
+            var result = await Http.GetFromJsonAsync<LectureConfigResponseDto>(
+    $"api/tt/lectureconfig/rows/{selectedSemesterId}?userId={userId}");
+
+            rows = result?.Rows ?? new();
+            lecturesPerDay = result?.LecturesPerDay ?? 0;
         }
         catch (Exception ex)
         {
@@ -281,6 +288,20 @@
         finally
         {
             isSaving = false;
+        }
+    }
+    private void ValidateBlockSize(LectureConfigRowDto row)
+    {
+        var maxAllowed = Math.Min(row.PracticalLecturesPerWeek, lecturesPerDay);
+
+        if (row.PracticalBlockSize > maxAllowed)
+        {
+            row.PracticalBlockSize = maxAllowed;
+        }
+
+        if (row.PracticalBlockSize < 1)
+        {
+            row.PracticalBlockSize = 1;
         }
     }
 }
