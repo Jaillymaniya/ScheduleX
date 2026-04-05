@@ -1,4 +1,5 @@
 ﻿@rendermode InteractiveServer
+@inject NavigationManager Nav
 @page "/login"
 
 <link href="css/login.css" rel="stylesheet" />
@@ -29,7 +30,13 @@
 
             <h2>Sign in</h2>
             <p class="subtitle">Access your ScheduleX dashboard</p>
-
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="alert alert-success">
+                    @successMessage
+                </div>
+            }
+            <br />
             <input class="input"
                    placeholder="Username"
                    @bind="Username"
@@ -63,9 +70,9 @@
             </button>
 
             <div class="forgot">
-                <a href="/forgot-password">Forgot password?</a>
+                @* <a href="/forgot-password">Forgot password?</a> *@
+                <a href="/forgot-password" class="forgot-link">Forgot password?</a>
             </div>
-
         </div>
     </div>
 
@@ -142,5 +149,22 @@
         showUserError = false;
         showPassError = false;
         Error = "";
+    }
+
+
+    string successMessage;
+
+    protected override void OnInitialized()
+    {
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("msg", out var msg))
+        {
+            if (msg == "reset-success")
+            {
+                successMessage = "Password changed successfully!";
+            }
+        }
     }
 }

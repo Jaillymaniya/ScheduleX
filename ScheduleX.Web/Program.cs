@@ -80,6 +80,18 @@ builder.Services.AddScoped<CourseApiService>();
 builder.Services.AddScoped<ScheduleX.Web.Services.AuthState>();
 builder.Services.AddScoped<ScheduleX.Web.Services.PasswordHasher>();
 
+// ================== forgot password =================
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession();
+
+builder.Services.AddScoped<HttpClient>(sp =>
+{
+    return new HttpClient
+    {
+        BaseAddress = new Uri("https://localhost:7299/")
+    };
+});
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -90,18 +102,12 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles();
-
-app.UseRouting();
-
-app.UseAntiforgery();
-
 app.UseStaticFiles();   // Static files
 app.UseRouting();       // Routing first
 
-app.UseAntiforgery();   // Must come AFTER UseRouting
+app.UseSession();
 
-app.MapControllers();   // Map API controllers
+app.UseAntiforgery();   // Must come AFTER UseRouting
 
 
 // ================= MAP CONTROLLERS =================

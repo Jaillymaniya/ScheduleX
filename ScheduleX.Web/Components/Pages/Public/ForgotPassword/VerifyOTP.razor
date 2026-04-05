@@ -1,0 +1,65 @@
+﻿@page "/verify-otp"
+@inject HttpClient Http
+@inject NavigationManager nav
+
+<link href="css/auth.css" rel="stylesheet" />
+
+<div class="auth-container">
+    <div class="auth-box">
+        <h2>Verify OTP</h2>
+
+        <input @bind="OTP" placeholder="Enter OTP" />
+        <button @onclick="Verify">Verify</button>
+
+        <p class="message">@Message</p>
+
+        <div class="timer">
+            @if (timeLeft > 0)
+            {
+                <p>Resend in @timeLeft sec</p>
+            }
+            else
+            {
+                <button class="resend" @onclick="Resend">Resend OTP</button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    string OTP;
+    string Message;
+    int timeLeft = 60;
+    System.Timers.Timer timer;
+
+    protected override void OnInitialized()
+    {
+        timer = new System.Timers.Timer(1000);
+        timer.Elapsed += async (s, e) =>
+        {
+            if (timeLeft > 0)
+            {
+                timeLeft--;
+                await InvokeAsync(StateHasChanged);
+            }
+        };
+        timer.Start();
+    }
+
+    async Task Verify()
+    {
+        var res = await Http.PostAsJsonAsync("api/account/verify-otp", new { OTP });
+
+        if (res.IsSuccessStatusCode)
+            nav.NavigateTo("/reset-password");
+        else
+            Message = "❌ Invalid or expired OTP";
+    }
+
+    async Task Resend()
+    {
+        await Http.PostAsync("api/account/resend-otp", null);
+        timeLeft = 60;
+        Message = "✅ OTP resent";
+    }
+}
