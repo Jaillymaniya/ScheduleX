@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ScheduleX.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialFullSchema : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -226,6 +226,33 @@ namespace ScheduleX.Infrastructure.Migrations
                         column: x => x.CourseId,
                         principalTable: "TblCourse",
                         principalColumn: "CourseId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TblExternalFacultyPermission",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FacultyId = table.Column<int>(type: "int", nullable: false),
+                    DepartmentId = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TblExternalFacultyPermission", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TblExternalFacultyPermission_TblDepartment_DepartmentId",
+                        column: x => x.DepartmentId,
+                        principalTable: "TblDepartment",
+                        principalColumn: "DepartmentId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_TblExternalFacultyPermission_TblFaculty_FacultyId",
+                        column: x => x.FacultyId,
+                        principalTable: "TblFaculty",
+                        principalColumn: "FacultyId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -944,6 +971,16 @@ namespace ScheduleX.Infrastructure.Migrations
                 column: "TemplateSnapshotId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TblExternalFacultyPermission_DepartmentId",
+                table: "TblExternalFacultyPermission",
+                column: "DepartmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TblExternalFacultyPermission_FacultyId",
+                table: "TblExternalFacultyPermission",
+                column: "FacultyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TblFaculty_DepartmentId",
                 table: "TblFaculty",
                 column: "DepartmentId");
@@ -1215,6 +1252,9 @@ namespace ScheduleX.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "TblExportHistory");
+
+            migrationBuilder.DropTable(
+                name: "TblExternalFacultyPermission");
 
             migrationBuilder.DropTable(
                 name: "TblFacultyAvailability");

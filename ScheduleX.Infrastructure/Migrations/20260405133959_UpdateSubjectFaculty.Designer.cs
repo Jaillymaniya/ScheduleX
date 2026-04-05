@@ -12,8 +12,8 @@ using ScheduleX.Infrastructure.Data;
 namespace ScheduleX.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260328092740_InitialFullSchema")]
-    partial class InitialFullSchema
+    [Migration("20260405133959_UpdateSubjectFaculty")]
+    partial class UpdateSubjectFaculty
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -275,6 +275,33 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.HasIndex("TemplateSnapshotId");
 
                     b.ToTable("TblExportHistory", (string)null);
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.ExternalFacultyPermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FacultyId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("FacultyId", "DepartmentId")
+                        .IsUnique();
+
+                    b.ToTable("TblExternalFacultyPermission", (string)null);
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Faculty", b =>
@@ -570,6 +597,9 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Property<int>("SubjectSemesterId")
                         .HasColumnType("int");
 
+                    b.Property<byte>("TeachingType")
+                        .HasColumnType("tinyint");
+
                     b.HasKey("SubjectFacultyId");
 
                     b.HasIndex("DivisionId");
@@ -578,7 +608,7 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.HasIndex("SubjectId");
 
-                    b.HasIndex("SubjectSemesterId", "DivisionId")
+                    b.HasIndex("SubjectSemesterId", "DivisionId", "TeachingType")
                         .IsUnique();
 
                     b.ToTable("TblSubjectFaculty", (string)null);
@@ -1200,6 +1230,25 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("TimeTableBatch");
                 });
 
+            modelBuilder.Entity("ScheduleX.Core.Entities.ExternalFacultyPermission", b =>
+                {
+                    b.HasOne("ScheduleX.Core.Entities.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ScheduleX.Core.Entities.Faculty", "Faculty")
+                        .WithMany("ExternalPermissions")
+                        .HasForeignKey("FacultyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Department");
+
+                    b.Navigation("Faculty");
+                });
+
             modelBuilder.Entity("ScheduleX.Core.Entities.Faculty", b =>
                 {
                     b.HasOne("ScheduleX.Core.Entities.Department", "Department")
@@ -1637,6 +1686,8 @@ namespace ScheduleX.Infrastructure.Migrations
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Faculty", b =>
                 {
+                    b.Navigation("ExternalPermissions");
+
                     b.Navigation("FacultyAvailabilities");
 
                     b.Navigation("SubjectFaculties");

@@ -12,8 +12,8 @@ using ScheduleX.Infrastructure.Data;
 namespace ScheduleX.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260328125640_SyncDatabase")]
-    partial class SyncDatabase
+    [Migration("20260405102401_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -300,7 +300,7 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.HasIndex("FacultyId");
 
-                    b.ToTable("ExternalFacultyPermissions");
+                    b.ToTable("TblExternalFacultyPermission", (string)null);
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Faculty", b =>
@@ -1235,7 +1235,7 @@ namespace ScheduleX.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("ScheduleX.Core.Entities.Faculty", "Faculty")
-                        .WithMany()
+                        .WithMany("ExternalPermissions")
                         .HasForeignKey("FacultyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1682,6 +1682,8 @@ namespace ScheduleX.Infrastructure.Migrations
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Faculty", b =>
                 {
+                    b.Navigation("ExternalPermissions");
+
                     b.Navigation("FacultyAvailabilities");
 
                     b.Navigation("SubjectFaculties");
