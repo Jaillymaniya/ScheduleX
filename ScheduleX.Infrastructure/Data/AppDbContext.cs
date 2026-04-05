@@ -36,6 +36,8 @@ public class AppDbContext : DbContext
     public DbSet<TimeTableEntryHistory> TimeTableEntryHistories => Set<TimeTableEntryHistory>();
     public DbSet<ExportHistory> ExportHistories => Set<ExportHistory>();
     public DbSet<SemesterStudentStrength> SemesterStudentStrengths { get; set; }
+    //public DbSet<ExternalFacultyPermission> ExternalFacultyPermissions { get; set; }
+    public DbSet<ExternalFacultyPermission> ExternalFacultyPermissions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -251,5 +253,8 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(x => x.ParentBatchId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ExternalFacultyPermission>()
+    .ToTable("TblExternalFacultyPermission");
     }
 }

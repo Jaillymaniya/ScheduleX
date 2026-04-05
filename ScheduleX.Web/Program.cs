@@ -19,8 +19,8 @@ using ScheduleX.Infrastructure.Repositories.TTCoordinator;
 
 using ScheduleX.Core.Interfaces.Admin;
 using ScheduleX.Infrastructure.Repositories.Admin;
-using ScheduleX.Core.Interfaces.TTCoordinator;
-using ScheduleX.Infrastructure.Repositories.TTCoordinator;
+//using ScheduleX.Core.Interfaces.TTCoordinator;
+//using ScheduleX.Infrastructure.Repositories.TTCoordinator;
 
 
 
