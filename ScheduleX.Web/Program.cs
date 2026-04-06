@@ -61,6 +61,7 @@ builder.Services.AddScoped<IDivisionService, DivisionService>();
 builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
 builder.Services.AddScoped<ISubjectSemesterRepository, SubjectSemesterRepository>();
 builder.Services.AddScoped<ISubjectFacultyRepository, SubjectFacultyRepository>();
+builder.Services.AddScoped<IDivisionRoomAllocationRepository, DivisionRoomAllocationRepository>();
 builder.Services.AddScoped(sp =>
 {
     var navigation = sp.GetRequiredService<NavigationManager>();
