@@ -148,21 +148,20 @@
 
 
 
-
 /* ================= PAGE ================= */
-body {
+.room-page body {
     background: #020617;
     color: white;
 }
 
 /* ================= MAIN CONTAINER ================= */
-.tt-container {
+.room-page .tt-container {
     width: 80%;
     margin: 0 auto;
 }
 
 /* ================= CARD ================= */
-.tt-card {
+.room-page .tt-card {
     background: linear-gradient(145deg, #0f172a, #1e293b);
     border-radius: 16px;
     border: 1px solid #334155;
@@ -171,14 +170,14 @@ body {
 }
 
 /* ================= DIVIDER ================= */
-.tt-divider {
+.room-page .tt-divider {
     height: 1px;
     background: #334155;
     margin: 30px 0;
 }
 
 /* ================= TABLE CARD ================= */
-.tt-table-card {
+.room-page .tt-table-card {
     background: linear-gradient(145deg, #0f172a, #1e293b);
     border-radius: 16px;
     border: 1px solid #334155;
@@ -186,18 +185,18 @@ body {
 }
 
 /* ================= FORM ================= */
-.tt-form-row {
+.room-page .tt-form-row {
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
 }
 
-.tt-form-group {
+.room-page .tt-form-group {
     flex: 1;
 }
 
 /* ================= LABEL ================= */
-label {
+.room-page label {
     color: #cbd5f5;
     font-size: 14px;
     margin-bottom: 6px;
@@ -205,8 +204,8 @@ label {
 }
 
 /* ================= INPUT ================= */
-.tt-input,
-.tt-select {
+.room-page .tt-input,
+.room-page .tt-select {
     width: 100%;
     background-color: #0f172a;
     border: 1px solid #334155;
@@ -215,15 +214,15 @@ label {
     border-radius: 10px;
 }
 
-    .tt-input:focus,
-    .tt-select:focus {
+    .room-page .tt-input:focus,
+    .room-page .tt-select:focus {
         outline: none;
         border-color: #22c55e;
         box-shadow: 0 0 6px #22c55e40;
     }
 
 /* ================= BUTTON ================= */
-.btn {
+.room-page .btn {
     border-radius: 8px;
     padding: 6px 14px;
     font-size: 13px;
@@ -233,75 +232,75 @@ label {
 }
 
 /* Button Colors */
-.btn-info {
+.room-page .btn-info {
     background: #06b6d4;
     color: #022c22;
 }
 
-.btn-danger {
+.room-page .btn-danger {
     background: #ef4444;
     color: white;
 }
 
-.btn-success {
+.room-page .btn-success {
     background: #16a34a;
     color: white;
 }
 
 /* ================= TABLE ================= */
-.tt-table {
+.room-page .tt-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-    .tt-table th {
+    .room-page .tt-table th {
         background-color: #1e293b;
         padding: 14px;
         border-bottom: 1px solid #334155;
     }
 
-    .tt-table td {
+    .room-page .tt-table td {
         padding: 14px;
         border-bottom: 1px solid #334155;
     }
 
-    .tt-table tbody tr:hover {
+    .room-page .tt-table tbody tr:hover {
         background-color: #1e293b;
     }
 
     /* ================= FIX ALIGNMENT ================= */
-    .tt-table th,
-    .tt-table td {
+    .room-page .tt-table th,
+    .room-page .tt-table td {
         text-align: left;
         vertical-align: middle;
     }
 
         /* FIX ACTION COLUMN */
-        .tt-table th:last-child,
-        .tt-table td:last-child {
+        .room-page .tt-table th:last-child,
+        .room-page .tt-table td:last-child {
             width: 220px;
         }
 
 /* ================= STATUS ================= */
-.badge {
+.room-page .badge {
     padding: 6px 10px;
     border-radius: 6px;
     font-size: 12px;
 }
 
 /* ================= INACTIVE ================= */
-.inactive-row {
+.room-page .inactive-row {
     opacity: 0.5;
 }
 
 /* ================= ACTION BUTTONS ================= */
-.action-buttons {
+.room-page .action-buttons {
     display: flex;
     gap: 10px;
 }
 
 /* ================= DISABLED ================= */
-.btn:disabled {
+.room-page .btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
 }

@@ -1,150 +1,158 @@
-﻿.schedule-page {
+﻿/* ================= PAGE ================= */
+.schedule-page {
     padding: 24px;
     color: #e5e7eb;
 }
 
-.schedule-header h2 {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 700;
-    color: #f8fafc;
-}
-
-.schedule-header p {
-    margin: 6px 0 20px;
-    color: #94a3b8;
-    font-size: 14px;
-}
-
-.schedule-card {
-    background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
-    border: 1px solid #22304d;
-    border-radius: 18px;
-    padding: 22px;
-    margin-bottom: 22px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-}
-
-    .schedule-card h4,
-    .schedule-card h5,
-    .schedule-card h6 {
-        color: #f8fafc;
-        margin-bottom: 16px;
+    .schedule-page .schedule-header h2 {
+        margin: 0;
+        font-size: 28px;
         font-weight: 700;
+        color: #f8fafc;
     }
 
-.schedule-label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 14px;
-    color: #cbd5e1;
-    font-weight: 600;
-}
-
-.schedule-input,
-.schedule-select {
-    width: 100%;
-    height: 42px;
-    background: #0b1220;
-    border: 1px solid #334155;
-    border-radius: 12px;
-    color: #f8fafc;
-    padding: 10px 12px;
-}
-
-    .schedule-input:focus,
-    .schedule-select:focus {
-        outline: none;
-        border-color: #38bdf8;
-        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-    }
-
-.schedule-checks {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin-top: 8px;
-}
-
-    .schedule-checks label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: #e2e8f0;
+    .schedule-page .schedule-header p {
+        margin: 6px 0 20px;
+        color: #94a3b8;
         font-size: 14px;
     }
 
-.schedule-btn {
-    border: none;
-    border-radius: 12px;
-    padding: 10px 16px;
-    font-weight: 600;
-    transition: .2s ease;
-}
-
-.schedule-btn-primary {
-    background: linear-gradient(90deg, #2563eb, #0ea5e9);
-    color: white;
-}
-
-.schedule-btn-success {
-    background: linear-gradient(90deg, #059669, #10b981);
-    color: white;
-}
-
-.schedule-btn-warning {
-    background: linear-gradient(90deg, #d97706, #f59e0b);
-    color: white;
-}
-
-.schedule-btn-danger {
-    background: linear-gradient(90deg, #dc2626, #ef4444);
-    color: white;
-}
-
-.schedule-btn:hover {
-    transform: translateY(-1px);
-    opacity: .95;
-}
-
-.schedule-table {
-    width: 100%;
-    border-collapse: collapse;
-    overflow: hidden;
-    border-radius: 14px;
-    margin-top: 14px;
-}
-
-    .schedule-table th {
-        background: #13203a;
-        color: #f8fafc;
-        font-weight: 700;
-        padding: 12px;
-        border-bottom: 1px solid #334155;
+    /* ================= CARD ================= */
+    .schedule-page .schedule-card {
+        background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+        border: 1px solid #22304d;
+        border-radius: 18px;
+        padding: 22px;
+        margin-bottom: 22px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.18);
     }
 
-    .schedule-table td {
+        .schedule-page .schedule-card h4,
+        .schedule-page .schedule-card h5,
+        .schedule-page .schedule-card h6 {
+            color: #f8fafc;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+    /* ================= LABEL ================= */
+    .schedule-page .schedule-label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+        color: #cbd5e1;
+        font-weight: 600;
+    }
+
+    /* ================= INPUT ================= */
+    .schedule-page .schedule-input,
+    .schedule-page .schedule-select {
+        width: 100%;
+        height: 42px;
         background: #0b1220;
-        color: #e2e8f0;
-        padding: 12px;
-        border-bottom: 1px solid #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        color: #f8fafc;
+        padding: 10px 12px;
     }
 
-.schedule-alert {
-    border-radius: 12px;
-    padding: 12px 14px;
-    margin-bottom: 14px;
-    font-weight: 600;
-}
+        .schedule-page .schedule-input:focus,
+        .schedule-page .schedule-select:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
 
-.schedule-alert-info {
-    background: rgba(14,165,233,0.15);
-    color: #bae6fd;
-    border: 1px solid rgba(14,165,233,0.35);
-}
+    /* ================= CHECKBOX ================= */
+    .schedule-page .schedule-checks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 8px;
+    }
 
-.schedule-alert-danger {
-    background: rgba(239,68,68,0.15);
-    color: #fecaca;
-    border: 1px solid rgba(239,68,68,0.35);
-}
+        .schedule-page .schedule-checks label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+    /* ================= BUTTON ================= */
+    .schedule-page .schedule-btn {
+        border: none;
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-weight: 600;
+        transition: .2s ease;
+    }
+
+    .schedule-page .schedule-btn-primary {
+        background: linear-gradient(90deg, #2563eb, #0ea5e9);
+        color: white;
+    }
+
+    .schedule-page .schedule-btn-success {
+        background: linear-gradient(90deg, #059669, #10b981);
+        color: white;
+    }
+
+    .schedule-page .schedule-btn-warning {
+        background: linear-gradient(90deg, #d97706, #f59e0b);
+        color: white;
+    }
+
+    .schedule-page .schedule-btn-danger {
+        background: linear-gradient(90deg, #dc2626, #ef4444);
+        color: white;
+    }
+
+    .schedule-page .schedule-btn:hover {
+        transform: translateY(-1px);
+        opacity: .95;
+    }
+
+    /* ================= TABLE ================= */
+    .schedule-page .schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 14px;
+        margin-top: 14px;
+    }
+
+        .schedule-page .schedule-table th {
+            background: #13203a;
+            color: #f8fafc;
+            font-weight: 700;
+            padding: 12px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .schedule-page .schedule-table td {
+            background: #0b1220;
+            color: #e2e8f0;
+            padding: 12px;
+            border-bottom: 1px solid #1e293b;
+        }
+
+    /* ================= ALERT ================= */
+    .schedule-page .schedule-alert {
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 14px;
+        font-weight: 600;
+    }
+
+    .schedule-page .schedule-alert-info {
+        background: rgba(14,165,233,0.15);
+        color: #bae6fd;
+        border: 1px solid rgba(14,165,233,0.35);
+    }
+
+    .schedule-page .schedule-alert-danger {
+        background: rgba(239,68,68,0.15);
+        color: #fecaca;
+        border: 1px solid rgba(239,68,68,0.35);
+    }

@@ -1,223 +1,279 @@
 ﻿/* ================= PAGE ================= */
-/*.subject-page {
-    padding: 24px;
+.subject-page {
+    padding: 30px;
     color: #e5e7eb;
-}*/
+}
+
+    /* ================= HEADER ================= */
+    .subject-page .subject-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 22px;
+    }
+
+        .subject-page .subject-header h3 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+    /* ================= CARD ================= */
     .subject-page .tt-card {
-        background: linear-gradient(180deg, #0f172a, #111827) !important;
-    }
-/* ================= HEADER ================= */
-.subject-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 22px;
-}
-
-    .subject-header h3 {
-        margin: 0;
-        font-size: 26px;
-        font-weight: 700;
-        color: #f8fafc;
+        background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+        border: 1px solid #22304d;
+        border-radius: 18px;
+        padding: 22px;
+        margin-bottom: 22px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
     }
 
-/* ================= CARD ================= */
-.tt-card {
-    background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
-    border: 1px solid #22304d;
-    border-radius: 18px;
-    padding: 22px;
-    margin-bottom: 22px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
-}
-
-/* ================= FORM ================= */
-.subject-form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-}
-
-.form-field {
-    display: flex;
-    flex-direction: column;
-}
-
-    .form-field label {
-        margin-bottom: 8px;
-        font-size: 14px;
-        color: #cbd5e1;
-        font-weight: 500;
+    /* ================= FORM ================= */
+    .subject-page .subject-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
     }
 
-/* ================= INPUT ================= */
-.tt-input,
-.tt-select {
-    width: 100%;
-    height: 44px;
-    border-radius: 12px;
-    border: 1px solid #2b3b5c;
-    background: #0b1220;
-    color: #f8fafc;
-    padding: 0 14px;
-    outline: none;
-    transition: all 0.2s ease;
-}
-
-    .tt-input:focus,
-    .tt-select:focus {
-        border-color: #22c55e;
-        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+    .subject-page .form-field {
+        display: flex;
+        flex-direction: column;
     }
 
-/* ================= BUTTONS ================= */
-.btn {
-    border: none;
-    border-radius: 12px;
-    padding: 10px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
+        .subject-page .form-field label {
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
 
-    .btn:hover {
-        transform: translateY(-1px);
-        opacity: 0.95;
-    }
-
-/* BUTTON TYPES */
-.btn-success {
-    background: linear-gradient(135deg, #16a34a, #22c55e);
-    color: white;
-}
-
-.btn-warning {
-    background: #f59e0b;
-    color: white;
-}
-.btn-section {
-    margin: 15px 0;
-    display: flex;
-    gap: 10px;
-}
-.btn-info {
-    background: #2563eb;
-    color: white;
-}
-
-.btn-danger {
-    background: #ef4444;
-    color: white;
-}
-
-.btn-secondary {
-    background: #334155;
-    color: white;
-}
-
-/* SMALL BUTTONS */
-.btn-sm {
-    padding: 8px 14px;
-    font-size: 13px;
-}
-
-/* DISABLED BUTTON */
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* ================= TABLE ================= */
-.table-wrap {
-    overflow-x: auto;
-}
-
-.table-dark {
-    width: 100%;
-    border-collapse: collapse;
-    border-radius: 14px;
-    overflow: hidden;
-}
-
-    .table-dark thead th {
+    /* ================= INPUT ================= */
+    .subject-page .tt-input,
+    .subject-page .tt-select {
+        width: 100%;
+        height: 44px;
+        border-radius: 12px;
+        border: 1px solid #2b3b5c;
         background: #0b1220;
-        color: #cbd5e1;
+        color: #f8fafc;
+        padding: 0 14px;
+        outline: none;
+        transition: all 0.2s ease;
+    }
+
+        .subject-page .tt-input:focus,
+        .subject-page .tt-select:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+        }
+
+    /* ================= BUTTON ================= */
+    .subject-page .btn {
+        border: none;
+        border-radius: 12px;
+        padding: 10px 16px;
         font-size: 14px;
         font-weight: 600;
-        padding: 14px 16px;
-        border-bottom: 1px solid #22304d;
+        cursor: pointer;
+        transition: all 0.2s ease;
     }
 
-    .table-dark tbody td {
-        padding: 14px 16px;
-        border-bottom: 1px solid #1f2a44;
-        color: #e2e8f0;
-        font-size: 14px;
+        .subject-page .btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.95;
+        }
+
+        .subject-page .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    .subject-page .btn-section {
+        margin: 15px 0;
+        display: flex;
+        gap: 10px;
     }
 
-    .table-dark tbody tr:hover {
-        background: rgba(255, 255, 255, 0.02);
+    /* COLORS */
+    .subject-page .btn-success {
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+        color: white;
     }
 
-/* ================= STATUS ================= */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 84px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-    .status-badge.active {
-        background: rgba(34, 197, 94, 0.18);
-        color: #86efac;
-        border: 1px solid rgba(34, 197, 94, 0.3);
+    .subject-page .btn-warning {
+        background: #f59e0b;
+        color: white;
     }
 
-    .status-badge.inactive {
-        background: rgba(239, 68, 68, 0.16);
-        color: #fca5a5;
-        border: 1px solid rgba(239, 68, 68, 0.28);
+    .subject-page .btn-info {
+        background: #2563eb;
+        color: white;
     }
 
-/* ================= ACTIONS ================= */
-.action-group {
-    display: flex;
-    gap: 8px; /* space between buttons */
-    align-items: center;
-    flex-wrap: nowrap; /* 🔥 prevents going to next line */
-}
+    .subject-page .btn-danger {
+        background: #ef4444;
+        color: white;
+    }
 
-/* ================= PROGRESS ================= */
-.progress-container {
-    width: 100%;
-    height: 8px;
-    background: #1f3a5f;
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
+    .subject-page .btn-secondary {
+        background: #334155;
+        color: white;
+    }
 
-.progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #22c55e, #16a34a);
-    transition: width 0.3s ease;
-}
+    .subject-page .btn-sm {
+        padding: 8px 14px;
+        font-size: 13px;
+    }
 
-/* ================= EMPTY ================= */
-.empty-row {
-    text-align: center;
-    color: #94a3b8;
-    padding: 20px;
-}
+    /* ================= TABLE ================= */
+    .subject-page .table-wrap {
+        overflow-x: auto;
+    }
+
+    .subject-page .table-dark {
+        width: 100%;
+        border-collapse: collapse;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+        .subject-page .table-dark thead th {
+            background: #0b1220;
+            color: #cbd5e1;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 14px 16px;
+            border-bottom: 1px solid #22304d;
+        }
+
+        .subject-page .table-dark tbody td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #1f2a44;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .subject-page .table-dark tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+    /* ================= STATUS ================= */
+    .subject-page .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 84px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+        .subject-page .status-badge.active {
+            background: rgba(34, 197, 94, 0.18);
+            color: #86efac;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .subject-page .status-badge.inactive {
+            background: rgba(239, 68, 68, 0.16);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.28);
+        }
+
+    /* ================= ACTION ================= */
+    .subject-page .action-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: nowrap;
+    }
+
+    /* ================= PROGRESS ================= */
+    .subject-page .progress-container {
+        width: 100%;
+        height: 8px;
+        background: #1f3a5f;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+
+    .subject-page .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #22c55e, #16a34a);
+    }
+
+    /* ================= EMPTY ================= */
+    .subject-page .empty-row {
+        text-align: center;
+        color: #94a3b8;
+        padding: 20px;
+    }
 
 /* ================= RESPONSIVE ================= */
 @media (max-width: 900px) {
-    .subject-form-grid {
+    .subject-page .subject-form-grid {
         grid-template-columns: 1fr;
+    }
+}
+/*Toast*/
+/* ================= TOAST ================= */
+
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast-message {
+    min-width: 260px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden; /* IMPORTANT */
+}
+
+    /* COLORS */
+    .toast-message.success {
+        background: linear-gradient(135deg, #00c853, #00e676);
+    }
+
+    .toast-message.danger {
+        background: linear-gradient(135deg, #ff5252, #ff1744);
+    }
+
+    .toast-message.warning {
+        background: linear-gradient(135deg, #ffb300, #ff8f00);
+    }
+
+    .toast-message.info {
+        background: linear-gradient(135deg, #00bcd4, #0097a7);
+    }
+
+/* 🔥 PROGRESS BAR (MAIN FIX) */
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    width: 100%;
+    background: rgba(255,255,255,0.7);
+    animation: toastProgress 3s linear forwards;
+}
+
+/* ANIMATION */
+@keyframes toastProgress {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
     }
 }

@@ -1,0 +1,111 @@
+﻿/* ================= SUBJECT MAPPING PAGE ================= */
+
+.subject-mapping-page {
+    padding: 20px;
+}
+
+    /* TITLE */
+    .subject-mapping-page .page-title {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .subject-mapping-page .page-subtitle {
+        color: #8ca3c7;
+        margin-bottom: 25px;
+    }
+
+    /* WRAPPER */
+    .subject-mapping-page .flow-wrapper {
+        position: relative;
+    }
+
+    /* CONTAINER */
+    .subject-mapping-page .flow-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    /* CARD */
+    .subject-mapping-page .flow-card {
+        background: linear-gradient(145deg, #0f1b2d, #14263d);
+        border: 1px solid #1f3a5f;
+        border-radius: 16px;
+        padding: 20px;
+        width: 200px;
+        min-height: 140px;
+        text-align: center;
+        cursor: pointer;
+        position: relative;
+        transition: 0.3s;
+    }
+
+    /* ICON */
+    .subject-mapping-page .flow-icon {
+        font-size: 26px;
+        color: #00d4ff;
+        margin-bottom: 10px;
+    }
+
+    /* HOVER */
+    .subject-mapping-page .flow-card:hover {
+        transform: translateY(-6px) scale(1.05);
+        border-color: #00d4ff;
+        box-shadow: 0 10px 25px rgba(0,212,255,0.25);
+    }
+
+    /* BADGE */
+    .subject-mapping-page .step-badge {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: #1f3a5f;
+        color: white;
+        padding: 6px 10px;
+        border-radius: 50%;
+        font-size: 0.7rem;
+    }
+
+    /* COMPLETED */
+    .subject-mapping-page .flow-card.completed {
+        border-color: #00c853;
+        box-shadow: 0 0 12px rgba(0,200,83,0.4);
+    }
+
+        .subject-mapping-page .flow-card.completed .step-badge {
+            background: #00c853;
+        }
+
+    /* SECONDARY */
+    .subject-mapping-page .flow-card.secondary {
+        opacity: 0.85;
+        border-style: dashed;
+    }
+
+    /* TEXT */
+    .subject-mapping-page .flow-card h5 {
+        font-size: 0.95rem;
+        color: #c9e0ff;
+    }
+
+    .subject-mapping-page .flow-card p {
+        font-size: 0.75rem;
+        color: #8ca3c7;
+    }
+
+    /* ARROW */
+    .subject-mapping-page .flow-arrow {
+        font-size: 22px;
+        color: #00d4ff;
+    }
+
+/* MOBILE */
+@media (max-width: 900px) {
+    .subject-mapping-page .flow-container {
+        flex-direction: column;
+    }
+}

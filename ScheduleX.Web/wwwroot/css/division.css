@@ -1,18 +1,18 @@
 ﻿/* ================= DIVISION PAGE ================= */
 
-.tt-container {
+.division-page .tt-container {
     padding: 20px;
     color: #f3f3f3;
 }
 
-.tt-title {
+.division-page .tt-title {
     margin-bottom: 20px;
     font-weight: 600;
     font-size: 22px;
 }
 
 /* CARD */
-.tt-card {
+.division-page .tt-card {
     background: linear-gradient(145deg, #0f172a, #1e293b);
     border-radius: 14px;
     padding: 20px;
@@ -21,14 +21,14 @@
 }
 
 /* FORM */
-.tt-form-grid {
+.division-page .tt-form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
     margin-bottom: 15px;
 }
 
-.tt-input {
+.division-page .tt-input {
     width: 100%;
     padding: 10px;
     border-radius: 8px;
@@ -38,7 +38,7 @@
 }
 
 /* BUTTONS */
-.tt-btn-success {
+.division-page .tt-btn-success {
     background: #22c55e;
     color: white;
     border: none;
@@ -46,7 +46,7 @@
     border-radius: 8px;
 }
 
-.tt-btn-danger {
+.division-page .tt-btn-danger {
     background: #ef4444;
     color: white;
     border: none;
@@ -54,7 +54,7 @@
     border-radius: 8px;
 }
 
-.tt-btn-edit {
+.division-page .tt-btn-edit {
     background: #06b6d4;
     color: white;
     border: none;
@@ -63,32 +63,32 @@
 }
 
 /* TABLE */
-.tt-table-card {
+.division-page .tt-table-card {
     background: #020617;
     border-radius: 12px;
     padding: 15px;
 }
 
-.tt-table {
+.division-page .tt-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-    .tt-table th {
+    .division-page .tt-table th {
         background: #1e293b;
         padding: 12px;
     }
 
-    .tt-table td {
+    .division-page .tt-table td {
         padding: 12px;
         border-top: 1px solid #334155;
     }
 
 /* STATUS */
-.status-active {
+.division-page .status-active {
     color: #22c55e;
 }
 
-.status-inactive {
+.division-page .status-inactive {
     color: #94a3b8;
 }

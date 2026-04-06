@@ -3,35 +3,73 @@
 @layout ScheduleX.Web.Components.Layout.tt.TTLayout
 @inject NavigationManager Nav
 
-<link href="css/mapping-buttons.css" rel="stylesheet" />
+ <div class="subject-mapping-page">
 
-<h3 class="mb-4">Subject Mapping Settings</h3>
+<h3 class="page-title">Academic Setup Flow</h3>
+<p class="page-subtitle">Complete each step in sequence to configure timetable</p>
 
-<div class="mapping-grid">
+<div class="flow-wrapper">
 
-    <div class="mapping-card" @onclick="GoSemester">
-        <h5>SUBJECT ↔ SEMESTER</h5>
-        <p>Assign subjects to semesters</p>
+    <!-- PROGRESS LINE -->
+    <div class="progress-line"></div>
+
+    <div class="flow-container">
+
+        <!-- STEP 1 -->
+        <div class="flow-card completed" @onclick="GoSubject">
+            <div class="step-badge">✔</div>
+            <i class="fas fa-book flow-icon"></i>
+            <h5>Subject Management</h5>
+            <p>Create and manage subjects</p>
+        </div>
+
+        <!-- ARROW -->
+        <div class="flow-arrow">→</div>
+
+        <!-- STEP 2 -->
+        <div class="flow-card" @onclick="GoSemester">
+            <div class="step-badge">2</div>
+            <i class="fas fa-layer-group flow-icon"></i>
+            <h5>Subject → Semester</h5>
+            <p>Assign subjects to semesters</p>
+        </div>
+
+        <div class="flow-arrow">→</div>
+
+        <!-- STEP 3 -->
+        <div class="flow-card" @onclick="GoFaculty">
+            <div class="step-badge">3</div>
+            <i class="fas fa-user flow-icon"></i>
+            <h5>Subject → Faculty</h5>
+            <p>Assign faculty to subjects</p>
+        </div>
+
+        <div class="flow-arrow">→</div>
+
+        <!-- STEP 4 -->
+        <div class="flow-card secondary" @onclick="GoLecture">
+            <div class="step-badge">4</div>
+            <i class="fas fa-clock flow-icon"></i>
+            <h5>Lecture Config</h5>
+            <p>Set lecture hours</p>
+        </div>
+
+        <div class="flow-arrow">→</div>
+
+        <!-- STEP 5 -->
+        <div class="flow-card secondary" @onclick="GoRoom">
+            <div class="step-badge">5</div>
+            <i class="fas fa-door-open flow-icon"></i>
+            <h5>Room Config</h5>
+            <p>Assign rooms & labs</p>
+        </div>
+
     </div>
-
-    <div class="mapping-card" @onclick="GoFaculty">
-        <h5>SUBJECT ↔ FACULTY</h5>
-        <p>Assign faculty to subjects</p>
-    </div>
-
-    <div class="mapping-card" @onclick="GoLecture">
-        <h5>LECTURE CONFIG</h5>
-        <p>Set theory & practical lectures</p>
-    </div>
-
-    <div class="mapping-card" @onclick="GoRoom">
-        <h5>ROOM CONFIG</h5>
-        <p>Assign rooms/labs</p>
-    </div>
-
+</div>
 </div>
 
 @code {
+    void GoSubject() => Nav.NavigateTo("/tt/subject");
     void GoSemester() => Nav.NavigateTo("/tt/subject-semester");
     void GoFaculty() => Nav.NavigateTo("/tt/subject-faculty");
     void GoLecture() => Nav.NavigateTo("/tt/lecture-config");
