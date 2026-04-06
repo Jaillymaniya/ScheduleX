@@ -536,6 +536,7 @@
 
 
 @* new css *@
+
 @page "/tt/room-management"
 @layout ScheduleX.Web.Components.Layout.tt.TTLayout
 
@@ -544,8 +545,8 @@
 
 @inject IRoomRepository RoomRepo
 
-<link href="css/room.css" rel="stylesheet" />
 
+<div class="room-page">
 <h3 class="mb-4">Room / Lab Management</h3>
 
 <!-- ================= FORM ================= -->
@@ -670,7 +671,7 @@
     </table>
 
 </div>
-
+</div>
 @code {
 
     private Room room = new();

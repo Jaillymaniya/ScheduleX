@@ -1,4 +1,4 @@
-﻿@page "/tt/academic/subject"
+﻿@page "/tt/subject"
 @layout ScheduleX.Web.Components.Layout.tt.TTLayout
 @inject ScheduleX.Web.Services.AuthState Auth
 @using SubjectEntity = ScheduleX.Core.Entities.Subject
@@ -6,15 +6,17 @@
 @using ScheduleX.Web.DTOs
 @inject ISubjectRepository Repo
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
-<link href="/css/subject.css?v=2.0" rel="stylesheet" />
 <div class="subject-page">
 <h3 class="mb-4">Subject Management</h3>
 
 <input class="tt-input w-100 mb-3"
        placeholder="Search subject..."
        @bind="searchText" />
-
+    <button class="btn btn-secondary" @onclick="GoBack">
+        ← Back
+    </button>
 <div class="mb-3">
         <div class="btn-section">
     <button class="btn btn-success me-2" @onclick="ShowManualForm">
@@ -213,11 +215,23 @@
     </table>
 </div>
 </div>
+
+<!-- TOAST -->
+@if (showToast)
+{
+    <div class="toast-container">
+        <div class="toast-message @toastType">
+            <span>@toastMessage</span>
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+}
 @code {
 
     private List<SubjectEntity> subjects = new();
     private List<Course> courses = new();
-
+    bool showToast = false;
+    string toastMessage = "";
     private SubjectEntity model = new()
         {
             SubjectCategory = SubjectCategoryEnum.Theory
@@ -229,14 +243,25 @@
     private bool showManualForm = false;
     private bool showCsvForm = false;
     private bool isEditMode = false;
-
+    string toastType = "success";
     private string searchText = "";
 
     private bool isUploading = false;
     private int progress = 0;
 
     private int userId;
+    async Task ShowToast(string message, string type = "success")
+    {
+        toastMessage = message;
+        toastType = type;
+        showToast = true;
+        StateHasChanged();
+        await Task.Delay(3000);
 
+        showToast = false;
+        StateHasChanged();
+    }
+    void GoBack() => Nav.NavigateTo("/tt/academic/subject-mapping");
     private IEnumerable<SubjectEntity> filteredSubjects =>
         subjects.Where(s =>
             string.IsNullOrEmpty(searchText) ||
@@ -422,13 +447,13 @@
 
         if (!entityList.Any())
         {
-            await ShowToast("No valid data found", "danger");
+            await ShowToast("No valid data found", "warning");
             return;
         }
 
         var result = await Repo.BulkInsertAsync(entityList, userId);
 
-        await ShowToast(result.Item2, result.Item1 ? "success" : "danger");
+       await ShowToast(result.Item2, result.Item1 ? "success" : "danger");
 
         isUploading = false;
         isFileSelected = false;
@@ -445,8 +470,5 @@
         await JS.InvokeVoidAsync("downloadFile", "SubjectTemplate.csv", bytes);
     }
 
-    private async Task ShowToast(string message, string type)
-    {
-        await JS.InvokeVoidAsync("showToast", message, type);
-    }
+    
 }

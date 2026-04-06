@@ -1,4 +1,4 @@
-﻿.mapping-grid {
+﻿/*.mapping-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
@@ -25,3 +25,147 @@
     .mapping-card p {
         color: #ccc;
     }
+*/
+/* ===============================
+   SUBJECT MAPPING PAGE (SCOPED)
+   =============================== */
+
+.subject-mapping-page .flow-wrapper {
+    position: relative;
+    margin-top: 20px;
+}
+
+/* ---------- PROGRESS LINE ---------- */
+.subject-mapping-page .progress-line {
+    position: absolute;
+    display: none;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #00d4ff, #00c853);
+    z-index: 0;
+    opacity: 0.3;
+}
+
+/* ---------- GRID ---------- */
+.subject-mapping-page .flow-container {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* ✅ center instead of space-between */
+    flex-wrap: wrap; /* ✅ allow wrapping */
+    gap: 20px; /* spacing between items */
+}
+
+/* ---------- CARD ---------- */
+.subject-mapping-page .flow-card {
+    background: linear-gradient(145deg, #0f1b2d, #14263d);
+    border: 1px solid #1f3a5f;
+    border-radius: 16px;
+    padding: 22px 18px;
+    width: 200px; /* slightly bigger */
+    flex-shrink: 0;
+    min-height: 140px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+/* ---------- ICON ---------- */
+.subject-mapping-page .flow-icon {
+    font-size: 26px;
+    color: #00d4ff;
+    margin-bottom: 10px;
+}
+
+/* ---------- HOVER ---------- */
+.subject-mapping-page .flow-card:hover {
+    transform: translateY(-6px) scale(1.05);
+    border-color: #00d4ff;
+    box-shadow: 0 12px 28px rgba(0, 212, 255, 0.25);
+}
+
+/* ---------- STEP BADGE ---------- */
+.subject-mapping-page .step-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #1f3a5f;
+    color: white;
+    font-size: 0.7rem;
+    padding: 6px 10px;
+    border-radius: 50%;
+    font-weight: 600;
+}
+
+/* ---------- COMPLETED STEP ---------- */
+.subject-mapping-page .flow-card.completed {
+    border-color: #00c853;
+    box-shadow: 0 0 15px rgba(0, 200, 83, 0.4);
+}
+
+    .subject-mapping-page .flow-card.completed .step-badge {
+        background: #00c853;
+    }
+
+/* ---------- SECONDARY CARDS ---------- */
+.subject-mapping-page .flow-card.secondary {
+    opacity: 0.9;
+    border-style: dashed;
+}
+
+/* ---------- ARROW ---------- */
+.subject-mapping-page .flow-arrow {
+    font-size: 22px;
+    color: #00d4ff;
+    min-width: 30px;
+    animation: moveArrow 1s infinite alternate;
+}
+
+/* ---------- ARROW ANIMATION ---------- */
+@keyframes moveArrow {
+    from {
+        transform: translateX(0);
+        opacity: 0.6;
+    }
+
+    to {
+        transform: translateX(6px);
+        opacity: 1;
+    }
+}
+
+/* ---------- TEXT ---------- */
+.subject-mapping-page .flow-card h5 {
+    color: #c9e0ff;
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+}
+
+.subject-mapping-page .flow-card p {
+    font-size: 0.75rem;
+    color: #8ca3c7;
+    line-height: 1.4;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 1000px) {
+    .subject-mapping-page .flow-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .subject-mapping-page .flow-arrow {
+        transform: rotate(90deg);
+    }
+
+    .subject-mapping-page .progress-line {
+        display: none;
+    }
+
+    .subject-mapping-page .flow-card {
+        width: 100%;
+        max-width: 300px;
+    }
+}

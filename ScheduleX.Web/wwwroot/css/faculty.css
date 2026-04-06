@@ -1,13 +1,13 @@
 ﻿/* ================= FONT ================= */
-.tt-card,
-.tt-table,
-.tt-input,
-button {
+.faculty-page .tt-card,
+.faculty-page .tt-table,
+.faculty-page .tt-input,
+.faculty-page button {
     font-family: 'Poppins', sans-serif !important;
 }
 
 /* ================= CARD ================= */
-.tt-card {
+.faculty-page .tt-card {
     background: linear-gradient(145deg, #0f172a, #1e293b);
     padding: 25px;
     border-radius: 16px;
@@ -16,14 +16,14 @@ button {
 }
 
 /* ================= GRID ================= */
-.form-grid-2 {
+.faculty-page .form-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
 
 /* ================= LABEL ================= */
-label {
+.faculty-page label {
     display: block;
     margin-bottom: 6px;
     color: #cbd5f5;
@@ -31,7 +31,7 @@ label {
 }
 
 /* ================= INPUT ================= */
-.tt-input {
+.faculty-page .tt-input {
     width: 100%;
     padding: 12px;
     border-radius: 12px;
@@ -41,7 +41,7 @@ label {
 }
 
 /* ================= SELECT ================= */
-select.tt-input {
+.faculty-page select.tt-input {
     appearance: none;
     background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='20' viewBox='0 0 24 24' width='20'><path d='M7 10l5 5 5-5z'/></svg>");
     background-repeat: no-repeat;
@@ -50,28 +50,28 @@ select.tt-input {
 }
 
 /* ================= BUTTONS ================= */
-.btn-save {
+.faculty-page .btn-save {
     background: linear-gradient(135deg, #22c55e, #16a34a);
     color: white;
     border-radius: 10px;
     padding: 10px 18px;
 }
 
-.btn-edit {
+.faculty-page .btn-edit {
     background: #06b6d4;
     color: white;
     border-radius: 8px;
     padding: 6px 12px;
 }
 
-.btn-danger {
+.faculty-page .btn-danger {
     background: #ef4444;
     color: white;
     border-radius: 8px;
     padding: 6px 12px;
 }
 
-.btn-success {
+.faculty-page .btn-success {
     background: #22c55e;
     color: white;
     border-radius: 8px;
@@ -79,74 +79,72 @@ select.tt-input {
 }
 
 /* ================= DISABLED EDIT ================= */
-.btn-disabled {
+.faculty-page .btn-disabled {
     opacity: 0.4;
     cursor: not-allowed;
     filter: blur(0.5px);
 }
 
 /* ================= TABLE ================= */
-.tt-table {
+.faculty-page .tt-table {
     background: #0f172a;
     border-radius: 14px;
     overflow: hidden;
 }
 
-    .tt-table table {
+    .faculty-page .tt-table table {
         width: 100%;
         border-collapse: collapse;
     }
 
-    .tt-table th {
+    .faculty-page .tt-table th {
         background: #1e293b;
         color: #cbd5f5;
         padding: 14px;
     }
 
-    .tt-table td {
+    .faculty-page .tt-table td {
         padding: 14px;
         border-top: 1px solid #1e293b;
         color: #e2e8f0;
     }
 
 /* ================= STATUS ================= */
-.status-badge {
+.faculty-page .status-badge {
     padding: 5px 10px;
     border-radius: 20px;
     font-size: 12px;
 }
 
-    .status-badge.active {
+    .faculty-page .status-badge.active {
         background: rgba(34,197,94,0.2);
         color: #22c55e;
     }
 
-    .status-badge.inactive {
+    .faculty-page .status-badge.inactive {
         background: rgba(239,68,68,0.2);
         color: #ef4444;
     }
 
 /* ================= HOVER ================= */
-.tt-table tr:hover {
+.faculty-page .tt-table tr:hover {
     background: rgba(255,255,255,0.05);
 }
 
-button:hover {
+.faculty-page button:hover {
     transform: scale(1.05);
 }
 
-
-/* ================= EDIT DISABLED EXACT STYLE ================= */
-.btn-edit-disabled {
-    background: #0f172a !important; /* dark button */
-    color: #64748b !important; /* faded text */
-    opacity: 1 !important; /* no full blur */
+/* ================= EDIT DISABLED ================= */
+.faculty-page .btn-edit-disabled {
+    background: #0f172a !important;
+    color: #64748b !important;
+    opacity: 1 !important;
     cursor: not-allowed !important;
-    pointer-events: none; /* fully block */
+    pointer-events: none;
 }
 
-    /* remove hover effect */
-    .btn-edit-disabled:hover {
+    .faculty-page .btn-edit-disabled:hover {
         transform: none !important;
         background: #0f172a !important;
     }
