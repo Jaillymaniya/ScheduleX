@@ -4,7 +4,7 @@
 @using System.IO
 @using System.Text
 @using ScheduleX.Core.Entities
-@using ScheduleX.Web.DTOs
+
 
 @using SubjectFacultyEntity = ScheduleX.Core.Entities.SubjectFaculty
 @using SubjectSemesterEntity = ScheduleX.Core.Entities.SubjectSemester
@@ -26,90 +26,137 @@
 <!-- ================= MANUAL ================= -->
 @if (showManual)
 {
-    <div class="tt-card">
+   <div class="tt-card">
 
-        <div class="subject-grid">
+    <div class="subject-grid">
 
-            <!-- COURSE -->
-            <div class="form-field">
-                <label>Course</label>
-                <select class="tt-select" @bind="courseId" @bind:after="LoadSemesters">
-                    <option value="0">Select</option>
-                    @foreach (var c in courses)
-                    {
-                        <option value="@c.CourseId">@c.CourseName</option>
-                    }
-                </select>
-            </div>
-
-            <!-- SEM -->
-            <div class="form-field">
-                <label>Semester</label>
-                <select class="tt-select" @bind="semesterId" @bind:after="LoadData">
-                    <option value="0">Select</option>
-                    @foreach (var s in semesters)
-                    {
-                        <option value="@s.SemesterId">Sem @s.SemesterNo</option>
-                    }
-                </select>
-            </div>
-
-            <!-- SUBJECT -->
-            <div class="form-field">
-                <label>Subject</label>
-                <select class="tt-select @(model.SubjectSemesterId==0?"input-error":"")"
-                        @bind="model.SubjectSemesterId">
-                    <option value="0">Select</option>
-                    @foreach (var s in subjectSemesters)
-                    {
-                        <option value="@s.SubjectSemesterId">@s.Subject.SubjectName</option>
-                    }
-                </select>
-            </div>
-
-            <!-- DIVISION -->
-            <div class="form-field">
-                <label>Division</label>
-                <select class="tt-select @(model.DivisionId==0?"input-error":"")"
-                        @bind="model.DivisionId">
-                    <option value="0">Select</option>
-                    @foreach (var d in divisions)
-                    {
-                        <option value="@d.DivisionId">@d.DivisionName</option>
-                    }
-                </select>
-            </div>
-
-            <!-- FACULTY -->
-            <div class="form-field">
-                <label>Faculty</label>
-                <select class="tt-select @(model.FacultyId==0?"input-error":"")"
-                        @bind="model.FacultyId">
-                    <option value="0">Select</option>
-                    @foreach (var f in faculties)
-                    {
-                        <option value="@f.FacultyId">@f.Email</option>
-                    }
-                </select>
-            </div>
-
+        <!-- COURSE -->
+        <div class="form-field">
+                <label>Course (Assigned to You)</label>
+            <select class="tt-select" @bind="courseId" @bind:after="LoadSemesters">
+                <option value="0">Select Course</option>
+                @foreach (var c in courses)
+                {
+                    <option value="@c.CourseId">@c.CourseName</option>
+                }
+            </select>
         </div>
 
-        <button class="btn btn-success mt-3" @onclick="Save">
-            @(isEditMode ? "Update" : "Save")
-        </button>
+        <!-- SEM -->
+        <div class="form-field">
+            <label>Select Semester</label>
+            <select class="tt-select" @bind="semesterId" @bind:after="LoadData">
+                <option value="0">Select Semester</option>
+                @foreach (var s in semesters)
+                {
+                    <option value="@s.SemesterId">Sem @s.SemesterNo</option>
+                }
+            </select>
+        </div>
 
-        <button class="btn btn-secondary mt-3 ms-2" @onclick="CloseForm">
-            Cancel
-        </button>
+        <!-- DIVISION -->
+        <div class="form-field">
+            <label>Select Division</label>
+            <select class="tt-select" @bind="model.DivisionId">
+                <option value="0">Select Division</option>
+                @foreach (var d in divisions)
+                {
+                    <option value="@d.DivisionId">@d.DivisionName</option>
+                }
+            </select>
+        </div>
+
+        <!-- SUBJECT -->
+        <div class="form-field">
+                <label>Subject (Unassigned Only)</label>
+            <select class="tt-select" @bind="model.SubjectSemesterId">
+                <option value="0">Select Subject</option>
+                @foreach (var s in subjectSemesters)
+                {
+                        <option value="@s.SubjectSemesterId"
+                                disabled="@IsSubjectFullyAssigned(s.SubjectSemesterId)">
+                            @s.Subject.SubjectName (@s.Subject.SubjectCategory)
+                        </option>
+                }
+            </select>
+        </div>
+
+        <!-- EXTERNAL CHECK -->
+        <div class="form-field">
+            <label>
+                    <input type="checkbox" @bind="isExternal" @bind:after="LoadDepartments" />
+                Assign External Faculty
+            </label>
+        </div>
+
+        @if (isExternal)
+        {
+            <div class="form-field">
+                <label>Select Department</label>
+                <select class="tt-select" @bind="externalDeptId" @bind:after="LoadExternalFaculty">
+                    <option value="0">Select Department</option>
+                    @foreach (var d in departments)
+                    {
+                        <option value="@d.DepartmentId">@d.DepartmentName</option>
+                    }
+                </select>
+            </div>
+        }
+
+        @{
+            var selectedSubject = subjectSemesters
+                .FirstOrDefault(x => x.SubjectSemesterId == model.SubjectSemesterId);
+        }
+
+        @if (selectedSubject != null)
+        {
+            var cat = selectedSubject.Subject.SubjectCategory;
+
+            <!-- THEORY -->
+            @if (cat == SubjectCategoryEnum.Theory || cat == SubjectCategoryEnum.Both)
+            {
+                <div class="form-field">
+                    <label>Theory Faculty</label>
+                    <select class="tt-select" @bind="theoryFacultyId">
+                        <option value="0">Select Faculty</option>
+                        @foreach (var f in isExternal ? externalFaculties : faculties)
+                        {
+                            <option value="@f.FacultyId">@f.Email</option>
+                        }
+                    </select>
+                </div>
+            }
+
+            <!-- PRACTICAL -->
+            @if (cat == SubjectCategoryEnum.Practical || cat == SubjectCategoryEnum.Both)
+            {
+                <div class="form-field">
+                    <label>Practical Faculty</label>
+                    <select class="tt-select" @bind="practicalFacultyId">
+                        <option value="0">Select Faculty</option>
+                        @foreach (var f in isExternal ? externalFaculties : faculties)
+                        {
+                            <option value="@f.FacultyId">@f.Email</option>
+                        }
+                    </select>
+                </div>
+            }
+        }
+
     </div>
+
+    <div class="btn-section">
+        <button class="btn btn-success" @onclick="SaveManual">Save</button>
+        <button class="btn btn-secondary" @onclick="CloseForm">Cancel</button>
+    </div>
+</div>
 }
 
 <!-- ================= CSV ================= -->
 @if (showCsv)
 {
     <div class="tt-card p-3">
-
+        <label>Select Course</label>
         <!-- COURSE -->
         <select class="tt-select mb-2" @bind="courseId" @bind:after="LoadSemesters">
             <option value="0">Select Course</option>
@@ -118,7 +165,7 @@
                 <option value="@c.CourseId">@c.CourseName</option>
             }
         </select>
-
+        <label>Select Semester</label>
         <!-- SEM -->
         <select class="tt-select mb-2" @bind="semesterId" @bind:after="LoadCsvData">
             <option value="0">Select Semester</option>
@@ -127,7 +174,7 @@
                 <option value="@s.SemesterId">Sem @s.SemesterNo</option>
             }
         </select>
-
+        <label>Select Division</label>
         <!-- DIVISION -->
         <select class="tt-select mb-2" @bind="divisionId">
             <option value="0">Select Division</option>
@@ -161,6 +208,7 @@
                 <th>Sem</th>
                 <th>Division</th>
                 <th>Subject</th>
+                <th>Type</th>
                 <th>Faculty</th>
                 <th>Action</th>
             </tr>
@@ -175,6 +223,7 @@
                     <td>@item.SubjectSemester.Semester.SemesterNo</td>
                     <td>@item.Division.DivisionName</td>
                     <td>@item.SubjectSemester.Subject.SubjectName</td>
+                    <td>@item.TeachingType</td>
                     <td>@item.Faculty.Email</td>
 
                     <td>
@@ -213,7 +262,14 @@
     int courseId, semesterId;
     int divisionId;
     bool showManual, showCsv, isEditMode;
+    bool isExternal = false;
 
+    int externalDeptId;
+    List<Department> departments = new();
+    List<Faculty> externalFaculties = new();
+
+    int theoryFacultyId;
+    int practicalFacultyId;
     IBrowserFile? file;
 
     IEnumerable<SubjectFacultyEntity> filteredList =>
@@ -223,9 +279,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var userId = Auth.UserId!.Value;
+        if (!Auth.IsLoggedIn)
+            return;
+
+        var userId = Auth.UserId ?? 0;
 
         courses = await Repo.GetCoursesByCoordinator(userId);
+
+        if (!courses.Any())
+        {
+            await JS.InvokeVoidAsync("showToast", "No courses assigned to you", "warning");
+        }
+
         list = await Repo.GetAllAsync();
     }
 
@@ -245,12 +310,46 @@
     {
         semesters = await Repo.GetSemesters(courseId);
     }
+    bool IsSubjectFullyAssigned(int subjectSemesterId)
+    {
+        var assigned = list.Where(x =>
+            x.SubjectSemesterId == subjectSemesterId &&
+            x.DivisionId == model.DivisionId &&
+            x.IsActive).ToList();
 
+        var hasTheory = assigned.Any(x => x.TeachingType == SubjectCategoryEnum.Theory);
+        var hasPractical = assigned.Any(x => x.TeachingType == SubjectCategoryEnum.Practical);
+
+        return hasTheory && hasPractical;
+    }
     async Task LoadData()
     {
         subjectSemesters = await Repo.GetSubjectSemesters(semesterId);
         divisions = await Repo.GetDivisions(semesterId);
         faculties = await Repo.GetFaculties(courseId);
+
+        // ❗ APPLY FILTER ONLY WHEN DIVISION SELECTED
+        if (model.DivisionId > 0)
+        {
+            subjectSemesters = subjectSemesters
+                .Where(s => !list.Any(x =>
+                    x.SubjectSemesterId == s.SubjectSemesterId &&
+                    x.DivisionId == model.DivisionId))
+                .ToList();
+        }
+    }
+    async Task LoadDepartments()
+    {
+        departments = await Repo.GetDepartments();
+    }
+
+    async Task LoadExternalFaculty()
+    {
+        var allFaculties = await Repo.GetFaculties(courseId);
+
+        externalFaculties = allFaculties
+            .Where(f => f.IsExternal && f.IsActive)
+            .ToList();
     }
     async Task LoadCsvData()
     {
@@ -261,7 +360,7 @@
     {
         if (courseId == 0 || semesterId == 0 || divisionId == 0)
         {
-            await ShowToast("Select Course, Semester, Division", "danger");
+            await ShowToast("Please select Course, Semester and Division", "danger");
             return;
         }
 
@@ -270,14 +369,16 @@
         var selectedDivision = divisions.First(x => x.DivisionId == divisionId);
 
         var sb = new StringBuilder();
-        sb.AppendLine("CourseName,SemesterNo,SubjectName,DivisionName,FacultyEmail");
+
+        // 🔥 UPDATED HEADER
+        sb.AppendLine("CourseName,SemesterNo,SubjectName,DivisionName,TheoryFacultyEmail,PracticalFacultyEmail");
 
         foreach (var s in subjectSemesters)
         {
             sb.AppendLine($"{selectedCourse.CourseName}," +
                           $"{selectedSemester.SemesterNo}," +
                           $"{s.Subject.SubjectName}," +
-                          $"{selectedDivision.DivisionName},");
+                          $"{selectedDivision.DivisionName},,");
         }
 
         var bytes = Encoding.UTF8.GetBytes(sb.ToString());
@@ -286,42 +387,165 @@
     }
     void Edit(SubjectFacultyEntity item)
     {
-        model = new SubjectFacultyEntity
-            {
-                SubjectFacultyId = item.SubjectFacultyId,
-                SubjectSemesterId = item.SubjectSemesterId,
-                DivisionId = item.DivisionId,
-                FacultyId = item.FacultyId
-            };
-
         showManual = true;
         isEditMode = true;
+
+        model.SubjectSemesterId = item.SubjectSemesterId;
+        model.DivisionId = item.DivisionId;
+
+        courseId = item.SubjectSemester.Semester.CourseId;
+        semesterId = item.SubjectSemester.SemesterId;
+
+        _ = LoadSemesters();
+        _ = LoadData();
+
+        // 🔥 RESET
+        theoryFacultyId = 0;
+        practicalFacultyId = 0;
+
+        // 🔥 LOAD BOTH TYPES
+        var related = list.Where(x =>
+            x.SubjectSemesterId == item.SubjectSemesterId &&
+            x.DivisionId == item.DivisionId).ToList();
+
+        foreach (var r in related)
+        {
+            if (r.TeachingType == SubjectCategoryEnum.Theory)
+                theoryFacultyId = r.FacultyId;
+
+            if (r.TeachingType == SubjectCategoryEnum.Practical)
+                practicalFacultyId = r.FacultyId;
+        }
     }
 
-    async Task Save()
+   
+    async Task SaveManual()
     {
-        if (model.SubjectSemesterId == 0 ||
-            model.DivisionId == 0 ||
-            model.FacultyId == 0)
+        if (model.DivisionId == 0)
         {
-            await ShowToast("All fields required", "danger");
+            await ShowToast("Select Division", "danger");
             return;
         }
 
-        var result = isEditMode
-            ? await Repo.UpdateAsync(model)
-            : await Repo.AddAsync(model);
+        if (model.SubjectSemesterId == 0)
+        {
+            await ShowToast("Select Subject", "danger");
+            return;
+        }
 
-        await ShowToast(result.Item2, result.Item1 ? "success" : "danger");
+        var subject = subjectSemesters
+            .First(x => x.SubjectSemesterId == model.SubjectSemesterId);
+
+        var category = subject.Subject.SubjectCategory;
+
+        // ================= VALIDATION =================
+
+        if (category == SubjectCategoryEnum.Theory && theoryFacultyId == 0)
+        {
+            await ShowToast("Select Theory Faculty", "danger");
+            return;
+        }
+
+        if (category == SubjectCategoryEnum.Practical && practicalFacultyId == 0)
+        {
+            await ShowToast("Select Practical Faculty", "danger");
+            return;
+        }
+
+        if (category == SubjectCategoryEnum.Both && theoryFacultyId == 0 && practicalFacultyId == 0)
+        {
+            await ShowToast("Select at least one faculty", "danger");
+            return;
+        }
+
+        // ================= DUPLICATE CHECK (ONLY FOR ADD) =================
+        if (!isEditMode)
+        {
+            var existsTheory = list.Any(x =>
+                x.SubjectSemesterId == model.SubjectSemesterId &&
+                x.DivisionId == model.DivisionId &&
+                x.TeachingType == SubjectCategoryEnum.Theory &&
+                x.IsActive);
+
+            var existsPractical = list.Any(x =>
+                x.SubjectSemesterId == model.SubjectSemesterId &&
+                x.DivisionId == model.DivisionId &&
+                x.TeachingType == SubjectCategoryEnum.Practical &&
+                x.IsActive);
+
+            if (existsTheory && (category == SubjectCategoryEnum.Theory || category == SubjectCategoryEnum.Both))
+            {
+                await ShowToast("Theory already assigned", "warning");
+                return;
+            }
+
+            if (existsPractical && (category == SubjectCategoryEnum.Practical || category == SubjectCategoryEnum.Both))
+            {
+                await ShowToast("Practical already assigned", "warning");
+                return;
+            }
+        }
+
+        // ================= BUILD LIST =================
+        var listToInsert = new List<SubjectFacultyEntity>();
+
+        if (category == SubjectCategoryEnum.Theory || category == SubjectCategoryEnum.Both)
+        {
+            listToInsert.Add(new SubjectFacultyEntity
+                {
+                    SubjectSemesterId = model.SubjectSemesterId,
+                    DivisionId = model.DivisionId,
+                    FacultyId = theoryFacultyId,
+                    TeachingType = SubjectCategoryEnum.Theory
+                });
+        }
+
+        if (category == SubjectCategoryEnum.Practical || category == SubjectCategoryEnum.Both)
+        {
+            listToInsert.Add(new SubjectFacultyEntity
+                {
+                    SubjectSemesterId = model.SubjectSemesterId,
+                    DivisionId = model.DivisionId,
+                    FacultyId = practicalFacultyId == 0 ? theoryFacultyId : practicalFacultyId,
+                    TeachingType = SubjectCategoryEnum.Practical
+                });
+        }
+
+        // ================= EDIT =================
+        if (isEditMode)
+        {
+            var existing = list.Where(x =>
+                x.SubjectSemesterId == model.SubjectSemesterId &&
+                x.DivisionId == model.DivisionId).ToList();
+
+            foreach (var item in existing)
+            {
+                if (item.TeachingType == SubjectCategoryEnum.Theory)
+                    item.FacultyId = theoryFacultyId;
+
+                if (item.TeachingType == SubjectCategoryEnum.Practical)
+                    item.FacultyId = practicalFacultyId == 0 ? theoryFacultyId : practicalFacultyId;
+
+                await Repo.UpdateAsync(item);
+            }
+
+            await ShowToast("Updated successfully", "success");
+        }
+        else
+        {
+            var result = await Repo.BulkInsertAsync(listToInsert, Auth.UserId!.Value);
+            await ShowToast(result.Item2, result.Item1 ? "success" : "danger");
+        }
 
         list = await Repo.GetAllAsync();
         showManual = false;
     }
-
     async Task Toggle(int id)
     {
         await Repo.ToggleAsync(id);
         list = await Repo.GetAllAsync();
+
+        await ShowToast("Status updated", "info");
     }
 
     void OnFileSelected(InputFileChangeEventArgs e) => file = e.File;
@@ -343,76 +567,41 @@
         var userId = Auth.UserId!.Value;
         var finalList = new List<SubjectFacultyEntity>();
 
+        var courseDeptId = courses.First(x => x.CourseId == courseId).DepartmentId;
+
         using var reader = new StreamReader(file.OpenReadStream());
 
         int row = 1;
         bool first = true;
+        string? line;
 
-        while (!reader.EndOfStream)
+        while ((line = await reader.ReadLineAsync()) != null)
         {
-            var line = await reader.ReadLineAsync();
-
             if (first) { first = false; continue; }
-
             row++;
 
-            if (string.IsNullOrWhiteSpace(line))
-                continue;
+            if (string.IsNullOrWhiteSpace(line)) continue;
 
-            var data = line.Split(',');
+            // var data = line.Split(',');
+            var data = line.Split(',', StringSplitOptions.TrimEntries);
 
-            if (data.Length < 5)
+            if (data.Length < 6)
             {
                 await ShowToast($"Row {row}: Invalid column format", "danger");
                 return;
             }
 
-            var courseName = data[0]?.Trim();
-            var semNoStr = data[1]?.Trim();
             var subjectName = data[2]?.Trim();
             var divisionName = data[3]?.Trim();
-            var facultyEmail = data[4]?.Trim();
-
-            // 🔥 VALIDATIONS
-
-            if (string.IsNullOrWhiteSpace(courseName))
-            {
-                await ShowToast($"Row {row}: Course is required", "danger");
-                return;
-            }
-
-            if (!byte.TryParse(semNoStr, out var semNo))
-            {
-                await ShowToast($"Row {row}: Invalid Semester", "danger");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(subjectName))
-            {
-                await ShowToast($"Row {row}: Subject required", "danger");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(divisionName))
-            {
-                await ShowToast($"Row {row}: Division required", "danger");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(facultyEmail))
-            {
-                await ShowToast($"Row {row}: Faculty Email required", "danger");
-                return;
-            }
-
-            // 🔥 MATCH VALID DATA
+            var theoryEmail = data[4]?.Trim();
+            var practicalEmail = data[5]?.Trim();
 
             var subject = subjectSemesters
                 .FirstOrDefault(x => x.Subject.SubjectName == subjectName);
 
             if (subject == null)
             {
-                await ShowToast($"Row {row}: Invalid Subject '{subjectName}'", "danger");
+                await ShowToast($"Row {row}: Invalid Subject", "danger");
                 return;
             }
 
@@ -421,47 +610,136 @@
 
             if (division == null)
             {
-                await ShowToast($"Row {row}: Invalid Division '{divisionName}'", "danger");
+                await ShowToast($"Row {row}: Invalid Division", "danger");
                 return;
             }
 
-            var faculty = await Repo.GetFacultyByEmail(facultyEmail);
+            var category = subject.Subject.SubjectCategory;
 
-            if (faculty == null)
+            // ❌ BOTH EMPTY
+            if (string.IsNullOrWhiteSpace(theoryEmail) && string.IsNullOrWhiteSpace(practicalEmail))
             {
-                await ShowToast($"Row {row}: Faculty not found '{facultyEmail}'", "danger");
+                await ShowToast($"Row {row}: Faculty required", "danger");
                 return;
             }
 
-            finalList.Add(new SubjectFacultyEntity
-                {
-                    SubjectSemesterId = subject.SubjectSemesterId,
-                    DivisionId = division.DivisionId,
-                    FacultyId = faculty.FacultyId
-                });
-        }
+            // ❌ PRACTICAL ONLY
+            if (string.IsNullOrWhiteSpace(theoryEmail) && !string.IsNullOrWhiteSpace(practicalEmail))
+            {
+                await ShowToast($"Row {row}: Theory faculty required first", "danger");
+                return;
+            }
 
-        if (!finalList.Any())
-        {
-            await ShowToast("No valid data found", "danger");
-            return;
+            // 🔥 CATEGORY VALIDATION FIRST (FIXED)
+            if (category == SubjectCategoryEnum.Theory && !string.IsNullOrWhiteSpace(practicalEmail))
+            {
+                await ShowToast($"Row {row}: Practical not allowed for Theory subject", "danger");
+                return;
+            }
+
+            if (category == SubjectCategoryEnum.Practical && !string.IsNullOrWhiteSpace(theoryEmail))
+            {
+                await ShowToast($"Row {row}: Theory not allowed for Practical subject", "danger");
+                return;
+            }
+
+            // 🔥 AUTO COPY ONLY FOR BOTH (FIXED)
+            if (category == SubjectCategoryEnum.Both && string.IsNullOrWhiteSpace(practicalEmail))
+            {
+                practicalEmail = theoryEmail;
+            }
+
+            // ================= THEORY =================
+            if (category == SubjectCategoryEnum.Theory || category == SubjectCategoryEnum.Both)
+            {
+                var theoryFaculty = await Repo.GetFacultyByEmail(theoryEmail);
+
+                if (theoryFaculty == null)
+                {
+                    await ShowToast($"Row {row}: Invalid Theory Faculty", "danger");
+                    return;
+                }
+
+                if (!await Repo.IsFacultyAllowed(theoryFaculty.FacultyId, courseDeptId))
+                {
+                    await ShowToast($"Row {row}: Theory faculty not allowed", "danger");
+                    return;
+                }
+
+                finalList.Add(new SubjectFacultyEntity
+                    {
+                        SubjectSemesterId = subject.SubjectSemesterId,
+                        DivisionId = division.DivisionId,
+                        FacultyId = theoryFaculty.FacultyId,
+                        TeachingType = SubjectCategoryEnum.Theory
+                    });
+            }
+
+            // ================= PRACTICAL =================
+            if (category == SubjectCategoryEnum.Practical || category == SubjectCategoryEnum.Both)
+            {
+                var practicalFaculty = await Repo.GetFacultyByEmail(practicalEmail);
+
+                if (practicalFaculty == null)
+                {
+                    await ShowToast($"Row {row}: Invalid Practical Faculty", "danger");
+                    return;
+                }
+
+                if (!await Repo.IsFacultyAllowed(practicalFaculty.FacultyId, courseDeptId))
+                {
+                    await ShowToast($"Row {row}: Practical faculty not allowed", "danger");
+                    return;
+                }
+
+                finalList.Add(new SubjectFacultyEntity
+                    {
+                        SubjectSemesterId = subject.SubjectSemesterId,
+                        DivisionId = division.DivisionId,
+                        FacultyId = practicalFaculty.FacultyId,
+                        TeachingType = SubjectCategoryEnum.Practical
+                    });
+            }
         }
 
         var result = await Repo.BulkInsertAsync(finalList, userId);
 
-        await ShowToast(result.Item2, result.Item1 ? "success" : "danger");
-
+        if (result.Item1)
+        {
+            await ShowToast("CSV Uploaded Successfully", "success");
+        }
+        else
+        {
+            await ShowToast(result.Item2, "danger");
+        }
+        // 🔥 RESET AFTER SUCCESS
+       
         list = await Repo.GetAllAsync();
+        if (result.Item1)
+        {
+            courseId = 0;
+            semesterId = 0;
+            divisionId = 0;
+
+            model = new SubjectFacultyEntity();   // 🔥 ADD THIS
+            theoryFacultyId = 0;                  // 🔥 ADD
+            practicalFacultyId = 0;               // 🔥 ADD
+
+            subjectSemesters.Clear();
+            divisions.Clear();
+
+            showCsv = false;
+        }
     }
 
    
-    async Task DownloadTemplate()
-    {
-        var csv = "CourseName,SemesterNo,SubjectName,DivisionName,FacultyEmail\n";
-        var bytes = Encoding.UTF8.GetBytes(csv);
+    // async Task DownloadTemplate()
+    // {
+    //     var csv = "CourseName,SemesterNo,SubjectName,DivisionName,FacultyEmail\n";
+    //     var bytes = Encoding.UTF8.GetBytes(csv);
 
-        await JS.InvokeVoidAsync("downloadFile", "template.csv", bytes);
-    }
+    //     await JS.InvokeVoidAsync("downloadFile", "template.csv", bytes);
+    // }
 
     async Task ShowToast(string msg, string type)
     {

@@ -122,11 +122,12 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
 
             public async Task<(bool, string)> AddAsync(SubjectFaculty model)
             {
-                var exists = await _context.SubjectFaculties.AnyAsync(x =>
-                    x.SubjectSemesterId == model.SubjectSemesterId &&
-                    x.DivisionId == model.DivisionId);
+            var exists = await _context.SubjectFaculties.AnyAsync(x =>
+                x.SubjectSemesterId == model.SubjectSemesterId &&
+                x.DivisionId == model.DivisionId &&
+                x.TeachingType == model.TeachingType);
 
-                if (exists)
+            if (exists)
                     return (false, "Already assigned for this division");
 
                 _context.SubjectFaculties.Add(model);
@@ -145,12 +146,12 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
                 if (existing == null)
                     return (false, "Record not found");
 
-                var duplicate = await _context.SubjectFaculties.AnyAsync(x =>
-                    x.SubjectSemesterId == model.SubjectSemesterId &&
-                    x.DivisionId == model.DivisionId &&
-                    x.SubjectFacultyId != model.SubjectFacultyId);
-
-                if (duplicate)
+            var duplicate = await _context.SubjectFaculties.AnyAsync(x =>
+                x.SubjectSemesterId == model.SubjectSemesterId &&
+                x.DivisionId == model.DivisionId &&
+                x.TeachingType == model.TeachingType &&
+                x.SubjectFacultyId != model.SubjectFacultyId);
+            if (duplicate)
                     return (false, "Already assigned");
 
                 existing.SubjectSemesterId = model.SubjectSemesterId;
@@ -174,10 +175,30 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
                     await _context.SaveChangesAsync();
                 }
             }
+        public async Task<bool> IsFacultyAllowed(int facultyId, int departmentId)
+        {
+            var faculty = await _context.Faculties
+                .Include(f => f.ExternalPermissions)
+                .FirstOrDefaultAsync(f => f.FacultyId == facultyId && f.IsActive);
 
-            // ================= BULK INSERT (MANUAL) =================
+            if (faculty == null)
+                return false;
 
-            public async Task<(bool, string)> BulkInsertAsync(List<SubjectFaculty> list, int userId)
+            // ✅ SAME DEPARTMENT
+            if (faculty.DepartmentId == departmentId)
+                return true;
+
+            // ❌ NOT EXTERNAL
+            if (!faculty.IsExternal)
+                return false;
+
+            // ✅ CHECK PERMISSION TABLE
+            return faculty.ExternalPermissions
+                .Any(x => x.DepartmentId == departmentId && x.IsActive);
+        }
+        // ================= BULK INSERT (MANUAL) =================
+
+        public async Task<(bool, string)> BulkInsertAsync(List<SubjectFaculty> list, int userId)
             {
                 foreach (var item in list)
                 {
@@ -194,11 +215,11 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
                     if (!allowed)
                         return (false, "Unauthorized Course");
 
-                    var exists = await _context.SubjectFaculties.AnyAsync(x =>
-                        x.SubjectSemesterId == item.SubjectSemesterId &&
-                        x.DivisionId == item.DivisionId);
-
-                    if (exists)
+                var exists = await _context.SubjectFaculties.AnyAsync(x =>
+                    x.SubjectSemesterId == item.SubjectSemesterId &&
+                    x.DivisionId == item.DivisionId &&
+                    x.TeachingType == item.TeachingType);
+                if (exists)
                         return (false, "Duplicate Entry");
                 }
 

@@ -295,9 +295,10 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.HasIndex("DepartmentId");
 
-                    b.HasIndex("FacultyId");
+                    b.HasIndex("FacultyId", "DepartmentId")
+                        .IsUnique();
 
-                    b.ToTable("ExternalFacultyPermissions");
+                    b.ToTable("TblExternalFacultyPermission", (string)null);
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Faculty", b =>
@@ -593,6 +594,9 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Property<int>("SubjectSemesterId")
                         .HasColumnType("int");
 
+                    b.Property<byte>("TeachingType")
+                        .HasColumnType("tinyint");
+
                     b.HasKey("SubjectFacultyId");
 
                     b.HasIndex("DivisionId");
@@ -601,7 +605,7 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.HasIndex("SubjectId");
 
-                    b.HasIndex("SubjectSemesterId", "DivisionId")
+                    b.HasIndex("SubjectSemesterId", "DivisionId", "TeachingType")
                         .IsUnique();
 
                     b.ToTable("TblSubjectFaculty", (string)null);
@@ -1232,7 +1236,7 @@ namespace ScheduleX.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("ScheduleX.Core.Entities.Faculty", "Faculty")
-                        .WithMany()
+                        .WithMany("ExternalPermissions")
                         .HasForeignKey("FacultyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1679,6 +1683,8 @@ namespace ScheduleX.Infrastructure.Migrations
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Faculty", b =>
                 {
+                    b.Navigation("ExternalPermissions");
+
                     b.Navigation("FacultyAvailabilities");
 
                     b.Navigation("SubjectFaculties");

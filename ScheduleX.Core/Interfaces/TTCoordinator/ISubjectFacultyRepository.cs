@@ -12,7 +12,7 @@ public interface ISubjectFacultyRepository
     Task<List<Division>> GetDivisions(int semesterId);
 
     Task<List<SubjectSemester>> GetSubjectSemesters(int semesterId);
-
+    Task<bool> IsFacultyAllowed(int facultyId, int departmentId);
     Task<List<Faculty>> GetFaculties(int courseId);
 
     // ================= CROSS-DEPARTMENT =================
