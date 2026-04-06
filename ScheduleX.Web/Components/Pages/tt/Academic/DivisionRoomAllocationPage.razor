@@ -1,0 +1,1016 @@
+﻿
+@* @page "/tt/academic/division-room-allocation" *@
+@* @layout ScheduleX.Web.Components.Layout.tt.TTLayout *@
+
+@* @using ScheduleX.Core.Entities *@
+@* @using ScheduleX.Core.Interfaces.TTCoordinator *@
+@* @using ScheduleX.Infrastructure.Repositories.TTCoordinator *@
+
+@* @inject IDivisionRoomAllocationRepository Repo *@
+@* @inject ISemesterRepository SemesterRepo *@
+@* @inject IRoomRepository RoomRepo *@
+@* @inject IDivisionService DivisionService *@
+
+@* <h3>Division Room Allocation</h3> *@
+
+@* <div class="form-section"> *@
+
+@*     <!-- Semester --> *@
+@*     <select @bind="model.SemesterId"> *@
+@*         <option value="0">Select Semester</option> *@
+@*         @foreach (var s in semesters) *@
+@*         { *@
+@*             <option value="@s.SemesterId">@s.SemesterNo</option> *@
+@*         } *@
+@*     </select> *@
+
+@*     <!-- Division --> *@
+@*     <select @bind="model.DivisionId"> *@
+@*         <option value="0">Select Division</option> *@
+@*         @foreach (var d in divisions) *@
+@*         { *@
+@*             <option value="@d.DivisionId">@d.DivisionName</option> *@
+@*         } *@
+@*     </select> *@
+
+@*     <!-- Room --> *@
+@*     <select @bind="model.RoomId"> *@
+@*         <option value="0">Select Room</option> *@
+@*         @foreach (var r in rooms) *@
+@*         { *@
+@*             <option value="@r.RoomId">@r.RoomName</option> *@
+@*         } *@
+@*     </select> *@
+
+@*     <label> *@
+@*         <input type="checkbox" @bind="model.IsFixed" /> Fixed *@
+@*     </label> *@
+
+@*     <input type="date" @bind="fromDate" /> *@
+@*     <input type="date" @bind="toDate" /> *@
+
+@*     <button @onclick="Save">Save</button> *@
+@*     <button @onclick="Clear">Clear</button> *@
+
+@* </div> *@
+
+@* <hr /> *@
+
+@* <table class="table"> *@
+@*     <thead> *@
+@*         <tr> *@
+@*             <th>Semester</th> *@
+@*             <th>Division</th> *@
+@*             <th>Room</th> *@
+@*             <th>Fixed</th> *@
+@*             <th>Action</th> *@
+@*         </tr> *@
+@*     </thead> *@
+@*     <tbody> *@
+@*         @foreach (var item in list) *@
+@*         { *@
+@*             <tr> *@
+@*                 <td>@item.Semester?.SemesterNo</td> *@
+@*                 <td>@item.Division?.DivisionName</td> *@
+@*                 <td>@item.Room?.RoomName</td> *@
+@*                 <td>@(item.IsFixed ? "Yes" : "No")</td> *@
+@*                 <td> *@
+@*                     <button @onclick="() => Edit(item)">Edit</button> *@
+@*                     <button @onclick="() => Delete(item.AllocationId)">Delete</button> *@
+@*                 </td> *@
+@*             </tr> *@
+@*         } *@
+@*     </tbody> *@
+@* </table> *@
+
+@* @code { *@
+
+@*     DivisionRoomAllocation model = new(); *@
+@*     List<DivisionRoomAllocation> list = new(); *@
+
+@*     List<Semester> semesters = new(); *@
+@*     List<Division> divisions = new(); *@
+@*     List<Room> rooms = new(); *@
+
+@*     DateTime? fromDate; *@
+@*     DateTime? toDate; *@
+
+@*     protected override async Task OnInitializedAsync() *@
+@*     { *@
+@*         list = await Repo.GetAllAsync(); *@
+@*         semesters = await SemesterRepo.GetAllAsync(); *@
+
+@*         // ✅ Room method (correct) *@
+@*         rooms = await RoomRepo.GetAllRoomsAsync(); *@
+
+@*         // ✅ FINAL FIX (correct method name) *@
+@*         divisions = await DivisionService.GetAllDivisionsAsync(); *@
+@*     } *@
+
+@*     async Task Save() *@
+@*     { *@
+@*         var existing = list.FirstOrDefault(x => x.DivisionId == model.DivisionId); *@
+
+@*         if (fromDate.HasValue) *@
+@*             model.EffectiveFrom = DateOnly.FromDateTime(fromDate.Value); *@
+
+@*         if (toDate.HasValue) *@
+@*             model.EffectiveTo = DateOnly.FromDateTime(toDate.Value); *@
+
+@*         if (existing != null) *@
+@*         { *@
+@*             existing.RoomId = model.RoomId; *@
+@*             existing.SemesterId = model.SemesterId; *@
+@*             existing.IsFixed = model.IsFixed; *@
+@*             existing.EffectiveFrom = model.EffectiveFrom; *@
+@*             existing.EffectiveTo = model.EffectiveTo; *@
+
+@*             await Repo.UpdateAsync(existing); *@
+@*         } *@
+@*         else *@
+@*         { *@
+@*             await Repo.AddAsync(model); *@
+@*         } *@
+
+@*         list = await Repo.GetAllAsync(); *@
+@*         Clear(); *@
+@*     } *@
+
+@*     void Edit(DivisionRoomAllocation item) *@
+@*     { *@
+@*         model = new DivisionRoomAllocation *@
+@*         { *@
+@*             AllocationId = item.AllocationId, *@
+@*             SemesterId = item.SemesterId, *@
+@*             DivisionId = item.DivisionId, *@
+@*             RoomId = item.RoomId, *@
+@*             IsFixed = item.IsFixed, *@
+@*             EffectiveFrom = item.EffectiveFrom, *@
+@*             EffectiveTo = item.EffectiveTo *@
+@*         }; *@
+
+@*         fromDate = item.EffectiveFrom?.ToDateTime(TimeOnly.MinValue); *@
+@*         toDate = item.EffectiveTo?.ToDateTime(TimeOnly.MinValue); *@
+@*     } *@
+
+@*     async Task Delete(int id) *@
+@*     { *@
+@*         await Repo.DeleteAsync(id); *@
+@*         list = await Repo.GetAllAsync(); *@
+@*     } *@
+
+@*     void Clear() *@
+@*     { *@
+@*         model = new DivisionRoomAllocation(); *@
+@*         fromDate = null; *@
+@*         toDate = null; *@
+@*     } *@
+@* } *@
+
+
+@* this is correct *@
+@* @page "/tt/academic/division-room-allocation" *@
+@* @layout ScheduleX.Web.Components.Layout.tt.TTLayout *@
+
+@* @using ScheduleX.Core.Entities *@
+@* @using ScheduleX.Core.Interfaces.TTCoordinator *@
+
+@* @inject IDivisionRoomAllocationRepository Repo *@
+@* @inject ISemesterRepository SemesterRepo *@
+@* @inject IRoomRepository RoomRepo *@
+@* @inject IDivisionService DivisionService *@
+
+@* <h3>Division Room Allocation</h3> *@
+
+@* @if (!string.IsNullOrEmpty(message)) *@
+@* { *@
+@*     <div class="alert alert-warning">@message</div> *@
+@* } *@
+
+@* <div class="card p-3 mb-3"> *@
+
+@*     <div class="row"> *@
+
+@*         <div class="col-md-3"> *@
+@*             <select class="form-control" @bind="model.SemesterId"> *@
+@*                 <option value="0">Select Semester</option> *@
+@*                 @foreach (var s in semesters) *@
+@*                 { *@
+@*                     <option value="@s.SemesterId">@s.SemesterNo</option> *@
+@*                 } *@
+@*             </select> *@
+@*         </div> *@
+
+@*         <div class="col-md-3"> *@
+@*             <select class="form-control" @bind="model.DivisionId"> *@
+@*                 <option value="0">Select Division</option> *@
+@*                 @foreach (var d in divisions) *@
+@*                 { *@
+@*                     <option value="@d.DivisionId">@d.DivisionName</option> *@
+@*                 } *@
+@*             </select> *@
+@*         </div> *@
+
+@*         <div class="col-md-3"> *@
+@*             <select class="form-control" @bind="model.RoomId"> *@
+@*                 <option value="0">Select Room</option> *@
+@*                 @foreach (var r in rooms) *@
+@*                 { *@
+@*                     <option value="@r.RoomId">@r.RoomName</option> *@
+@*                 } *@
+@*             </select> *@
+@*         </div> *@
+
+@*         <div class="col-md-2 mt-2"> *@
+@*             <input type="checkbox" @bind="model.IsFixed" /> Fixed *@
+@*         </div> *@
+
+@*         <div class="col-md-2 mt-2"> *@
+@*             <button class="btn btn-success" @onclick="Save"> *@
+@*                 @(model.AllocationId == 0 ? "Save" : "Update") *@
+@*             </button> *@
+@*             <button class="btn btn-secondary ms-2" @onclick="Clear">Clear</button> *@
+@*         </div> *@
+
+@*     </div> *@
+
+@* </div> *@
+
+@* <table class="table table-dark table-bordered"> *@
+@*     <thead> *@
+@*         <tr> *@
+@*             <th>Semester</th> *@
+@*             <th>Division</th> *@
+@*             <th>Room</th> *@
+@*             <th>Fixed</th> *@
+@*             <th>Action</th> *@
+@*         </tr> *@
+@*     </thead> *@
+
+@*     <tbody> *@
+@*         @foreach (var item in list) *@
+@*         { *@
+@*             <tr> *@
+@*                 <td>@item.Semester?.SemesterNo</td> *@
+@*                 <td>@item.Division?.DivisionName</td> *@
+@*                 <td>@item.Room?.RoomName</td> *@
+@*                 <td>@(item.IsFixed ? "Yes" : "No")</td> *@
+@*                 <td> *@
+@*                     <button class="btn btn-info btn-sm" @onclick="() => Edit(item)">Edit</button> *@
+@*                     <button class="btn btn-danger btn-sm" @onclick="() => Delete(item.AllocationId)">Delete</button> *@
+@*                 </td> *@
+@*             </tr> *@
+@*         } *@
+@*     </tbody> *@
+@* </table> *@
+
+@* @code { *@
+
+@*     DivisionRoomAllocation model = new(); *@
+@*     List<DivisionRoomAllocation> list = new(); *@
+
+@*     List<Semester> semesters = new(); *@
+@*     List<Division> divisions = new(); *@
+@*     List<Room> rooms = new(); *@
+
+@*     string? message; *@
+
+@*     protected override async Task OnInitializedAsync() *@
+@*     { *@
+@*         await LoadData(); *@
+@*     } *@
+
+@*     async Task LoadData() *@
+@*     { *@
+@*         list = await Repo.GetAllAsync(); *@
+@*         semesters = await SemesterRepo.GetAllAsync(); *@
+@*         rooms = await RoomRepo.GetAllRoomsAsync(); *@
+@*         divisions = await DivisionService.GetAllDivisionsAsync(); *@
+@*     } *@
+
+@*     async Task Save() *@
+@*     { *@
+@*         message = null; *@
+
+@*         try *@
+@*         { *@
+@*             if (model.AllocationId == 0) *@
+@*                 await Repo.AddAsync(model); *@
+@*             else *@
+@*                 await Repo.UpdateAsync(model); *@
+
+@*             await LoadData(); *@
+@*             Clear(); *@
+@*         } *@
+@*         catch (Exception ex) *@
+@*         { *@
+@*             message = ex.Message;   // ✅ SHOW MESSAGE *@
+@*         } *@
+@*     } *@
+
+@*     void Edit(DivisionRoomAllocation item) *@
+@*     { *@
+@*         model = new DivisionRoomAllocation *@
+@*             { *@
+@*                 AllocationId = item.AllocationId, *@
+@*                 SemesterId = item.SemesterId, *@
+@*                 DivisionId = item.DivisionId, *@
+@*                 RoomId = item.RoomId, *@
+@*                 IsFixed = item.IsFixed *@
+@*             }; *@
+
+@*         StateHasChanged(); // 🔥 IMPORTANT FIX *@
+@*     } *@
+
+@*     async Task Delete(int id) *@
+@*     { *@
+@*         await Repo.DeleteAsync(id); *@
+@*         await LoadData(); *@
+@*     } *@
+
+@*     void Clear() *@
+@*     { *@
+@*         model = new DivisionRoomAllocation(); *@
+@*         message = null; *@
+@*     } *@
+@* } *@
+
+
+
+
+@* @page "/tt/academic/division-room-allocation" *@
+@* @layout ScheduleX.Web.Components.Layout.tt.TTLayout *@
+
+@* @using ScheduleX.Core.Entities *@
+@* @using ScheduleX.Core.Interfaces.TTCoordinator *@
+
+@* @inject IDivisionRoomAllocationRepository Repo *@
+@* @inject ISemesterRepository SemesterRepo *@
+@* @inject IRoomRepository RoomRepo *@
+@* @inject IDivisionService DivisionService *@
+
+@* <h3>Division Room Allocation</h3> *@
+
+@* @if (!string.IsNullOrEmpty(message)) *@
+@* { *@
+@*     <div class="alert alert-danger">@message</div> *@
+@* } *@
+
+@* <div class="card p-3 mb-3"> *@
+
+@*     <div class="row"> *@
+
+@*         <div class="col-md-3"> *@
+@*             <label>Semester</label> *@
+@*             <select class="form-control" @bind="model.SemesterId"> *@
+@*                 <option value="0">Select Semester</option> *@
+@*                 @foreach (var s in semesters) *@
+@*                 { *@
+@*                     <option value="@s.SemesterId">@s.SemesterNo</option> *@
+@*                 } *@
+@*             </select> *@
+@*         </div> *@
+
+@*         <div class="col-md-3"> *@
+@*             <label>Division</label> *@
+@*             <select class="form-control" @bind="model.DivisionId"> *@
+@*                 <option value="0">Select Division</option> *@
+@*                 @foreach (var d in divisions) *@
+@*                 { *@
+@*                     <option value="@d.DivisionId">@d.DivisionName</option> *@
+@*                 } *@
+@*             </select> *@
+@*         </div> *@
+
+@*         <div class="col-md-3"> *@
+@*             <label>Room</label> *@
+@*             <select class="form-control" @bind="model.RoomId"> *@
+@*                 <option value="0">Select Room</option> *@
+@*                 @foreach (var r in rooms) *@
+@*                 { *@
+@*                     <option value="@r.RoomId">@r.RoomName</option> *@
+@*                 } *@
+@*             </select> *@
+@*         </div> *@
+
+@*         <div class="col-md-2 mt-4"> *@
+@*             <input type="checkbox" @bind="model.IsFixed" /> Fixed *@
+@*         </div> *@
+
+@*         <div class="col-md-4 mt-3"> *@
+@*             <button class="btn btn-success" @onclick="Save"> *@
+@*                 @(model.AllocationId == 0 ? "Save" : "Update") *@
+@*             </button> *@
+
+@*             <button class="btn btn-secondary ms-2" @onclick="Clear">Clear</button> *@
+@*         </div> *@
+
+@*     </div> *@
+
+@* </div> *@
+
+@* <table class="table table-dark table-bordered"> *@
+@*     <thead> *@
+@*         <tr> *@
+@*             <th>Semester</th> *@
+@*             <th>Division</th> *@
+@*             <th>Room</th> *@
+@*             <th>Fixed</th> *@
+@*             <th>Action</th> *@
+@*         </tr> *@
+@*     </thead> *@
+
+@*     <tbody> *@
+@*         @foreach (var item in list) *@
+@*         { *@
+@*             <tr> *@
+@*                 <td>@item.Semester?.SemesterNo</td> *@
+@*                 <td>@item.Division?.DivisionName</td> *@
+@*                 <td>@item.Room?.RoomName</td> *@
+@*                 <td>@(item.IsFixed ? "Yes" : "No")</td> *@
+@*                 <td> *@
+@*                     <button class="btn btn-info btn-sm" @onclick="() => Edit(item)">Edit</button> *@
+@*                     <button class="btn btn-danger btn-sm" @onclick="() => Delete(item.AllocationId)">Delete</button> *@
+@*                 </td> *@
+@*             </tr> *@
+@*         } *@
+@*     </tbody> *@
+@* </table> *@
+
+@* @code { *@
+
+@*     DivisionRoomAllocation model = new(); *@
+@*     List<DivisionRoomAllocation> list = new(); *@
+
+@*     List<Semester> semesters = new(); *@
+@*     List<Division> divisions = new(); *@
+@*     List<Room> rooms = new(); *@
+
+@*     string? message; *@
+
+@*     protected override async Task OnInitializedAsync() *@
+@*     { *@
+@*         await LoadData(); *@
+@*     } *@
+
+@*     async Task LoadData() *@
+@*     { *@
+@*         list = await Repo.GetAllAsync(); *@
+@*         semesters = await SemesterRepo.GetAllAsync(); *@
+@*         rooms = await RoomRepo.GetAllRoomsAsync(); *@
+@*         divisions = await DivisionService.GetAllDivisionsAsync(); *@
+@*     } *@
+
+@*     async Task Save() *@
+@*     { *@
+@*         message = null; *@
+
+@*         if (model.SemesterId == 0) *@
+@*         { *@
+@*             message = "Please select semester"; *@
+@*             return; *@
+@*         } *@
+
+@*         if (model.DivisionId == 0) *@
+@*         { *@
+@*             message = "Please select division"; *@
+@*             return; *@
+@*         } *@
+
+@*         if (model.RoomId == 0) *@
+@*         { *@
+@*             message = "Please select room"; *@
+@*             return; *@
+@*         } *@
+
+@*         try *@
+@*         { *@
+@*             if (model.AllocationId == 0) *@
+@*                 await Repo.AddAsync(model); *@
+@*             else *@
+@*                 await Repo.UpdateAsync(model); *@
+
+@*             await LoadData(); *@
+@*             Clear(); *@
+@*         } *@
+@*         catch (Exception ex) *@
+@*         { *@
+@*             message = ex.Message; *@
+@*         } *@
+@*     } *@
+
+@*     void Edit(DivisionRoomAllocation item) *@
+@*     { *@
+@*         model = new DivisionRoomAllocation *@
+@*             { *@
+@*                 AllocationId = item.AllocationId, *@
+@*                 SemesterId = item.SemesterId, *@
+@*                 DivisionId = item.DivisionId, *@
+@*                 RoomId = item.RoomId, *@
+@*                 IsFixed = item.IsFixed *@
+@*             }; *@
+
+@*         StateHasChanged(); *@
+@*     } *@
+
+@*     async Task Delete(int id) *@
+@*     { *@
+@*         await Repo.DeleteAsync(id); *@
+@*         await LoadData(); *@
+@*     } *@
+
+@*     void Clear() *@
+@*     { *@
+@*         model = new DivisionRoomAllocation(); *@
+@*         message = null; *@
+@*     } *@
+@* } *@
+
+
+
+@* this is final *@
+@* @page "/tt/academic/division-room-allocation" *@
+@* @layout ScheduleX.Web.Components.Layout.tt.TTLayout *@
+
+@* @using ScheduleX.Core.Entities *@
+@* @using ScheduleX.Core.Interfaces.TTCoordinator *@
+
+@* @inject IDivisionRoomAllocationRepository Repo *@
+@* @inject ISemesterRepository SemesterRepo *@
+@* @inject IRoomRepository RoomRepo *@
+@* @inject IDivisionService DivisionService *@
+@* <link href="css/division-room-allocation.css" rel="stylesheet" /> *@
+
+@* <h3 class="mb-4">Division Room Allocation</h3> *@
+
+@* @if (!string.IsNullOrEmpty(message)) *@
+@* { *@
+@*     <div class="alert">@message</div> *@
+@* } *@
+
+@* <!-- ================= FORM ================= --> *@
+@* <div class="tt-card mb-4"> *@
+
+@*     <div class="row g-3"> *@
+
+@*         <!-- Semester --> *@
+@*         <div class="col-md-4"> *@
+@*             <label>Semester</label> *@
+@*             <select class="tt-select" @bind="model.SemesterId"> *@
+@*                 <option value="0">-- Select Semester --</option> *@
+@*                 @foreach (var s in semesters) *@
+@*                 { *@
+@*                     <option value="@s.SemesterId">@s.SemesterNo</option> *@
+@*                 } *@
+@*             </select> *@
+@*         </div> *@
+
+@*         <!-- Division --> *@
+@*         <div class="col-md-4"> *@
+@*             <label>Division</label> *@
+@*             <select class="tt-select" @bind="model.DivisionId"> *@
+@*                 <option value="0">-- Select Division --</option> *@
+@*                 @foreach (var d in divisions) *@
+@*                 { *@
+@*                     <option value="@d.DivisionId">@d.DivisionName</option> *@
+@*                 } *@
+@*             </select> *@
+@*         </div> *@
+
+@*         <!-- Room --> *@
+@*         <div class="col-md-4"> *@
+@*             <label>Room</label> *@
+@*             <select class="tt-select" @bind="model.RoomId"> *@
+@*                 <option value="0">-- Select Room --</option> *@
+@*                 @foreach (var r in rooms) *@
+@*                 { *@
+@*                     <option value="@r.RoomId">@r.RoomName</option> *@
+@*                 } *@
+@*             </select> *@
+@*         </div> *@
+
+@*         <!-- Fixed --> *@
+@*         <div class="col-md-3 mt-3"> *@
+@*             <input type="checkbox" @bind="model.IsFixed" /> Fixed *@
+@*         </div> *@
+
+@*     </div> *@
+
+@*     <div class="mt-4"> *@
+@*         <button class="btn btn-success px-4" @onclick="Save"> *@
+@*             @(model.AllocationId == 0 ? "Save" : "Update") *@
+@*         </button> *@
+
+@*         <button class="btn btn-secondary ms-2" @onclick="Clear"> *@
+@*             Clear *@
+@*         </button> *@
+@*     </div> *@
+
+@* </div> *@
+
+@* <hr /> *@
+
+@* <!-- ================= TABLE ================= --> *@
+@* <table class="table table-dark"> *@
+@*     <thead> *@
+@*         <tr> *@
+@*             <th>Semester</th> *@
+@*             <th>Division</th> *@
+@*             <th>Room</th> *@
+@*             <th>Fixed</th> *@
+@*             <th style="width:180px;">Actions</th> *@
+@*         </tr> *@
+@*     </thead> *@
+
+@*     <tbody> *@
+@*         @foreach (var item in list) *@
+@*         { *@
+@*             <tr> *@
+@*                 <td>@item.Semester?.SemesterNo</td> *@
+@*                 <td>@item.Division?.DivisionName</td> *@
+@*                 <td>@item.Room?.RoomName</td> *@
+@*                 <td>@(item.IsFixed ? "Yes" : "No")</td> *@
+
+@*                 <td> *@
+@*                     <div style="display:flex; gap:10px;"> *@
+
+@*                         <button class="btn btn-info btn-sm" *@
+@*                                 @onclick="() => Edit(item)"> *@
+@*                             Edit *@
+@*                         </button> *@
+
+@*                         <button class="btn btn-danger btn-sm" *@
+@*                                 @onclick="() => Delete(item.AllocationId)"> *@
+@*                             Delete *@
+@*                         </button> *@
+
+@*                     </div> *@
+@*                 </td> *@
+@*             </tr> *@
+@*         } *@
+@*     </tbody> *@
+@* </table> *@
+
+@* @code { *@
+
+@*     DivisionRoomAllocation model = new(); *@
+@*     List<DivisionRoomAllocation> list = new(); *@
+
+@*     List<Semester> semesters = new(); *@
+@*     List<Division> divisions = new(); *@
+@*     List<Room> rooms = new(); *@
+
+@*     string? message; *@
+
+@*     protected override async Task OnInitializedAsync() *@
+@*     { *@
+@*         await LoadData(); *@
+@*     } *@
+
+@*     async Task LoadData() *@
+@*     { *@
+@*         list = await Repo.GetAllAsync(); *@
+@*         semesters = await SemesterRepo.GetAllAsync(); *@
+@*         rooms = await RoomRepo.GetAllRoomsAsync(); *@
+@*         divisions = await DivisionService.GetAllDivisionsAsync(); *@
+@*     } *@
+
+@*     async Task Save() *@
+@*     { *@
+@*         message = null; *@
+
+@*         // ✅ Validation *@
+@*         if (model.SemesterId == 0) *@
+@*         { *@
+@*             message = "Please select a semester"; *@
+@*             return; *@
+@*         } *@
+
+@*         if (model.DivisionId == 0) *@
+@*         { *@
+@*             message = "Please select a division"; *@
+@*             return; *@
+@*         } *@
+
+@*         if (model.RoomId == 0) *@
+@*         { *@
+@*             message = "Please select a room"; *@
+@*             return; *@
+@*         } *@
+
+@*         try *@
+@*         { *@
+@*             if (model.AllocationId == 0) *@
+@*             { *@
+@*                 await Repo.AddAsync(model); *@
+@*                 message = "Room allocated successfully"; *@
+@*             } *@
+@*             else *@
+@*             { *@
+@*                 await Repo.UpdateAsync(model); *@
+@*                 message = "Room updated successfully"; *@
+@*             } *@
+
+@*             await LoadData(); *@
+@*             Clear(); *@
+@*         } *@
+@*         catch (Exception ex) *@
+@*         { *@
+@*             message = ex.Message; *@
+@*         } *@
+@*     } *@
+
+@*     void Edit(DivisionRoomAllocation item) *@
+@*     { *@
+@*         model = new DivisionRoomAllocation *@
+@*             { *@
+@*                 AllocationId = item.AllocationId, *@
+@*                 SemesterId = item.SemesterId, *@
+@*                 DivisionId = item.DivisionId, *@
+@*                 RoomId = item.RoomId, *@
+@*                 IsFixed = item.IsFixed *@
+@*             }; *@
+@*     } *@
+
+@*     async Task Delete(int id) *@
+@*     { *@
+@*         await Repo.DeleteAsync(id); *@
+@*         await LoadData(); *@
+@*     } *@
+
+@*     void Clear() *@
+@*     { *@
+@*         model = new DivisionRoomAllocation(); *@
+@*         message = null; *@
+@*     } *@
+@* } *@
+
+
+
+
+@page "/tt/academic/division-room-allocation"
+@layout ScheduleX.Web.Components.Layout.tt.TTLayout
+
+@using ScheduleX.Core.Entities
+@using ScheduleX.Core.Interfaces.TTCoordinator
+
+@inject IDivisionRoomAllocationRepository Repo
+@inject ISemesterRepository SemesterRepo
+@inject IRoomRepository RoomRepo
+@inject IDivisionService DivisionService
+<link href="css/division-room-allocation.css" rel="stylesheet" />
+
+<h3>Division Room Allocation</h3>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert">@message</div>
+}
+
+<!-- ================= FORM ================= -->
+<div class="tt-card p-4 mb-4">
+
+    <h5 class="mb-4">Allocate Room</h5>
+
+    <div class="row g-4">
+
+        <!-- Semester -->
+        <div class="col-md-6">
+            <label>Semester</label>
+            <select class="tt-select w-100" @bind="model.SemesterId">
+                <option value="0">-- Select Semester --</option>
+                @foreach (var s in semesters)
+                {
+                    <option value="@s.SemesterId">@s.SemesterNo</option>
+                }
+            </select>
+        </div>
+
+        <!-- Division -->
+        <div class="col-md-6">
+            <label>Division</label>
+            <select class="tt-select w-100" @bind="model.DivisionId">
+                <option value="0">-- Select Division --</option>
+                @foreach (var d in divisions)
+                {
+                    <option value="@d.DivisionId">@d.DivisionName</option>
+                }
+            </select>
+        </div>
+
+        <!-- Room -->
+        <div class="col-md-6">
+            <label>Room</label>
+            <select class="tt-select w-100" @bind="model.RoomId">
+                <option value="0">-- Select Room --</option>
+                @foreach (var r in rooms)
+                {
+                    <option value="@r.RoomId">@r.RoomName</option>
+                }
+            </select>
+        </div>
+
+        <!-- Fixed -->
+        <div class="col-md-6 d-flex align-items-end">
+            <div>
+                <input type="checkbox" @bind="model.IsFixed" />
+                <label style="display:inline; margin-left:8px;">Fixed</label>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BUTTON -->
+    <div class="mt-4">
+        <button class="btn btn-success px-4"
+                @onclick="Save">
+            @(model.AllocationId == 0 ? "Save Allocation" : "Update Allocation")
+        </button>
+
+        <button class="btn btn-secondary ms-2"
+                @onclick="Clear">
+            Clear
+        </button>
+    </div>
+
+</div>
+
+<hr />
+
+<!-- ================= TABLE ================= -->
+@* <table class="table table-dark"> *@
+@*     <thead> *@
+@*         <tr> *@
+@*             <th>Semester</th> *@
+@*             <th>Division</th> *@
+@*             <th>Room</th> *@
+@*             <th>Fixed</th> *@
+@*             <th style="width:180px;">Actions</th> *@
+@*         </tr> *@
+@*     </thead> *@
+
+@*     <tbody> *@
+@*         @foreach (var item in list) *@
+@*         { *@
+@*             <tr> *@
+@*                 <td>@item.Semester?.SemesterNo</td> *@
+@*                 <td>@item.Division?.DivisionName</td> *@
+@*                 <td>@item.Room?.RoomName</td> *@
+@*                 <td>@(item.IsFixed ? "Yes" : "No")</td> *@
+
+@*                 <td> *@
+@*                     <div style="display:flex; gap:10px;"> *@
+
+@*                         <button class="btn btn-info btn-sm" *@
+@*                                 @onclick="() => Edit(item)"> *@
+@*                             Edit *@
+@*                         </button> *@
+
+@*                         <button class="btn btn-danger btn-sm" *@
+@*                                 @onclick="() => Delete(item.AllocationId)"> *@
+@*                             Delete *@
+@*                         </button> *@
+
+@*                     </div> *@
+@*                 </td> *@
+@*             </tr> *@
+@*         } *@
+@*     </tbody> *@
+@* </table> *@
+
+
+<div class="tt-card p-4 mt-4">
+
+    <table class="table tt-table">
+        <thead>
+            <tr>
+                <th>Semester</th>
+                <th>Division</th>
+                <th>Room</th>
+                <th>Fixed</th>
+                <th style="width:180px;">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var item in list)
+            {
+                <tr>
+                    <td>@item.Semester?.SemesterNo</td>
+                    <td>@item.Division?.DivisionName</td>
+                    <td>@item.Room?.RoomName</td>
+
+                    <td>
+                        <span class="badge @(item.IsFixed ? "badge-success" : "badge-gray")">
+                            @(item.IsFixed ? "Yes" : "No")
+                        </span>
+                    </td>
+
+                    <td>
+                        <div class="action-buttons">
+
+                            <button class="btn-edit"
+                                    @onclick="() => Edit(item)">
+                                Edit
+                            </button>
+
+                            <button class="btn-delete"
+                                    @onclick="() => Delete(item.AllocationId)">
+                                Delete
+                            </button>
+
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
+
+@code {
+
+    DivisionRoomAllocation model = new();
+    List<DivisionRoomAllocation> list = new();
+
+    List<Semester> semesters = new();
+    List<Division> divisions = new();
+    List<Room> rooms = new();
+
+    string? message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    async Task LoadData()
+    {
+        list = await Repo.GetAllAsync();
+        semesters = await SemesterRepo.GetAllAsync();
+        rooms = await RoomRepo.GetAllRoomsAsync();
+        divisions = await DivisionService.GetAllDivisionsAsync();
+    }
+
+    async Task Save()
+    {
+        message = null;
+
+        if (model.SemesterId == 0)
+        {
+            message = "Please select semester";
+            return;
+        }
+
+        if (model.DivisionId == 0)
+        {
+            message = "Please select division";
+            return;
+        }
+
+        if (model.RoomId == 0)
+        {
+            message = "Please select room";
+            return;
+        }
+
+        try
+        {
+            if (model.AllocationId == 0)
+                await Repo.AddAsync(model);
+            else
+                await Repo.UpdateAsync(model);
+
+            await LoadData();
+            Clear();
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+        }
+    }
+
+    void Edit(DivisionRoomAllocation item)
+    {
+        model = new DivisionRoomAllocation
+            {
+                AllocationId = item.AllocationId,
+                SemesterId = item.SemesterId,
+                DivisionId = item.DivisionId,
+                RoomId = item.RoomId,
+                IsFixed = item.IsFixed
+            };
+    }
+
+    async Task Delete(int id)
+    {
+        await Repo.DeleteAsync(id);
+        await LoadData();
+    }
+
+    void Clear()
+    {
+        model = new DivisionRoomAllocation();
+        message = null;
+    }
+}
