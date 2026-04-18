@@ -157,21 +157,42 @@
 
     void CloseForm() => showForm = false;
 
+    // async Task SaveDepartment()
+    // {
+    //     if (departmentModel.DepartmentId == 0)
+    //     {
+    //         await DepartmentService.CreateAsync(departmentModel);
+    //         ShowToast("Department Added Successfully");
+    //     }
+    //     else
+    //     {
+    //         await DepartmentService.UpdateAsync(departmentModel);
+    //         ShowToast("Department Updated Successfully");
+    //     }
+
+    //     showForm = false;
+    //     await LoadData();
+    // }
     async Task SaveDepartment()
     {
+        (bool success, string message) result;
+
         if (departmentModel.DepartmentId == 0)
         {
-            await DepartmentService.CreateAsync(departmentModel);
-            ShowToast("Department Added Successfully");
+            result = await DepartmentService.CreateAsync(departmentModel);
         }
         else
         {
-            await DepartmentService.UpdateAsync(departmentModel);
-            ShowToast("Department Updated Successfully");
+            result = await DepartmentService.UpdateAsync(departmentModel);
         }
 
-        showForm = false;
-        await LoadData();
+        ShowToast(result.message);
+
+        if (result.success)
+        {
+            showForm = false;
+            await LoadData();
+        }
     }
 
     void Edit(Department dept)
@@ -187,10 +208,21 @@
         showForm = true;
     }
 
+    // async Task Toggle(int id)
+    // {
+    //     await DepartmentService.ToggleAsync(id);
+    //     await LoadData();
+    // }
     async Task Toggle(int id)
     {
-        await DepartmentService.ToggleAsync(id);
-        await LoadData();
+        var result = await DepartmentService.ToggleAsync(id);
+
+        ShowToast(result.message);
+
+        if (result.success)
+        {
+            await LoadData();
+        }
     }
 
     async void ShowToast(string message)
