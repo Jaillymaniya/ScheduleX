@@ -22,7 +22,8 @@ using ScheduleX.Infrastructure.Repositories.Admin;
 //using ScheduleX.Core.Interfaces.TTCoordinator;
 //using ScheduleX.Infrastructure.Repositories.TTCoordinator;
 
-
+using ScheduleX.Web.Services.Excel;
+using ScheduleX.Web.Services.TimeTable;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,7 +58,7 @@ builder.Services.AddScoped<IFacultyRepository, FacultyRepository>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();   // ROOM MANAGEMENT
 builder.Services.AddScoped<IScheduleConfigRepository, ScheduleConfigRepository>();
 builder.Services.AddScoped<IDivisionService, DivisionService>();
-
+builder.Services.AddScoped<ITimetableRepository, TimetableRepository>();
 builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
 builder.Services.AddScoped<ISubjectSemesterRepository, SubjectSemesterRepository>();
 builder.Services.AddScoped<ISubjectFacultyRepository, SubjectFacultyRepository>();
@@ -75,7 +76,10 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddScoped<TTCoordinatorApiService>();
 builder.Services.AddScoped<DepartmentApiService>();
 builder.Services.AddScoped<CourseApiService>();
-  // ROOM API SERVICE
+// ================= SERVICES =================
+builder.Services.AddScoped<IExcelService, ExcelService>();
+builder.Services.AddScoped<ITimeTableService, TimeTableService>();
+// ROOM API SERVICE
 
 // ================= AUTH SERVICES =================
 builder.Services.AddScoped<ScheduleX.Web.Services.AuthState>();
