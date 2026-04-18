@@ -1,168 +1,4 @@
-﻿/* remove layout padding only on login page */
-/*.content.px-4 {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-}
-
-* {
-    box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
-}*/
-
-/* MAIN LAYOUT */
-/*.auth-container {
-    display: flex;
-    min-height: 100vh;
-    overflow-x: hidden;
-}*/
-
-/* LEFT PANEL (THEME MATCHED) */
-/*.auth-left {
-    width: 40%;
-    background: linear-gradient(145deg, #0f172a, #1e293b, #312e81);
-    color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;*/ /* CENTER VERTICALLY */
-    /*padding: 60px;
-}
-
-    .auth-left h1 {
-        font-size: 40px;
-        margin-bottom: 10px;
-        font-weight: 600;
-    }
-
-    .auth-left h3 {
-        font-size: 22px;
-        font-weight: 400;
-        margin-bottom: 20px;
-        opacity: 0.9;
-    }
-
-    .auth-left p {
-        font-size: 15px;
-        line-height: 1.7;
-        max-width: 380px;
-        opacity: 0.8;
-    }*/
-
-/* RIGHT PANEL */
-/*.auth-right {
-    width: 60%;
-    background: #0b1120;*/ /* Dark like homepage */
-    /*display: flex;
-    align-items: center;
-    justify-content: center;
-}*/
-
-/* LOGIN CARD (GLASS STYLE) */
-/*.login-card {
-    width: 400px;
-    padding: 40px;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: #ffffff;
-}
-
-    .login-card h2 {
-        font-size: 28px;
-        margin-bottom: 8px;
-    }
-
-.subtitle {
-    font-size: 14px;
-    margin-bottom: 25px;
-    opacity: 0.7;
-}*/
-
-/* INPUT */
-/*.input {
-    width: 100%;
-    padding: 14px;
-    margin-bottom: 8px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: rgba(255,255,255,0.08);
-    color: white;
-    font-size: 14px;
-}
-
-    .input::placeholder {
-        color: rgba(255,255,255,0.6);
-    }
-
-    .input:focus {
-        outline: none;
-        border-color: #8b5cf6;
-    }*/
-
-/* FIELD ERROR */
-/*.field-error {
-    font-size: 13px;
-    color: #f87171;
-    margin-bottom: 12px;
-}*/
-
-/* SERVER ERROR */
-/*.server-error {
-    font-size: 14px;
-    color: #f87171;
-    margin-bottom: 15px;
-    text-align: center;
-}*/
-
-/* BUTTON (MATCH HOMEPAGE GRADIENT) */
-/*.btn {
-    width: 100%;
-    padding: 14px;
-    border-radius: 10px;
-    border: none;
-    font-size: 15px;
-    cursor: pointer;
-    margin-top: 10px;
-    font-weight: 500;
-}
-
-    .btn.primary {
-        background: linear-gradient(90deg, #8b5cf6, #6366f1);
-        color: white;
-    }
-
-        .btn.primary:hover {
-            opacity: 0.9;
-        }*/
-
-/* FORGOT */
-/*.forgot {
-    margin-top: 16px;
-    text-align: center;
-}
-
-    .forgot a {
-        font-size: 13px;
-        color: #a78bfa;
-        text-decoration: none;
-    }
-
-        .forgot a:hover {
-            text-decoration: underline;
-        }*/
-
-/* RESPONSIVE */
-/*@media (max-width: 900px) {
-    .auth-left {
-        display: none;
-    }
-
-    .auth-right {
-        width: 100%;
-    }
-}*/
-
-/* ======= LOGIN FULL SCREEN FIX (NO SCROLL) ======= */
+﻿
 
 /* Make page truly full height */
 html, body {
@@ -362,3 +198,31 @@ body {
         padding: 16px;
     }
 }
+
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-input {
+    width: 100%;
+    padding-right: 45px;
+}
+
+.toggle-eye {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: rgba(255,255,255,0.7);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+    .toggle-eye:hover {
+        color: #a78bfa;
+    }
+
+

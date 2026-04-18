@@ -24,19 +24,22 @@
         </p>
     </div>
 
-    <!-- RIGHT LOGIN PANEL -->
     <div class="auth-right">
         <div class="login-card">
 
             <h2>Sign in</h2>
             <p class="subtitle">Access your ScheduleX dashboard</p>
+
             @if (!string.IsNullOrEmpty(successMessage))
             {
                 <div class="alert alert-success">
                     @successMessage
                 </div>
             }
+
             <br />
+
+            <!-- USERNAME -->
             <input class="input"
                    placeholder="Username"
                    @bind="Username"
@@ -47,11 +50,18 @@
                 <div class="field-error">Username is required</div>
             }
 
-            <input type="password"
-                   class="input"
-                   placeholder="Password"
-                   @bind="Password"
-                   @oninput="ClearMessages" />
+            <!-- PASSWORD WITH EYE (UPDATED) -->
+            <div class="password-wrapper">
+                <input type="@(_showPassword ? "text" : "password")"
+                       class="input password-input"
+                       placeholder="Password"
+                       @bind="Password"
+                       @oninput="ClearMessages" />
+
+                <span class="toggle-eye" @onclick="TogglePassword">
+                    <i class="@(_showPassword ? "fa-solid fa-eye-slash" : "fa-solid fa-eye")"></i>
+                </span>
+            </div>
 
             @if (showPassError)
             {
@@ -63,16 +73,18 @@
                 <div class="server-error">@Error</div>
             }
 
+            <!-- BUTTON -->
             <button class="btn primary"
                     disabled="@_busy"
                     @onclick="DoLogin">
                 @(_busy ? "Signing in..." : "Sign in")
             </button>
 
+            <!-- FORGOT -->
             <div class="forgot">
-                @* <a href="/forgot-password">Forgot password?</a> *@
                 <a href="/forgot-password" class="forgot-link">Forgot password?</a>
             </div>
+
         </div>
     </div>
 
@@ -87,6 +99,13 @@
 
     private bool showUserError;
     private bool showPassError;
+
+    private bool _showPassword = false;
+
+    private void TogglePassword()
+    {
+        _showPassword = !_showPassword;
+    }
 
     private async Task DoLogin()
     {
@@ -108,7 +127,6 @@
         {
             await using var db = await DbFactory.CreateDbContextAsync();
 
-            // 🔥 FORCE CASE-SENSITIVE COMPARISON (even if DB is CI)
             var user = await db.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u =>
@@ -118,22 +136,33 @@
                     ) == Username
                     && u.IsActive);
 
-            // 🔐 COMMON MESSAGE FOR BOTH CASES
+            // if (user == null || !Hasher.Verify(Password, user.PasswordHash ?? ""))
+            // {
+            //     Error = "Invalid credentials.";
+            //     return;
+            // }
+
             if (user == null || !Hasher.Verify(Password, user.PasswordHash ?? ""))
             {
                 Error = "Invalid credentials.";
+
+                // 🔥 CLEAR BOTH FIELDS
+                Username = "";
+                Password = "";
+
+                // optional (reset eye)
+                _showPassword = false;
+
                 return;
             }
 
             Auth.SignIn(user.UserId, user.FullName, user.Role);
 
-
             Nav.NavigateTo(
                 user.Role == UserRole.Admin
                     ? "/admin/overview"
-                    : "/tt/overview");
-            // Nav.NavigateTo(user.Role == UserRole.Admin ? "/admin/overview" : "/tt/overview", forceLoad: true);
-            Nav.NavigateTo(user.Role == UserRole.Admin ? "/admin/overview" : "/tt/overview", replace: true);
+                    : "/tt/overview",
+                replace: true);
         }
         catch (Exception ex)
         {
@@ -144,13 +173,13 @@
             _busy = false;
         }
     }
+
     private void ClearMessages(ChangeEventArgs? e = null)
     {
         showUserError = false;
         showPassError = false;
         Error = "";
     }
-
 
     string successMessage;
 
