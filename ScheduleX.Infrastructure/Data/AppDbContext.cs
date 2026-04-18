@@ -225,11 +225,7 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(e => e.SubjectSemesterId);
 
-        // Faculty → TimeTableEntry
-        modelBuilder.Entity<TimeTableEntry>()
-            .HasOne(e => e.Faculty)
-            .WithMany()
-            .HasForeignKey(e => e.FacultyId);
+       
         modelBuilder.Entity<TTCoordinatorCourse>()
         .HasOne(x => x.Course)
         .WithMany(x => x.TTCoordinatorCourses)

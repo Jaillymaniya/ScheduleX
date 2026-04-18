@@ -41,8 +41,15 @@ namespace ScheduleX.Web.Services.TimeTable
                 {
                     Day = e.DayOfWeek,
                     Slot = e.TimeSlot?.SlotNo ?? 0,
+
                     Subject = e.SubjectSemester?.Subject?.SubjectName ?? "N/A",
-                    Faculty = e.Faculty?.FacultyName ?? "N/A",
+
+                    // ✅ FIXED + COMMA ADDED
+                    Faculty = e.SubjectSemester?
+                        .SubjectFaculties
+                        .FirstOrDefault(f => f.DivisionId == e.DivisionId)?
+                        .Faculty?.FacultyName ?? "N/A",
+
                     Room = e.Room?.RoomName ?? "N/A",
                     Division = e.Division?.DivisionName ?? "N/A"
                 }).ToList();
