@@ -15,10 +15,10 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
         }
 
         public async Task<(bool, string, List<TimeTableEntry>)> GenerateAsync(
-       int userId,
-       int courseId,
-       List<int> semesterIds,
-       int templateId)
+     int userId,
+     int courseId,
+     List<int> semesterIds,
+     int templateId)
         {
             try
             {
@@ -72,22 +72,24 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
 
                     foreach (var div in divisions)
                     {
-                        var faculties = await _context.SubjectFaculties
+                        var subjectFaculties = await _context.SubjectFaculties
                             .Where(x => x.DivisionId == div.DivisionId)
                             .ToListAsync();
 
-                        var workload = new List<(int subId, int facultyId)>();
+                        // 🔥 workload only subject (NO faculty stored)
+                        var workload = new List<int>();
 
                         foreach (var sub in subjects)
                         {
                             var lec = sub.LectureConfigs.FirstOrDefault();
-                            var fac = faculties.FirstOrDefault(f => f.SubjectSemesterId == sub.SubjectSemesterId);
+                            var hasFaculty = subjectFaculties
+                                .Any(f => f.SubjectSemesterId == sub.SubjectSemesterId);
 
-                            if (lec == null || fac == null) continue;
+                            if (lec == null || !hasFaculty) continue;
 
                             for (int i = 0; i < lec.TheoryLecturesPerWeek; i++)
                             {
-                                workload.Add((sub.SubjectSemesterId, fac.FacultyId));
+                                workload.Add(sub.SubjectSemesterId);
                             }
                         }
 
@@ -99,10 +101,11 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
                             {
                                 if (index >= workload.Count) break;
 
-                                var item = workload[index];
+                                var subjectSemesterId = workload[index];
 
+                                // 🔥 prevent duplicate subject in same slot/division
                                 bool clash = entries.Any(e =>
-                                    e.FacultyId == item.facultyId &&
+                                    e.DivisionId == div.DivisionId &&
                                     e.DayOfWeek == day &&
                                     e.TimeSlotId == slot.TimeSlotId);
 
@@ -117,8 +120,7 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
                                     TimeSlotId = slot.TimeSlotId,
                                     EntryType = EntryTypeEnum.Lecture,
 
-                                    SubjectSemesterId = item.subId,
-                                    FacultyId = item.facultyId,
+                                    SubjectSemesterId = subjectSemesterId,
                                     RoomId = null
                                 });
 
@@ -131,7 +133,20 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
                 await _context.TimeTableEntries.AddRangeAsync(entries);
                 await _context.SaveChangesAsync();
 
-                return (true, "Timetable generated successfully", entries);
+                // 🔥 IMPORTANT: load navigation for preview
+                var result = await _context.TimeTableEntries
+                    .Include(e => e.TimeSlot)
+                    .Include(e => e.Division)
+                    .Include(e => e.Room)
+                    .Include(e => e.SubjectSemester)
+                        .ThenInclude(ss => ss.Subject)
+                    .Include(e => e.SubjectSemester)
+                        .ThenInclude(ss => ss.SubjectFaculties)
+                            .ThenInclude(sf => sf.Faculty)
+                    .Where(e => e.BatchId == batch.BatchId)
+                    .ToListAsync();
+
+                return (true, "Timetable generated successfully", result);
             }
             catch (Exception ex)
             {

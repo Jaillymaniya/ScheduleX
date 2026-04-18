@@ -95,11 +95,6 @@ public class TimeTableEntry
     [ForeignKey(nameof(SubjectSemesterId))]
     public SubjectSemester? SubjectSemester { get; set; }
 
-    public int? FacultyId { get; set; }
-
-    [ForeignKey(nameof(FacultyId))]
-    public Faculty? Faculty { get; set; }
-
     public int? RoomId { get; set; }
 
     [ForeignKey(nameof(RoomId))]
