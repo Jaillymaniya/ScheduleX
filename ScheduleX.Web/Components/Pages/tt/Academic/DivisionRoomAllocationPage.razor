@@ -750,6 +750,8 @@
 
 @page "/tt/academic/division-room-allocation"
 @layout ScheduleX.Web.Components.Layout.tt.TTLayout
+@inject NavigationManager Nav
+
 
 @using ScheduleX.Core.Entities
 @using ScheduleX.Core.Interfaces.TTCoordinator
@@ -759,6 +761,10 @@
 @inject IRoomRepository RoomRepo
 @inject IDivisionService DivisionService
 <link href="css/division-room-allocation.css" rel="stylesheet" />
+
+<button class="btn btn-secondary" @onclick="GoBack">
+    ← Back
+</button>
 
 <h3>Division Room Allocation</h3>
 
@@ -930,6 +936,8 @@
 
 @code {
 
+    
+
     DivisionRoomAllocation model = new();
     List<DivisionRoomAllocation> list = new();
 
@@ -1013,4 +1021,6 @@
         model = new DivisionRoomAllocation();
         message = null;
     }
+
+    void GoBack() => Nav.NavigateTo("/tt/academic/subject-mapping");
 }
