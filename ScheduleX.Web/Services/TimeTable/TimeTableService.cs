@@ -15,6 +15,7 @@ namespace ScheduleX.Web.Services.TimeTable
         {
             var entries = await _repo.GetEntriesByBatch(batchId);
 
+            // ✅ GROUP INTO GRID
             var preview = entries.Select(e => new PreviewDto
             {
                 Day = e.DayOfWeek,
@@ -27,11 +28,18 @@ namespace ScheduleX.Web.Services.TimeTable
                 Faculty = e.SubjectSemester?
                     .SubjectFaculties
                     .FirstOrDefault(f => f.DivisionId == e.DivisionId)?
-                    .Faculty?.FacultyName ?? "N/A",
+                    .Faculty?.FacultyName ?? "",
 
-                Room = e.Room?.RoomName ?? "N/A",
+                Room = e.Room?.RoomName ?? "",
+
                 Division = e.Division.DivisionName
             }).ToList();
+
+            // ✅ SORT (VERY IMPORTANT FOR GRID)
+            preview = preview
+                .OrderBy(x => x.Day)
+                .ThenBy(x => x.Slot)
+                .ToList();
 
             var excel = _excel.GenerateExcel(preview);
 
