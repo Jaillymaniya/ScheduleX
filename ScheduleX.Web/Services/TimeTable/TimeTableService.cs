@@ -41,8 +41,10 @@ namespace ScheduleX.Web.Services.TimeTable
                 {
                     Day = e.DayOfWeek,
                     Slot = e.TimeSlot?.SlotNo ?? 0,
-
-                    Subject = e.SubjectSemester?.Subject?.SubjectName ?? "N/A",
+                    Subject = e.EntryType == EntryTypeEnum.Free
+    ? "Free"
+    : e.SubjectSemester?.Subject?.SubjectName ?? "N/A",
+                    //Subject = e.SubjectSemester?.Subject?.SubjectName ?? "N/A",
 
                     // ✅ FIXED + COMMA ADDED
                     Faculty = e.SubjectSemester?
