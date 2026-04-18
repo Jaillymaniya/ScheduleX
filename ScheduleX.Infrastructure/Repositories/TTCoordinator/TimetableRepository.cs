@@ -13,7 +13,20 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
         {
             _context = context;
         }
+        private List<int> GetWorkingDays(int mask)
+        {
+            var days = new List<int>();
 
+            for (int i = 0; i < 7; i++)
+            {
+                if ((mask & (1 << i)) != 0)
+                {
+                    days.Add(i + 1); // 1 = Monday
+                }
+            }
+
+            return days;
+        }
         public async Task<(bool, string, List<TimeTableEntry>)> GenerateAsync(
      int userId,
      int courseId,
@@ -76,8 +89,8 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
                             .Where(x => x.DivisionId == div.DivisionId)
                             .ToListAsync();
 
-                        // 🔥 workload only subject (NO faculty stored)
-                        var workload = new List<int>();
+                        // 🔥 SMART SUBJECT LOAD
+                        var subjectLoads = new List<(int subjectId, int remaining)>();
 
                         foreach (var sub in subjects)
                         {
@@ -87,29 +100,18 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
 
                             if (lec == null || !hasFaculty) continue;
 
-                            for (int i = 0; i < lec.TheoryLecturesPerWeek; i++)
-                            {
-                                workload.Add(sub.SubjectSemesterId);
                             }
                         }
 
-                        int index = 0;
 
-                        for (int day = 1; day <= 5; day++)
                         {
+                            lastSubjectPerDay[day] = null;
+
                             foreach (var slot in timeSlots)
                             {
-                                if (index >= workload.Count) break;
 
-                                var subjectSemesterId = workload[index];
 
-                                // 🔥 prevent duplicate subject in same slot/division
-                                bool clash = entries.Any(e =>
-                                    e.DivisionId == div.DivisionId &&
-                                    e.DayOfWeek == day &&
-                                    e.TimeSlotId == slot.TimeSlotId);
 
-                                if (clash) continue;
 
                                 entries.Add(new TimeTableEntry
                                 {
@@ -118,9 +120,7 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
                                     DivisionId = div.DivisionId,
                                     DayOfWeek = (byte)day,
                                     TimeSlotId = slot.TimeSlotId,
-                                    EntryType = EntryTypeEnum.Lecture,
 
-                                    SubjectSemesterId = subjectSemesterId,
                                     RoomId = null
                                 });
 
@@ -133,7 +133,6 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
                 await _context.TimeTableEntries.AddRangeAsync(entries);
                 await _context.SaveChangesAsync();
 
-                // 🔥 IMPORTANT: load navigation for preview
                 var result = await _context.TimeTableEntries
                     .Include(e => e.TimeSlot)
                     .Include(e => e.Division)
