@@ -11,6 +11,47 @@ namespace ScheduleX.Web.Services.TimeTable
         private readonly ITimetableRepository _repo;
         private readonly IExcelService _excel;
 
+        public async Task<GenerateResultDto> GetPreviewByBatch(int batchId)
+        {
+            var entries = await _repo.GetEntriesByBatch(batchId);
+
+            // ✅ GROUP INTO GRID
+            var preview = entries.Select(e => new PreviewDto
+            {
+                Day = e.DayOfWeek,
+                Slot = e.TimeSlot.SlotNo,
+
+                Subject = e.EntryType == EntryTypeEnum.Free
+                    ? "Free"
+                    : e.SubjectSemester?.Subject?.SubjectName ?? "N/A",
+
+                Faculty = e.SubjectSemester?
+                    .SubjectFaculties
+                    .FirstOrDefault(f => f.DivisionId == e.DivisionId)?
+                    .Faculty?.FacultyName ?? "",
+
+                Room = e.Room?.RoomName ?? "",
+
+                Division = e.Division.DivisionName
+            }).ToList();
+
+            // ✅ SORT (VERY IMPORTANT FOR GRID)
+            preview = preview
+                .OrderBy(x => x.Day)
+                .ThenBy(x => x.Slot)
+                .ToList();
+
+            var excel = _excel.GenerateExcel(preview);
+
+            return new GenerateResultDto
+            {
+                Success = true,
+                Preview = preview,
+                Base64 = Convert.ToBase64String(excel)
+            };
+        }
+
+
         public TimeTableService(ITimetableRepository repo, IExcelService excel)
         {
             _repo = repo;

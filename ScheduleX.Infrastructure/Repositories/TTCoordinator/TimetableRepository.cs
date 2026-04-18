@@ -200,5 +200,33 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
                 .OrderByDescending(x => x.IsDefault)
                 .ToListAsync();
         }
+
+        public async Task<List<TimeTableBatch>> GetAllBatches()
+        {
+            return await _context.TimeTableBatches
+                .Include(x => x.Course)
+                .Include(x => x.BatchSemesters)
+                    .ThenInclude(bs => bs.Semester)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
+        }
+        public async Task<List<TimeTableEntry>> GetEntriesByBatch(int batchId)
+        {
+            return await _context.TimeTableEntries
+                .Where(x => x.BatchId == batchId)
+
+                // ✅ LOAD EVERYTHING IN ONE QUERY
+                .Include(x => x.TimeSlot)
+                .Include(x => x.Room)
+                .Include(x => x.Division)
+                .Include(x => x.SubjectSemester)
+                    .ThenInclude(ss => ss.Subject)
+                .Include(x => x.SubjectSemester)
+                    .ThenInclude(ss => ss.SubjectFaculties)
+                        .ThenInclude(sf => sf.Faculty)
+
+                .ToListAsync();
+        }
+
     }
 }
