@@ -1,0 +1,39 @@
+﻿@using ScheduleX.Web.DTOs
+
+<div class="tt-card">
+
+    <h5>Preview</h5>
+
+    <table class="table-dark">
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>Slot</th>
+                <th>Subject</th>
+                <th>Faculty</th>
+                <th>Room</th>
+                <th>Division</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var item in Data)
+            {
+                <tr>
+                    <td>@item.Day</td>
+                    <td>@item.Slot</td>
+                    <td>@item.Subject</td>
+                    <td>@item.Faculty</td>
+                    <td>@item.Room</td>
+                    <td>@item.Division</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
+
+@code {
+    [Parameter]
+    public List<PreviewDto> Data { get; set; }
+}
