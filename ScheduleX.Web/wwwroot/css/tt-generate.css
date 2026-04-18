@@ -83,7 +83,19 @@
             padding: 12px;
             border-bottom: 1px solid #1f2a44;
         }
+.progress {
+    height: 20px;
+    background: #1f2937;
+    border-radius: 10px;
+    overflow: hidden;
+}
 
+.progress-bar {
+    background: #22c55e;
+    text-align: center;
+    color: white;
+    font-size: 12px;
+}
 /* ================= TOAST ================= */
 .toast-container {
     position: fixed;
