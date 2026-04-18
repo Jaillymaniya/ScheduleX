@@ -516,7 +516,7 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.HasIndex("SemesterId");
 
-                    b.ToTable("SemesterStudentStrengths");
+                    b.ToTable("SemesterStudentStrengths", (string)null);
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Subject", b =>
@@ -648,6 +648,52 @@ namespace ScheduleX.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("TblSubjectLectureConfig", (string)null);
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectOffering", b =>
+                {
+                    b.Property<int>("OfferingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OfferingId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FacultyId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<byte?>("PracticalBlockSize")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte>("PracticalLecturesPerWeek")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte?>("PreferredRoomType")
+                        .HasColumnType("tinyint");
+
+                    b.Property<int>("SemesterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<byte>("TheoryLecturesPerWeek")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("OfferingId");
+
+                    b.HasIndex("FacultyId");
+
+                    b.HasIndex("SemesterId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.ToTable("SubjectOffering", (string)null);
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.SubjectRoomConfig", b =>
@@ -902,16 +948,13 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Property<byte>("EntryType")
                         .HasColumnType("tinyint");
 
-                    b.Property<int?>("FacultyId")
+                    b.Property<int?>("OfferingId")
                         .HasColumnType("int");
 
                     b.Property<int?>("RoomId")
                         .HasColumnType("int");
 
                     b.Property<int>("SemesterId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SubjectSemesterId")
                         .HasColumnType("int");
 
                     b.Property<int>("TimeSlotId")
@@ -921,13 +964,11 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.HasIndex("DivisionId");
 
-                    b.HasIndex("FacultyId");
+                    b.HasIndex("OfferingId");
 
                     b.HasIndex("RoomId");
 
                     b.HasIndex("SemesterId");
-
-                    b.HasIndex("SubjectSemesterId");
 
                     b.HasIndex("TimeSlotId");
 
@@ -1337,6 +1378,33 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("SubjectSemester");
                 });
 
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectOffering", b =>
+                {
+                    b.HasOne("ScheduleX.Core.Entities.Faculty", "Faculty")
+                        .WithMany()
+                        .HasForeignKey("FacultyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ScheduleX.Core.Entities.Semester", "Semester")
+                        .WithMany()
+                        .HasForeignKey("SemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ScheduleX.Core.Entities.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Faculty");
+
+                    b.Navigation("Semester");
+
+                    b.Navigation("Subject");
+                });
+
             modelBuilder.Entity("ScheduleX.Core.Entities.SubjectRoomConfig", b =>
                 {
                     b.HasOne("ScheduleX.Core.Entities.Room", "Room")
@@ -1499,9 +1567,9 @@ namespace ScheduleX.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ScheduleX.Core.Entities.Faculty", "Faculty")
-                        .WithMany()
-                        .HasForeignKey("FacultyId")
+                    b.HasOne("ScheduleX.Core.Entities.SubjectOffering", "SubjectOffering")
+                        .WithMany("TimeTableEntries")
+                        .HasForeignKey("OfferingId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("ScheduleX.Core.Entities.Room", "Room")
@@ -1515,11 +1583,6 @@ namespace ScheduleX.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ScheduleX.Core.Entities.SubjectSemester", "SubjectSemester")
-                        .WithMany()
-                        .HasForeignKey("SubjectSemesterId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("ScheduleX.Core.Entities.TimeSlot", "TimeSlot")
                         .WithMany("TimeTableEntries")
                         .HasForeignKey("TimeSlotId")
@@ -1528,13 +1591,11 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.Navigation("Division");
 
-                    b.Navigation("Faculty");
-
                     b.Navigation("Room");
 
                     b.Navigation("Semester");
 
-                    b.Navigation("SubjectSemester");
+                    b.Navigation("SubjectOffering");
 
                     b.Navigation("TimeSlot");
 
@@ -1667,6 +1728,11 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Navigation("SubjectRoomConfigs");
 
                     b.Navigation("SubjectSemesters");
+                });
+
+            modelBuilder.Entity("ScheduleX.Core.Entities.SubjectOffering", b =>
+                {
+                    b.Navigation("TimeTableEntries");
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.SubjectSemester", b =>
