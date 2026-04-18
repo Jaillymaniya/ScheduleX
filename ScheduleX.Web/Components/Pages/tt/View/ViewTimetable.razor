@@ -1,0 +1,212 @@
+﻿@page "/tt/view"
+@layout ScheduleX.Web.Components.Layout.tt.TTLayout
+
+@using ScheduleX.Web.DTOs
+@using ScheduleX.Core.Entities
+
+@inject ScheduleX.Web.Services.AuthState Auth
+@inject ScheduleX.Core.Interfaces.TTCoordinator.ITimetableRepository Repo
+@inject ScheduleX.Web.Services.TimeTable.ITimeTableService TTService
+@inject IJSRuntime JS
+
+<link href="css/tt-generate.css" rel="stylesheet" />
+
+<div class="generate-page">
+
+    <div class="page-header">
+        <h3>View Timetable</h3>
+    </div>
+
+    <!-- ================= CARDS ================= -->
+    <div class="card-container">
+
+        @if (batches.Any())
+        {
+            @foreach (var batch in batches)
+            {
+                <div class="tt-card"
+                     style="cursor:pointer"
+                     @onclick="() => LoadPreview(batch.BatchId)">
+
+                    <h5>@batch.Course?.CourseName</h5>
+
+                    <p>
+                        Semester:
+                        @string.Join(", ",
+                                 batch.BatchSemesters.Select(s => s.Semester.SemesterNo))
+                    </p>
+
+                    <p>
+                        Generated:
+                        @batch.CreatedAt.ToString("dd MMM yyyy")
+                    </p>
+
+                </div>
+            }
+        }
+        else
+        {
+            <div class="tt-card">No Timetable Found</div>
+        }
+
+    </div>
+
+    <!-- ================= PREVIEW ================= -->
+    @if (previewData != null && previewData.Any())
+    {
+        <div class="tt-card">
+
+            <h5>Timetable Preview</h5>
+
+            <table class="table-dark">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+
+                        @foreach (var slot in slots)
+                        {
+                            <th>Slot @slot</th>
+                        }
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var day in days)
+                    {
+                        <tr>
+                            <td>@GetDayName(day)</td>
+
+                            @foreach (var slot in slots)
+                            {
+                                var cell = previewData
+                                .FirstOrDefault(x => x.Day == day && x.Slot == slot);
+
+                                <td>
+                                    @if (cell != null)
+                                    {
+                                        <div><b>@cell.Subject</b></div>
+                                        <small>@cell.Faculty</small>
+                                    }
+                                    else
+                                    {
+                                        <span>Free</span>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <br />
+
+            <button class="btn btn-primary" @onclick="Download">
+                Download Excel
+            </button>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    List<TimeTableBatch> batches = new();
+    List<PreviewDto> previewData = new();
+
+    List<int> slots = new();
+    List<int> days = new() { 1, 2, 3, 4, 5, 6, 7 };
+    bool isLoading = false;
+    string fileBase64 = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = Auth.UserId.Value;
+
+        var all = await Repo.GetAllBatches();
+
+        // ✅ REMOVE DUPLICATES (GROUPING)
+        batches = all
+            .Where(x => x.CreatedByUserId == userId)
+            .GroupBy(x => new
+            {
+                x.CourseId,
+                Sem = string.Join(",", x.BatchSemesters.Select(s => s.SemesterId))
+            })
+            .Select(g => g
+                .OrderByDescending(x => x.CreatedAt)
+                .First())
+            .ToList();
+    }
+
+    async Task LoadPreview(int batchId)
+    {
+        if (isLoading) return;
+
+        isLoading = true;
+
+        try
+        {
+            Console.WriteLine("CLICKED: " + batchId);
+
+            var result = await TTService.GetPreviewByBatch(batchId);
+
+            if (result == null)
+            {
+                Console.WriteLine("RESULT NULL");
+                previewData = new();
+            }
+            else
+            {
+                Console.WriteLine("PREVIEW COUNT: " + (result.Preview?.Count ?? 0));
+
+                previewData = result.Preview ?? new List<PreviewDto>();
+                fileBase64 = result.Base64 ?? "";
+
+                slots = previewData
+                    .Select(x => x.Slot)
+                    .Distinct()
+                    .OrderBy(x => x)
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("ERROR: " + ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+
+            // 🔥 THIS LINE WAS MISSING
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    async Task Download()
+    {
+        if (!string.IsNullOrEmpty(fileBase64))
+        {
+            await JS.InvokeVoidAsync(
+                "downloadFileFromBase64",
+                "timetable.xlsx",
+                fileBase64
+            );
+        }
+    }
+
+    string GetDayName(int day)
+    {
+        return day switch
+        {
+            1 => "Mon",
+            2 => "Tue",
+            3 => "Wed",
+            4 => "Thu",
+            5 => "Fri",
+            6 => "Sat",
+            7 => "Sun",
+            _ => ""
+        };
+    }
+}

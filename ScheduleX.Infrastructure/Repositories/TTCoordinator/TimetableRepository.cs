@@ -28,10 +28,10 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
             return days;
         }
         public async Task<(bool, string, List<TimeTableEntry>)> GenerateAsync(
-     int userId,
-     int courseId,
-     List<int> semesterIds,
-     int templateId)
+      int userId,
+      int courseId,
+      List<int> semesterIds,
+      int templateId)
         {
             try
             {
@@ -100,18 +100,37 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
 
                             if (lec == null || !hasFaculty) continue;
 
-                            }
+                            subjectLoads.Add((sub.SubjectSemesterId, lec.TheoryLecturesPerWeek));
                         }
 
+                        // ✅ working days from config
+                        var workingDays = GetWorkingDays(config.WorkingDaysMask);
 
+                        // track last subject per day
+                        var lastSubjectPerDay = new Dictionary<int, int?>();
+
+                        foreach (var day in workingDays)
                         {
                             lastSubjectPerDay[day] = null;
 
                             foreach (var slot in timeSlots)
                             {
+                                int? selectedSubject = null;
 
+                                var candidate = subjectLoads
+                                    .Where(s => s.remaining > 0 && s.subjectId != lastSubjectPerDay[day])
+                                    .OrderByDescending(s => s.remaining)
+                                    .FirstOrDefault();
 
+                                if (candidate.subjectId != 0)
+                                {
+                                    selectedSubject = candidate.subjectId;
 
+                                    var idx = subjectLoads.FindIndex(s => s.subjectId == candidate.subjectId);
+                                    subjectLoads[idx] = (candidate.subjectId, candidate.remaining - 1);
+
+                                    lastSubjectPerDay[day] = selectedSubject;
+                                }
 
                                 entries.Add(new TimeTableEntry
                                 {
@@ -121,10 +140,13 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
                                     DayOfWeek = (byte)day,
                                     TimeSlotId = slot.TimeSlotId,
 
+                                    EntryType = selectedSubject == null
+                                        ? EntryTypeEnum.Free
+                                        : EntryTypeEnum.Lecture,
+
+                                    SubjectSemesterId = selectedSubject,
                                     RoomId = null
                                 });
-
-                                index++;
                             }
                         }
                     }
@@ -133,6 +155,7 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
                 await _context.TimeTableEntries.AddRangeAsync(entries);
                 await _context.SaveChangesAsync();
 
+                // 🔥 load navigation for preview
                 var result = await _context.TimeTableEntries
                     .Include(e => e.TimeSlot)
                     .Include(e => e.Division)
@@ -177,5 +200,33 @@ namespace ScheduleX.Infrastructure.Repositories.TTCoordinator
                 .OrderByDescending(x => x.IsDefault)
                 .ToListAsync();
         }
+
+        public async Task<List<TimeTableBatch>> GetAllBatches()
+        {
+            return await _context.TimeTableBatches
+                .Include(x => x.Course)
+                .Include(x => x.BatchSemesters)
+                    .ThenInclude(bs => bs.Semester)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
+        }
+        public async Task<List<TimeTableEntry>> GetEntriesByBatch(int batchId)
+        {
+            return await _context.TimeTableEntries
+                .Where(x => x.BatchId == batchId)
+
+                // ✅ LOAD EVERYTHING IN ONE QUERY
+                .Include(x => x.TimeSlot)
+                .Include(x => x.Room)
+                .Include(x => x.Division)
+                .Include(x => x.SubjectSemester)
+                    .ThenInclude(ss => ss.Subject)
+                .Include(x => x.SubjectSemester)
+                    .ThenInclude(ss => ss.SubjectFaculties)
+                        .ThenInclude(sf => sf.Faculty)
+
+                .ToListAsync();
+        }
+
     }
 }
