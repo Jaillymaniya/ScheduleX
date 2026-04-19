@@ -14,6 +14,8 @@ namespace ScheduleX.Core.Interfaces.TTCoordinator
         Task<List<Course>> GetCoursesForCoordinatorAsync(int userId);
         Task<List<Semester>> GetSemestersByCourseAsync(int courseId);
         Task<List<TimeTableTemplate>> GetTemplatesAsync();
+
+        Task<TimeTableBatch> GetBatchWithTemplate(int batchId);
         Task<List<TimeTableBatch>> GetAllBatches();
        
         Task<List<TimeTableEntry>> GetEntriesByBatch(int batchId);

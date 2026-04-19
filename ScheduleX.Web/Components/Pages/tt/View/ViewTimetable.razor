@@ -113,7 +113,12 @@
                                 var cell = filteredData
                                 .FirstOrDefault(x => x.Day == day && x.Slot == slot);
 
-                                <td style="background:@style.bodyBg; color:@style.bodyText; padding:@style.cellPadding">
+                                <td style="
+    background:@style.bodyBg;
+    color:@style.bodyText;
+    padding:@style.cellPadding;
+    border:1px solid @style.borderColor;
+            ">
 
                                     @if (cell != null && cell.Subject != "Free")
                                     {
@@ -192,20 +197,20 @@ List<TimeTableBatch> batches = new();
     .ToList();
 
         // template
-        var json = @"{
-      ""headerBg"":""#1e293b"",
-      ""headerText"":""#ffffff"",
-      ""bodyBg"":""#ffffff"",
-      ""bodyText"":""#111827"",
-      ""borderColor"":""#cbd5e1"",
-      ""showRoom"":true,
-      ""showFaculty"":true,
-      ""cellPadding"":""8px"",
-      ""fontSize"":""14px"",
-      ""titleAlign"":""center""
-    }";
+    //     var json = @"{
+    //   ""headerBg"":""#1e293b"",
+    //   ""headerText"":""#ffffff"",
+    //   ""bodyBg"":""#ffffff"",
+    //   ""bodyText"":""#111827"",
+    //   ""borderColor"":""#cbd5e1"",
+    //   ""showRoom"":true,
+    //   ""showFaculty"":true,
+    //   ""cellPadding"":""8px"",
+    //   ""fontSize"":""14px"",
+    //   ""titleAlign"":""center""
+    // }";
 
-        style = System.Text.Json.JsonSerializer.Deserialize<TemplateStyle>(json);
+    //     style = System.Text.Json.JsonSerializer.Deserialize<TemplateStyle>(json);
     }
 
     async Task LoadPreview(int batchId)
@@ -214,6 +219,8 @@ List<TimeTableBatch> batches = new();
 
         previewData = result.Preview;
         fileBase64 = result.Base64 ?? "";
+
+        style = result.TemplateStyle ?? new TemplateStyle();
         // ✅ GET UNIQUE DIVISIONS
         divisions = previewData
             .Select(x => x.Division)

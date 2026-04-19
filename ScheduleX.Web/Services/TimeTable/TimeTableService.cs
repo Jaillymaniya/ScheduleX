@@ -2,6 +2,7 @@
 using ScheduleX.Core.Entities;
 using ScheduleX.Core.Interfaces.TTCoordinator;
 using ScheduleX.Web.DTOs;
+using ScheduleX.Web.Models.Template;
 using ScheduleX.Web.Services.Excel;
 
 namespace ScheduleX.Web.Services.TimeTable
@@ -17,12 +18,73 @@ namespace ScheduleX.Web.Services.TimeTable
             _excel = excel;
         }
 
+        //public async Task<GenerateResultDto> GetPreviewByBatch(int batchId)
+        //{
+        //    // Here, your data is stored in 'entries'
+        //    var entries = await _repo.GetEntriesByBatch(batchId);
+
+        //    // Change 'result.Entries' to 'entries' to fix the error
+        //    var preview = entries.Select(e => new PreviewDto
+        //    {
+        //        Day = e.DayOfWeek,
+        //        Slot = e.TimeSlot?.SlotNo ?? 0,
+
+        //        Subject = e.EntryType switch
+        //        {
+        //            EntryTypeEnum.Break => e.TimeSlot?.BreakRule?.BreakName ?? "Break",
+        //            EntryTypeEnum.Free => "Free",
+        //            _ => e.SubjectSemester?.Subject?.SubjectName ?? "N/A"
+        //        },
+
+        //        Faculty = e.EntryType == EntryTypeEnum.Lecture
+        //            ? (e.SubjectSemester?.SubjectFaculties?
+        //                .FirstOrDefault(f => f.DivisionId == e.DivisionId)?
+        //                .Faculty?.FacultyName ?? "N/A")
+        //            : "",
+
+        //        Room = e.Room?.RoomName ?? "N/A",
+        //        Division = e.Division?.DivisionName ?? "N/A"
+        //    }).ToList();
+
+        //    preview = preview
+        //        .OrderBy(x => x.Day)
+        //        .ThenBy(x => x.Slot)
+        //        .ToList();
+
+        //    var excel = _excel.GenerateExcel(preview);
+
+        //    return new GenerateResultDto
+        //    {
+        //        Success = true,
+        //        Preview = preview,
+        //        Base64 = Convert.ToBase64String(excel)
+        //    };
+        //}
         public async Task<GenerateResultDto> GetPreviewByBatch(int batchId)
         {
-            // Here, your data is stored in 'entries'
             var entries = await _repo.GetEntriesByBatch(batchId);
+            var batch = await _repo.GetBatchWithTemplate(batchId);
 
-            // Change 'result.Entries' to 'entries' to fix the error
+            TemplateStyle style;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(batch?.TimeTableTemplate?.TemplateJson))
+                {
+                    style = System.Text.Json.JsonSerializer.Deserialize<TemplateStyle>(
+                        batch.TimeTableTemplate.TemplateJson
+                    );
+                }
+                else
+                {
+                    style = GetDefaultStyle();
+                }
+            }
+            catch
+            {
+                style = GetDefaultStyle();
+            }
+
             var preview = entries.Select(e => new PreviewDto
             {
                 Day = e.DayOfWeek,
@@ -36,27 +98,43 @@ namespace ScheduleX.Web.Services.TimeTable
                 },
 
                 Faculty = e.EntryType == EntryTypeEnum.Lecture
-                    ? (e.SubjectSemester?.SubjectFaculties?
+                    ? e.SubjectSemester?.SubjectFaculties?
                         .FirstOrDefault(f => f.DivisionId == e.DivisionId)?
-                        .Faculty?.FacultyName ?? "N/A")
+                        .Faculty?.FacultyName ?? ""
                     : "",
 
-                Room = e.Room?.RoomName ?? "N/A",
-                Division = e.Division?.DivisionName ?? "N/A"
-            }).ToList();
+                Room = e.Room?.RoomName ?? "",
+                Division = e.Division?.DivisionName ?? ""
+            })
+            .OrderBy(x => x.Day)
+            .ThenBy(x => x.Slot)
+            .ToList();
 
-            preview = preview
-                .OrderBy(x => x.Day)
-                .ThenBy(x => x.Slot)
-                .ToList();
-
-            var excel = _excel.GenerateExcel(preview);
+            var excel = _excel.GenerateExcel(preview, style);
 
             return new GenerateResultDto
             {
                 Success = true,
                 Preview = preview,
-                Base64 = Convert.ToBase64String(excel)
+                Base64 = Convert.ToBase64String(excel),
+                TemplateStyle = style
+            };
+        }
+
+        private TemplateStyle GetDefaultStyle()
+        {
+            return new TemplateStyle
+            {
+                headerBg = "#1e293b",
+                headerText = "#ffffff",
+                bodyBg = "#ffffff",
+                bodyText = "#111827",
+                borderColor = "#cbd5e1",
+                cellPadding = "8px",
+                fontSize = "14px",
+                showRoom = true,
+                showFaculty = true,
+                titleAlign = "center"
             };
         }
 
@@ -79,6 +157,19 @@ namespace ScheduleX.Web.Services.TimeTable
                         Success = false,
                         Message = result.Message
                     };
+                }
+                var batch = await _repo.GetBatchWithTemplate(result.Entries.First().BatchId);
+                TemplateStyle style;
+
+                if (!string.IsNullOrEmpty(batch?.TimeTableTemplate?.TemplateJson))
+                {
+                    style = System.Text.Json.JsonSerializer.Deserialize<TemplateStyle>(
+                        batch.TimeTableTemplate.TemplateJson
+                    );
+                }
+                else
+                {
+                    style = new TemplateStyle();
                 }
 
                 var preview = result.Entries.Select(e => new PreviewDto
@@ -103,14 +194,15 @@ namespace ScheduleX.Web.Services.TimeTable
                     Division = e.Division?.DivisionName ?? "N/A"
                 }).ToList();
 
-                var excel = _excel.GenerateExcel(preview);
+                var excel = _excel.GenerateExcel(preview, style);
 
                 return new GenerateResultDto
                 {
                     Success = true,
                     Message = "Generated Successfully",
                     Base64 = Convert.ToBase64String(excel),
-                    Preview = preview
+                    Preview = preview,
+                    TemplateStyle = style
                 };
             }
             catch (Exception ex)
