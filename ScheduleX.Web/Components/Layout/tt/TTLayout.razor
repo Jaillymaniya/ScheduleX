@@ -23,18 +23,31 @@
 <link href="/css/room.css" rel="stylesheet" />
 <link href="/css/tt-generate.css" rel="stylesheet" />
 <link rel="stylesheet" href="/css/division-room-allocation.css" />
-@code{
-    protected override void OnInitialized()
+
+
+
+
+
+@code {
+    private bool isLoaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // If user is not logged in, block TT pages
-        if (!Auth.IsLoggedIn)
+        if (firstRender && !isLoaded)
         {
-            // replace:true clears back history entry
-            Nav.NavigateTo("/login", replace: true);
+            isLoaded = true;
+
+            await Auth.LoadFromSession();
+
+            if (!Auth.IsLoggedIn || Auth.Role != UserRole.TTCoordinator)
+            {
+                Nav.NavigateTo("/login", true);
+            }
+
+            StateHasChanged();
         }
     }
 }
-
 <div class="tt-shell">
     <div class="tt-sidebar">
         <TTSidebar />

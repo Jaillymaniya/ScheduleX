@@ -5,6 +5,9 @@
 @using ScheduleX.Core.Interfaces.TTCoordinator
 @inject IFacultyRepository FacultyRepo
 
+@inject ScheduleX.Web.Services.AuthState Auth // Inject your auth service
+
+
 <div class="faculty-page">
     <h3>Faculty Management</h3>
 
@@ -27,7 +30,15 @@
 
             <div>
                 <label>Phone</label>
-                <input class="tt-input" @bind="model.Phone" />
+            @*     <input class="tt-input" @bind="model.Phone" /> *@
+           
+            <input class="tt-input"
+                   @bind="model.Phone"
+                   maxlength="10"
+                   minlength="10"
+                   pattern="[0-9]{10}"
+                   inputmode="numeric"
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,10)" />
             </div>
 
             <div>
@@ -44,13 +55,11 @@
 
             <div>
                 <label>Department</label>
-                <select class="tt-input" @bind="model.DepartmentId">
-                    <option value="0">-- Select Department --</option>
-                    @foreach (var d in departments)
-                    {
-                        <option value="@d.DepartmentId">@d.DepartmentName</option>
-                    }
-                </select>
+                @if (!model.IsExternal)
+                {
+                        <input class="tt-input" value="@GetTTDepartmentName()" disabled />
+                    
+                }
             </div>
 
         </div>
@@ -64,13 +73,24 @@
 
         @if (model.IsExternal)
         {
-            <select class="tt-input" @bind="externalDepartmentId">
-                <option value="0">-- Select External Dept --</option>
-                @foreach (var d in departments.Where(d => d.DepartmentId != model.DepartmentId))
-                {
-                    <option value="@d.DepartmentId">@d.DepartmentName</option>
-                }
-            </select>
+            @* <select class="tt-input" @bind="externalDepartmentId"> *@
+            @*     <option value="0">-- Select External Dept --</option> *@
+            @*     @foreach (var d in departments.Where(d => d.DepartmentId != model.DepartmentId)) *@
+            @*     { *@
+            @*         <option value="@d.DepartmentId">@d.DepartmentName</option> *@
+            @*     } *@
+            @* </select> *@
+            <div style="margin-top: 10px;">
+                <label>Origin Department (External Source)</label>
+                <select class="tt-input" @bind="externalDepartmentId">
+                    <option value="0">-- Select External Dept --</option>
+                    @* 🔥 FILTER: Hide the TT Coordinator's own department ID *@
+                    @foreach (var d in departments.Where(d => d.DepartmentId != Auth.DepartmentId))
+                    {
+                        <option value="@d.DepartmentId">@d.DepartmentName</option>
+                    }
+                </select>
+            </div>
         }
 
         <br />
@@ -194,6 +214,15 @@
     {
         departments = await FacultyRepo.GetDepartmentsAsync();
         facultyList = await FacultyRepo.GetAllAsync();
+        var ttDept = departments.FirstOrDefault(d => d.DepartmentName == "TT");
+
+        await InitializeStickyDepartment();
+    }
+
+    private Task InitializeStickyDepartment()
+    {
+        model.DepartmentId = Auth.DepartmentId;
+        return Task.CompletedTask;
     }
 
     async Task ShowToast(string message, string type = "success")
@@ -235,6 +264,13 @@
 
     private async Task SaveFaculty()
     {
+        var ttDept = departments.FirstOrDefault(d => d.DepartmentName == "TT");
+
+if (ttDept != null)
+{
+    model.DepartmentId = ttDept.DepartmentId;
+}
+
         // 🔴 REQUIRED VALIDATION
         if (string.IsNullOrWhiteSpace(model.FacultyName))
         {
@@ -359,6 +395,13 @@
 
     private async Task UpdateFaculty()
     {
+        var ttDept = departments.FirstOrDefault(d => d.DepartmentName == "TT");
+
+if (ttDept != null)
+{
+    model.DepartmentId = ttDept.DepartmentId;
+}
+
         // 🔴 REQUIRED
         if (string.IsNullOrWhiteSpace(model.FacultyName))
         {
@@ -499,5 +542,14 @@
         model = new Faculty();
         externalDepartmentId = 0;
         isEditMode = false;
+
+        InitializeStickyDepartment();
+    }
+
+    private string GetTTDepartmentName()
+    {
+        // Helper to display the name in the disabled textbox
+        var dept = departments.FirstOrDefault(d => d.DepartmentId == model.DepartmentId);
+        return dept?.DepartmentName ?? "TT Department";
     }
 }

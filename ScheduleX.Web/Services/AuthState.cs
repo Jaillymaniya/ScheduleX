@@ -47,6 +47,9 @@ namespace ScheduleX.Web.Services
         public string? FullName { get; private set; }
         public UserRole? Role { get; private set; }
 
+        public int DepartmentId { get; set; }
+        public string DepartmentName { get; set; }
+
         public bool IsLoggedIn => UserId.HasValue;
         public bool IsAdmin => Role == UserRole.Admin;
 

@@ -66,6 +66,17 @@
             }
 
             <!-- PASSWORD WITH EYE (UPDATED) -->
+            @* <div class="password-wrapper"> *@
+            @*     <input type="@(_showPassword ? "text" : "password")" *@
+            @*            class="input password-input" *@
+            @*            placeholder="Password" *@
+            @*            @bind="Password" *@
+            @*            @oninput="ClearMessages" /> *@
+
+            @*     <button type="button" class="toggle-eye" @onclick="TogglePassword"> *@
+            @*         <i class="@(_showPassword ? "fa-solid fa-eye-slash" : "fa-solid fa-eye")"></i> *@
+            @*     </button> *@
+            @* </div> *@
             <div class="password-wrapper">
                 <input type="@(_showPassword ? "text" : "password")"
                        class="input password-input"
@@ -73,9 +84,9 @@
                        @bind="Password"
                        @oninput="ClearMessages" />
 
-                <span class="toggle-eye" @onclick="TogglePassword">
+                <button type="button" class="toggle-eye" @onclick="TogglePassword">
                     <i class="@(_showPassword ? "fa-solid fa-eye-slash" : "fa-solid fa-eye")"></i>
-                </span>
+                </button>
             </div>
 
             @if (showPassError)
@@ -171,7 +182,9 @@
                 return;
             }
 
-            Auth.SignIn(user.UserId, user.FullName, user.Role);
+            await Auth.SignIn(user.UserId, user.FullName, user.Role);
+            Auth.DepartmentId = user.DepartmentId ?? 0;
+            Auth.DepartmentName = user.Department?.DepartmentName;
 
             Nav.NavigateTo(
                 user.Role == UserRole.Admin

@@ -16,8 +16,29 @@
 
 @inherits LayoutComponentBase
 @rendermode InteractiveServer
+@inject ScheduleX.Web.Services.AuthState Auth
+@inject NavigationManager Nav
 
+@code {
+    private bool isLoaded = false;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !isLoaded)
+        {
+            isLoaded = true;
+
+            await Auth.LoadFromSession();
+
+            if (!Auth.IsLoggedIn || Auth.Role != UserRole.TTCoordinator)
+            {
+                Nav.NavigateTo("/login", true);
+            }
+
+            StateHasChanged();
+        }
+    }
+}
 <div class="admin-wrapper">
     <AdminSidebar />
 
