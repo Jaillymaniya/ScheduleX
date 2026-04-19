@@ -10,43 +10,31 @@
 @* @inject ScheduleX.Web.Services.TimeTable.ITimeTableService TTService *@
 @* @inject IJSRuntime JS *@
 
-@* <link href="css/tt-view.css" rel="stylesheet" /> *@
+@* <link href="css/tt-generate.css" rel="stylesheet" /> *@
 
 @* <div class="generate-page"> *@
 
+    
 @*     <div class="page-header"> *@
 @*         <h3>View Timetable</h3> *@
 @*     </div> *@
 
 @*     <!-- ================= CARDS ================= --> *@
-@*     <div class="tt-wrapper"> *@
-@*         <div class="tt-grid"> *@
-@*             @foreach (var batch in batches) *@
-@*             { *@
-@*                 <div class="tt-card" @onclick="() => LoadPreview(batch.BatchId)"> *@
-@*                     <div class="tt-top"> *@
-@*                         <h6>@batch.Course?.CourseName</h6> *@
-@*                         <span class="tt-version">@($"v{batch.VersionNo}")</span> *@
-@*                     </div> *@
+@*     <div class="card-container"> *@
+@*         @foreach (var batch in batches) *@
+@*         { *@
+@*             <div class="tt-card" @onclick="() => LoadPreview(batch.BatchId)"> *@
+@*                 <h5>@batch.Course?.CourseName</h5> *@
 
-@*                     <div class="tt-body"> *@
-@*                         <div class="tt-row"> *@
-@*                             <span>Sem</span> *@
-@*                             <b>@string.Join(", ", batch.BatchSemesters.Select(s => s.Semester.SemesterNo))</b> *@
-@*                         </div> *@
+@*                 <p> *@
+@*                     Semester: *@
+@*                     @string.Join(", ", *@
+@*                              batch.BatchSemesters.Select(s => s.Semester.SemesterNo)) *@
+@*                 </p> *@
 
-@*                         <div class="tt-row"> *@
-@*                             <span>Date</span> *@
-@*                             <b>@batch.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</b> *@
-@*                         </div> *@
-@*                     </div> *@
-
-@*                     <div class="tt-footer"> *@
-@*                         <span class="status">@batch.Status</span> *@
-@*                     </div> *@
-@*                 </div> *@
-@*             } *@
-@*         </div> *@
+@*                 <p>Generated: @batch.CreatedAt.ToString("dd MMM yyyy")</p> *@
+@*             </div> *@
+@*         } *@
 @*     </div> *@
 
 @*     <!-- ================= DIVISION SELECTOR ================= --> *@
@@ -68,7 +56,7 @@
 @*     <!-- ================= PREVIEW ================= --> *@
 @*     @if (filteredData.Any()) *@
 @*     { *@
-@*         <div class="preview-card"> *@
+@*         <div class="tt-card" style="margin-top:20px;"> *@
 
 @*             <h5 style="text-align:@style.titleAlign"> *@
 @*                 Division: @selectedDivision *@
@@ -100,996 +88,7 @@
 @*                                 var cell = filteredData *@
 @*                                 .FirstOrDefault(x => x.Day == day && x.Slot == slot); *@
 
-@*                                 <td style=" *@
-@*     background:@style.bodyBg; *@
-@*     color:@style.bodyText; *@
-@*     padding:@style.cellPadding; *@
-@*     border:1px solid @style.borderColor; *@
-@*     cursor:pointer; *@
-@*             " *@
-@*                                     @onclick="() => SelectCell(cell)"> *@
-
-@*                                     @if (selectedCell?.EntryId == cell?.EntryId && isEditMode) *@
-@*                                     { *@
-@*                                         <select @bind="selectedSubjectSemesterId" class="form-control"> *@
-@*                                             <option value="0">Select Subject</option> *@
-@*                                             @foreach (var s in subjects) *@
-@*                                             { *@
-@*                                                 <option value="@s.SubjectSemesterId"> *@
-@*                                                     @s.Subject.SubjectName *@
-@*                                                 </option> *@
-@*                                             } *@
-@*                                         </select> *@
-
-@*                                         <select @bind="selectedRoomId" class="form-control mt-1"> *@
-@*                                             <option value="0">Select Room</option> *@
-@*                                             @foreach (var r in rooms) *@
-@*                                             { *@
-@*                                                 <option value="@r.RoomId">@r.RoomName</option> *@
-@*                                             } *@
-@*                                         </select> *@
-
-@*                                         <button class="btn btn-success btn-sm mt-1" *@
-@*                                                 @onclick="SaveEdit" *@
-@*                                                 @onclick:stopPropagation="true"> *@
-@*                                             Save *@
-@*                                         </button> *@
-@*                                     } *@
-@*                                     else *@
-@*                                     { *@
-@*                                         @if (cell != null && cell.Subject != "Free") *@
-@*                                         { *@
-@*                                             <div><b>@cell.Subject</b></div> *@
-
-@*                                             @if (style.showFaculty) *@
-@*                                             { *@
-@*                                                 <small>@cell.Faculty</small> *@
-@*                                             } *@
-
-@*                                             @if (style.showRoom) *@
-@*                                             { *@
-@*                                                 <div>@cell.Room</div> *@
-@*                                             } *@
-@*                                         } *@
-@*                                         else *@
-@*                                         { *@
-@*                                             <span>Free</span> *@
-@*                                         } *@
-@*                                     } *@
-@*                                 </td> *@
-@*                             } *@
-@*                         </tr> *@
-@*                     } *@
-@*                 </tbody> *@
-@*             </table> *@
-
-@*             <br /> *@
-
-@*             <button class="btn btn-primary" @onclick="Download"> *@
-@*                 Download Excel *@
-@*             </button> *@
-
-@*         </div> *@
-@*     } *@
-@* </div> *@
-
-@* @code { *@
-
-@*     List<TimeTableBatch> batches = new(); *@
-@*     List<PreviewDto> previewData = new(); *@
-@*     List<PreviewDto> filteredData = new(); *@
-
-@*     List<string> divisions = new(); *@
-@*     string selectedDivision; *@
-
-@*     List<int> slots = new(); *@
-@*     List<int> days = new() { 1, 2, 3, 4, 5, 6 }; *@
-
-@*     string fileBase64 = ""; *@
-@*     TemplateStyle style = new(); *@
-
-@*     // ================= EDIT VARIABLES ================= *@
-@*     PreviewDto selectedCell; *@
-@*     bool isEditMode; *@
-
-@*     int selectedSubjectSemesterId; *@
-@*     int selectedRoomId; *@
-
-@*     List<SubjectSemester> subjects = new(); *@
-@*     List<Room> rooms = new(); *@
-
-@*     int selectedBatchId; *@
-
-@*     protected override async Task OnInitializedAsync() *@
-@*     { *@
-@*         var userId = Auth.UserId.Value; *@
-
-@*         var all = await Repo.GetAllBatches(); *@
-
-@*         batches = all *@
-@*             .Where(x => x.CreatedByUserId == userId) *@
-@*             .OrderByDescending(x => x.CreatedAt) *@
-@*             .ToList(); *@
-@*     } *@
-
-@*     async Task LoadPreview(int batchId) *@
-@*     { *@
-@*         var result = await TTService.GetPreviewByBatch(batchId); *@
-
-@*         previewData = result.Preview; *@
-@*         fileBase64 = result.Base64 ?? ""; *@
-@*         style = result.TemplateStyle ?? new TemplateStyle(); *@
-
-@*         divisions = previewData *@
-@*             .Select(x => x.Division) *@
-@*             .Distinct() *@
-@*             .ToList(); *@
-
-@*         selectedDivision = divisions.FirstOrDefault(); *@
-
-@*         ApplyDivisionFilter(); *@
-
-@*         // EDIT DATA LOAD *@
-@*         selectedBatchId = batchId; *@
-@*         subjects = await TTService.GetSubjects(); *@
-@*         rooms = await TTService.GetRooms(); *@
-@*     } *@
-
-@*     void SelectCell(PreviewDto cell) *@
-@*     { *@
-@*         if (cell == null || cell.Subject == "Free" || cell.Subject == "Break") *@
-@*             return; *@
-
-@*         selectedCell = cell; *@
-@*         isEditMode = true; *@
-
-@*         selectedSubjectSemesterId = cell.SubjectSemesterId ?? 0; *@
-@*         selectedRoomId = cell.RoomId ?? 0; *@
-@*     } *@
-
-@*     async Task SaveEdit() *@
-@*     { *@
-@*         var dto = new UpdateEntryDto *@
-@*             { *@
-@*                 EntryId = selectedCell.EntryId, *@
-@*                 SubjectSemesterId = selectedSubjectSemesterId == 0 ? null : selectedSubjectSemesterId, *@
-@*                 RoomId = selectedRoomId == 0 ? null : selectedRoomId, *@
-@*                 UserId = Auth.UserId.Value *@
-@*             }; *@
-
-@*         var result = await TTService.UpdateEntryAsync(dto); *@
-
-@*         if (!result.Success) *@
-@*         { *@
-@*             Console.WriteLine(result.Message); *@
-@*             return; *@
-@*         } *@
-
-@*         isEditMode = false; *@
-@*         selectedCell = null; *@
-
-@*         await LoadPreview(selectedBatchId); *@
-@*     } *@
-
-@*     void SelectDivision(string div) *@
-@*     { *@
-@*         selectedDivision = div; *@
-@*         ApplyDivisionFilter(); *@
-@*     } *@
-
-@*     void ApplyDivisionFilter() *@
-@*     { *@
-@*         filteredData = previewData *@
-@*             .Where(x => x.Division == selectedDivision) *@
-@*             .ToList(); *@
-
-@*         slots = filteredData *@
-@*             .Select(x => x.Slot) *@
-@*             .Distinct() *@
-@*             .OrderBy(x => x) *@
-@*             .ToList(); *@
-@*     } *@
-
-@*     async Task Download() *@
-@*     { *@
-@*         if (string.IsNullOrEmpty(fileBase64)) *@
-@*             return; *@
-
-@*         await JS.InvokeVoidAsync("downloadFileFromBase64", "timetable.xlsx", fileBase64); *@
-@*     } *@
-
-@*     string GetDayName(int day) => day switch *@
-@*     { *@
-@*         1 => "Mon", *@
-@*         2 => "Tue", *@
-@*         3 => "Wed", *@
-@*         4 => "Thu", *@
-@*         5 => "Fri", *@
-@*         6 => "Sat", *@
-@*         _ => "" *@
-@*     }; *@
-@* } *@
-
-
-@* with edit button *@
-
-@* @page "/tt/view" *@
-@* @layout ScheduleX.Web.Components.Layout.tt.TTLayout *@
-
-@* @using ScheduleX.Web.DTOs *@
-@* @using ScheduleX.Core.Entities *@
-@* @using ScheduleX.Web.Models.Template *@
-
-@* @inject ScheduleX.Web.Services.AuthState Auth *@
-@* @inject ScheduleX.Core.Interfaces.TTCoordinator.ITimetableRepository Repo *@
-@* @inject ScheduleX.Web.Services.TimeTable.ITimeTableService TTService *@
-@* @inject IJSRuntime JS *@
-
-@* <link href="css/tt-view.css" rel="stylesheet" /> *@
-
-@* <div class="generate-page"> *@
-
-@*     <div class="page-header"> *@
-@*         <h3>View Timetable</h3> *@
-@*     </div> *@
-
-@*     <!-- ================= CARDS ================= --> *@
-@*     <div class="tt-wrapper"> *@
-@*         <div class="tt-grid"> *@
-@*             @foreach (var batch in batches) *@
-@*             { *@
-@*                 <div class="tt-card" @onclick="() => LoadPreview(batch.BatchId)"> *@
-@*                     <div class="tt-top"> *@
-@*                         <h6>@batch.Course?.CourseName</h6> *@
-@*                         <span class="tt-version">@($"v{batch.VersionNo}")</span> *@
-@*                     </div> *@
-
-@*                     <div class="tt-body"> *@
-@*                         <div class="tt-row"> *@
-@*                             <span>Sem</span> *@
-@*                             <b>@string.Join(", ", batch.BatchSemesters.Select(s => s.Semester.SemesterNo))</b> *@
-@*                         </div> *@
-
-@*                         <div class="tt-row"> *@
-@*                             <span>Date</span> *@
-@*                             <b>@batch.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</b> *@
-@*                         </div> *@
-@*                     </div> *@
-
-@*                     <div class="tt-footer"> *@
-@*                         <span class="status">@batch.Status</span> *@
-@*                     </div> *@
-@*                 </div> *@
-@*             } *@
-@*         </div> *@
-@*     </div> *@
-
-@*     <!-- ================= DIVISION ================= --> *@
-@*     @if (divisions.Any()) *@
-@*     { *@
-@*         <div style="margin-top:20px;"> *@
-@*             @foreach (var div in divisions) *@
-@*             { *@
-@*                 <button class="btn btn-primary" *@
-@*                         style="margin-right:10px; *@
-@*                     background:@(selectedDivision == div ? "#22c55e" : "#2563eb")" *@
-@*                         @onclick="() => SelectDivision(div)"> *@
-@*                     @div *@
-@*                 </button> *@
-@*             } *@
-@*         </div> *@
-@*     } *@
-
-@*     <!-- ================= PREVIEW ================= --> *@
-@*     @if (filteredData.Any()) *@
-@*     { *@
-@*         <div class="preview-card"> *@
-
-@*             <h5 style="text-align:@style.titleAlign"> *@
-@*                 Division: @selectedDivision *@
-@*             </h5> *@
-
-@*             <table style="width:100%; border-collapse:collapse; font-size:@style.fontSize"> *@
-
-@*                 <thead style="background:@style.headerBg; color:@style.headerText;"> *@
-@*                     <tr> *@
-@*                         <th style="padding:@style.cellPadding;">Time</th> *@
-@*                         @foreach (var day in days) *@
-@*                         { *@
-@*                             <th style="padding:@style.cellPadding;"> *@
-@*                                 @GetDayName(day) *@
-@*                             </th> *@
-@*                         } *@
-@*                     </tr> *@
-@*                 </thead> *@
-
-@*                 <tbody> *@
-@*                     @foreach (var slot in slots) *@
-@*                     { *@
-@*                         <tr> *@
-@*                             <td><b>Slot @slot</b></td> *@
-
-@*                             @foreach (var day in days) *@
-@*                             { *@
-@*                                 var cell = filteredData *@
-@*                                 .FirstOrDefault(x => x.Day == day && x.Slot == slot); *@
-
-@*                                 <td style=" *@
-@*                                     background:@style.bodyBg; *@
-@*                                     color:@style.bodyText; *@
-@*                                     padding:@style.cellPadding; *@
-@*                                     border:1px solid @style.borderColor; *@
-@*                                     cursor:pointer;" *@
-@*                                     @onclick="() => SelectCell(cell)"> *@
-
-@*                                     @if (selectedCell?.EntryId == cell?.EntryId && isEditMode && isGlobalEditMode) *@
-@*                                     { *@
-@*                                         <!-- EDIT MODE --> *@
-@*                                         <select @bind="selectedSubjectSemesterId" class="form-control"> *@
-@*                                             <option value="0">Select Subject</option> *@
-@*                                             @foreach (var s in subjects) *@
-@*                                             { *@
-@*                                                 <option value="@s.SubjectSemesterId"> *@
-@*                                                     @s.Subject.SubjectName *@
-@*                                                 </option> *@
-@*                                             } *@
-@*                                         </select> *@
-
-@*                                         <select @bind="selectedRoomId" class="form-control mt-1"> *@
-@*                                             <option value="0">Select Room</option> *@
-@*                                             @foreach (var r in rooms) *@
-@*                                             { *@
-@*                                                 <option value="@r.RoomId">@r.RoomName</option> *@
-@*                                             } *@
-@*                                         </select> *@
-
-@*                                         <button class="btn btn-success btn-sm mt-1" *@
-@*                                                 @onclick="SaveEdit" *@
-@*                                                 @onclick:stopPropagation="true"> *@
-@*                                             Save *@
-@*                                         </button> *@
-@*                                     } *@
-@*                                     else *@
-@*                                     { *@
-@*                                         <!-- VIEW MODE --> *@
-@*                                         @if (cell != null && cell.Subject != "Free") *@
-@*                                         { *@
-@*                                             <div><b>@cell.Subject</b></div> *@
-
-@*                                             @if (style.showFaculty) *@
-@*                                             { *@
-@*                                                 <small>@cell.Faculty</small> *@
-@*                                             } *@
-
-@*                                             @if (style.showRoom) *@
-@*                                             { *@
-@*                                                 <div>@cell.Room</div> *@
-@*                                             } *@
-@*                                         } *@
-@*                                         else *@
-@*                                         { *@
-@*                                             <span>Free</span> *@
-@*                                         } *@
-@*                                     } *@
-@*                                 </td> *@
-@*                             } *@
-@*                         </tr> *@
-@*                     } *@
-@*                 </tbody> *@
-@*             </table> *@
-
-@*             <br /> *@
-
-@*             <!-- ✅ BUTTONS --> *@
-@*             <div class="d-flex gap-2"> *@
-@*                 <button class="btn btn-warning" *@
-@*                         @onclick="ToggleEditMode"> *@
-@*                     @(isGlobalEditMode ? "Cancel Edit" : "Edit Timetable") *@
-@*                 </button> *@
-
-@*                 <button class="btn btn-primary" @onclick="Download"> *@
-@*                     Download Excel *@
-@*                 </button> *@
-@*             </div> *@
-
-@*         </div> *@
-@*     } *@
-@* </div> *@
-
-@* @code { *@
-
-@*     List<TimeTableBatch> batches = new(); *@
-@*     List<PreviewDto> previewData = new(); *@
-@*     List<PreviewDto> filteredData = new(); *@
-
-@*     List<string> divisions = new(); *@
-@*     string selectedDivision; *@
-
-@*     List<int> slots = new(); *@
-@*     List<int> days = new() { 1, 2, 3, 4, 5, 6 }; *@
-
-@*     string fileBase64 = ""; *@
-@*     TemplateStyle style = new(); *@
-
-@*     // ================= EDIT ================= *@
-@*     bool isGlobalEditMode = false; *@
-
-@*     PreviewDto selectedCell; *@
-@*     bool isEditMode; *@
-
-@*     int selectedSubjectSemesterId; *@
-@*     int selectedRoomId; *@
-
-@*     List<SubjectSemester> subjects = new(); *@
-@*     List<Room> rooms = new(); *@
-
-@*     int selectedBatchId; *@
-
-@*     protected override async Task OnInitializedAsync() *@
-@*     { *@
-@*         var userId = Auth.UserId.Value; *@
-
-@*         var all = await Repo.GetAllBatches(); *@
-
-@*         batches = all *@
-@*             .Where(x => x.CreatedByUserId == userId) *@
-@*             .OrderByDescending(x => x.CreatedAt) *@
-@*             .ToList(); *@
-@*     } *@
-
-@*     async Task LoadPreview(int batchId) *@
-@*     { *@
-@*         var result = await TTService.GetPreviewByBatch(batchId); *@
-
-@*         previewData = result.Preview; *@
-@*         fileBase64 = result.Base64 ?? ""; *@
-@*         style = result.TemplateStyle ?? new TemplateStyle(); *@
-
-@*         divisions = previewData *@
-@*             .Select(x => x.Division) *@
-@*             .Distinct() *@
-@*             .ToList(); *@
-
-@*         selectedDivision = divisions.FirstOrDefault(); *@
-
-@*         ApplyDivisionFilter(); *@
-
-@*         // EDIT DATA *@
-@*         selectedBatchId = batchId; *@
-@*         subjects = await TTService.GetSubjects(); *@
-@*         rooms = await TTService.GetRooms(); *@
-@*     } *@
-
-@*     void ToggleEditMode() *@
-@*     { *@
-@*         isGlobalEditMode = !isGlobalEditMode; *@
-@*         isEditMode = false; *@
-@*         selectedCell = null; *@
-@*     } *@
-
-@*     void SelectCell(PreviewDto cell) *@
-@*     { *@
-@*         if (!isGlobalEditMode) *@
-@*             return; *@
-
-@*         if (cell == null || cell.Subject == "Free" || cell.Subject == "Break") *@
-@*             return; *@
-
-@*         selectedCell = cell; *@
-@*         isEditMode = true; *@
-
-@*         selectedSubjectSemesterId = cell.SubjectSemesterId ?? 0; *@
-@*         selectedRoomId = cell.RoomId ?? 0; *@
-@*     } *@
-
-@*     async Task SaveEdit() *@
-@*     { *@
-@*         var dto = new UpdateEntryDto *@
-@*             { *@
-@*                 EntryId = selectedCell.EntryId, *@
-@*                 SubjectSemesterId = selectedSubjectSemesterId == 0 ? null : selectedSubjectSemesterId, *@
-@*                 RoomId = selectedRoomId == 0 ? null : selectedRoomId, *@
-@*                 UserId = Auth.UserId.Value *@
-@*             }; *@
-
-@*         var result = await TTService.UpdateEntryAsync(dto); *@
-
-@*         if (!result.Success) *@
-@*         { *@
-@*             Console.WriteLine(result.Message); *@
-@*             return; *@
-@*         } *@
-
-@*         isEditMode = false; *@
-@*         selectedCell = null; *@
-
-@*         await LoadPreview(selectedBatchId); *@
-@*     } *@
-
-@*     void SelectDivision(string div) *@
-@*     { *@
-@*         selectedDivision = div; *@
-@*         ApplyDivisionFilter(); *@
-@*     } *@
-
-@*     void ApplyDivisionFilter() *@
-@*     { *@
-@*         filteredData = previewData *@
-@*             .Where(x => x.Division == selectedDivision) *@
-@*             .ToList(); *@
-
-@*         slots = filteredData *@
-@*             .Select(x => x.Slot) *@
-@*             .Distinct() *@
-@*             .OrderBy(x => x) *@
-@*             .ToList(); *@
-@*     } *@
-
-@*     async Task Download() *@
-@*     { *@
-@*         if (string.IsNullOrEmpty(fileBase64)) *@
-@*             return; *@
-
-@*         await JS.InvokeVoidAsync("downloadFileFromBase64", "timetable.xlsx", fileBase64); *@
-@*     } *@
-
-@*     string GetDayName(int day) => day switch *@
-@*     { *@
-@*         1 => "Mon", *@
-@*         2 => "Tue", *@
-@*         3 => "Wed", *@
-@*         4 => "Thu", *@
-@*         5 => "Fri", *@
-@*         6 => "Sat", *@
-@*         _ => "" *@
-@*     }; *@
-@* } *@
-
-
-
-
-
-@* @page "/tt/view" *@
-@* @layout ScheduleX.Web.Components.Layout.tt.TTLayout *@
-
-@* @using ScheduleX.Web.DTOs *@
-@* @using ScheduleX.Core.Entities *@
-@* @using ScheduleX.Web.Models.Template *@
-
-@* @inject ScheduleX.Web.Services.AuthState Auth *@
-@* @inject ScheduleX.Core.Interfaces.TTCoordinator.ITimetableRepository Repo *@
-@* @inject ScheduleX.Web.Services.TimeTable.ITimeTableService TTService *@
-@* @inject IJSRuntime JS *@
-
-@* <link href="css/tt-view.css" rel="stylesheet" /> *@
-
-@* <div class="generate-page"> *@
-
-@*     <div class="page-header"> *@
-@*         <h3>View Timetable</h3> *@
-@*     </div> *@
-
-@*     <!-- ================= CARDS ================= --> *@
-@*     <div class="tt-wrapper"> *@
-@*         <div class="tt-grid"> *@
-@*             @foreach (var batch in batches) *@
-@*             { *@
-@*                 <div class="tt-card" @onclick="() => LoadPreview(batch.BatchId)"> *@
-@*                     <div class="tt-top"> *@
-@*                         <h6>@batch.Course?.CourseName</h6> *@
-@*                         <span class="tt-version">@($"v{batch.VersionNo}")</span> *@
-@*                     </div> *@
-
-@*                     <div class="tt-body"> *@
-@*                         <div class="tt-row"> *@
-@*                             <span>Sem</span> *@
-@*                             <b>@string.Join(", ", batch.BatchSemesters.Select(s => s.Semester.SemesterNo))</b> *@
-@*                         </div> *@
-
-@*                         <div class="tt-row"> *@
-@*                             <span>Date</span> *@
-@*                             <b>@batch.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</b> *@
-@*                         </div> *@
-@*                     </div> *@
-
-@*                     <div class="tt-footer"> *@
-@*                         <span class="status">@batch.Status</span> *@
-@*                     </div> *@
-@*                 </div> *@
-@*             } *@
-@*         </div> *@
-@*     </div> *@
-
-@*     <!-- ================= DIVISION ================= --> *@
-@*     @if (divisions.Any()) *@
-@*     { *@
-@*         <div style="margin-top:20px;"> *@
-@*             @foreach (var div in divisions) *@
-@*             { *@
-@*                 <button class="btn btn-primary" *@
-@*                         style="margin-right:10px; *@
-@*                     background:@(selectedDivision == div ? "#22c55e" : "#2563eb")" *@
-@*                         @onclick="() => SelectDivision(div)"> *@
-@*                     @div *@
-@*                 </button> *@
-@*             } *@
-@*         </div> *@
-@*     } *@
-
-@*     <!-- ================= PREVIEW ================= --> *@
-@*     @if (filteredData.Any()) *@
-@*     { *@
-@*         <div class="preview-card"> *@
-
-@*             <h5 style="text-align:@style.titleAlign"> *@
-@*                 Division: @selectedDivision *@
-@*             </h5> *@
-
-@*             <table style="width:100%; border-collapse:collapse; font-size:@style.fontSize"> *@
-
-@*                 <thead style="background:@style.headerBg; color:@style.headerText;"> *@
-@*                     <tr> *@
-@*                         <th style="padding:@style.cellPadding;">Time</th> *@
-@*                         @foreach (var day in days) *@
-@*                         { *@
-@*                             <th style="padding:@style.cellPadding;"> *@
-@*                                 @GetDayName(day) *@
-@*                             </th> *@
-@*                         } *@
-@*                     </tr> *@
-@*                 </thead> *@
-
-@*                 <tbody> *@
-@*                     @foreach (var slot in slots) *@
-@*                     { *@
-@*                         <tr> *@
-@*                             <td><b>Slot @slot</b></td> *@
-
-@*                             @foreach (var day in days) *@
-@*                             { *@
-@*                                 var cell = filteredData *@
-@*                                 .FirstOrDefault(x => x.Day == day && x.Slot == slot); *@
-
-@*                                 <td style=" *@
-@*                                     background:@style.bodyBg; *@
-@*                                     color:@style.bodyText; *@
-@*                                     padding:@style.cellPadding; *@
-@*                                     border:1px solid @style.borderColor; *@
-@*                                     cursor:pointer;" *@
-@*                                     @onclick="() => SelectCell(cell)"> *@
-
-@*                                     @if (selectedCell?.EntryId == cell?.EntryId && isEditMode && isGlobalEditMode) *@
-@*                                     { *@
-@*                                         <select @bind="selectedSubjectSemesterId" class="form-control"> *@
-@*                                             <option value="0">Select Subject</option> *@
-@*                                             @foreach (var s in subjects) *@
-@*                                             { *@
-@*                                                 <option value="@s.SubjectSemesterId"> *@
-@*                                                     @s.Subject.SubjectName *@
-@*                                                 </option> *@
-@*                                             } *@
-@*                                         </select> *@
-
-@*                                         <select @bind="selectedRoomId" class="form-control mt-1"> *@
-@*                                             <option value="0">Select Room</option> *@
-@*                                             @foreach (var r in rooms) *@
-@*                                             { *@
-@*                                                 <option value="@r.RoomId">@r.RoomName</option> *@
-@*                                             } *@
-@*                                         </select> *@
-
-@*                                         <button class="btn btn-success btn-sm mt-1" *@
-@*                                                 @onclick="SaveEdit" *@
-@*                                                 @onclick:stopPropagation="true"> *@
-@*                                             Save *@
-@*                                         </button> *@
-@*                                     } *@
-@*                                     else *@
-@*                                     { *@
-@*                                         @if (cell != null && cell.Subject != "Free") *@
-@*                                         { *@
-@*                                             <div><b>@cell.Subject</b></div> *@
-
-@*                                             @if (style.showFaculty) *@
-@*                                             { *@
-@*                                                 <small>@cell.Faculty</small> *@
-@*                                             } *@
-
-@*                                             @if (style.showRoom) *@
-@*                                             { *@
-@*                                                 <div>@cell.Room</div> *@
-@*                                             } *@
-@*                                         } *@
-@*                                         else *@
-@*                                         { *@
-@*                                             <span>Free</span> *@
-@*                                         } *@
-@*                                     } *@
-@*                                 </td> *@
-@*                             } *@
-@*                         </tr> *@
-@*                     } *@
-@*                 </tbody> *@
-@*             </table> *@
-
-@*             <br /> *@
-
-@*             <div class="d-flex gap-2"> *@
-@*                 <button class="btn btn-warning" *@
-@*                         @onclick="ToggleEditMode"> *@
-@*                     @(isGlobalEditMode ? "Cancel Edit" : "Edit Timetable") *@
-@*                 </button> *@
-
-@*                 <button class="btn btn-primary" @onclick="Download"> *@
-@*                     Download Excel *@
-@*                 </button> *@
-@*             </div> *@
-
-@*         </div> *@
-@*     } *@
-@* </div> *@
-
-@* @code { *@
-
-@*     List<TimeTableBatch> batches = new(); *@
-@*     List<PreviewDto> previewData = new(); *@
-@*     List<PreviewDto> filteredData = new(); *@
-
-@*     List<string> divisions = new(); *@
-@*     string selectedDivision; *@
-
-@*     List<int> slots = new(); *@
-@*     List<int> days = new() { 1, 2, 3, 4, 5, 6 }; *@
-
-@*     string fileBase64 = ""; *@
-@*     TemplateStyle style = new(); *@
-
-@*     bool isGlobalEditMode = false; *@
-
-@*     PreviewDto selectedCell; *@
-@*     bool isEditMode; *@
-
-@*     int selectedSubjectSemesterId; *@
-@*     int selectedRoomId; *@
-
-@*     List<SubjectSemester> subjects = new(); *@
-@*     List<Room> rooms = new(); *@
-
-@*     int selectedBatchId; *@
-@*     int selectedSemesterId; *@
-
-@*     protected override async Task OnInitializedAsync() *@
-@*     { *@
-@*         var userId = Auth.UserId.Value; *@
-
-@*         var all = await Repo.GetAllBatches(); *@
-
-@*         batches = all *@
-@*             .Where(x => x.CreatedByUserId == userId) *@
-@*             .OrderByDescending(x => x.CreatedAt) *@
-@*             .ToList(); *@
-@*     } *@
-
-@*     async Task LoadPreview(int batchId) *@
-@*     { *@
-@*         var result = await TTService.GetPreviewByBatch(batchId); *@
-
-@*         previewData = result.Preview; *@
-@*         fileBase64 = result.Base64 ?? ""; *@
-@*         style = result.TemplateStyle ?? new TemplateStyle(); *@
-
-@*         divisions = previewData.Select(x => x.Division).Distinct().ToList(); *@
-@*         selectedDivision = divisions.FirstOrDefault(); *@
-
-@*         ApplyDivisionFilter(); *@
-
-@*         // ✅ CORRECT FIX *@
-@*         var batch = batches.FirstOrDefault(x => x.BatchId == batchId); *@
-
-@*         selectedSemesterId = batch?.BatchSemesters *@
-@*             .FirstOrDefault()?.SemesterId ?? 0; *@
-
-@*         subjects = (await TTService.GetSubjects()) *@
-@*             .Where(x => x.SemesterId == selectedSemesterId) *@
-@*             .ToList(); *@
-
-@*         rooms = await TTService.GetRooms(); *@
-
-@*         selectedBatchId = batchId; *@
-@*     } *@
-
-@*     void ToggleEditMode() *@
-@*     { *@
-@*         isGlobalEditMode = !isGlobalEditMode; *@
-@*         isEditMode = false; *@
-@*         selectedCell = null; *@
-@*     } *@
-
-@*     void SelectCell(PreviewDto cell) *@
-@*     { *@
-@*         if (!isGlobalEditMode) *@
-@*             return; *@
-
-@*         if (cell == null || cell.Subject == "Free" || cell.Subject == "Break") *@
-@*             return; *@
-
-@*         selectedCell = cell; *@
-@*         isEditMode = true; *@
-
-@*         selectedSubjectSemesterId = cell.SubjectSemesterId ?? 0; *@
-@*         selectedRoomId = cell.RoomId ?? 0; *@
-@*     } *@
-
-@*     async Task SaveEdit() *@
-@*     { *@
-@*         var dto = new UpdateEntryDto *@
-@*             { *@
-@*                 EntryId = selectedCell.EntryId, *@
-@*                 SubjectSemesterId = selectedSubjectSemesterId == 0 ? null : selectedSubjectSemesterId, *@
-@*                 RoomId = selectedRoomId == 0 ? null : selectedRoomId, *@
-@*                 UserId = Auth.UserId.Value *@
-@*             }; *@
-
-@*         var result = await TTService.UpdateEntryAsync(dto); *@
-
-@*         if (!result.Success) *@
-@*         { *@
-@*             Console.WriteLine(result.Message); *@
-@*             return; *@
-@*         } *@
-
-@*         isEditMode = false; *@
-@*         selectedCell = null; *@
-
-@*         await LoadPreview(selectedBatchId); *@
-@*     } *@
-
-@*     void SelectDivision(string div) *@
-@*     { *@
-@*         selectedDivision = div; *@
-@*         ApplyDivisionFilter(); *@
-@*     } *@
-
-@*     void ApplyDivisionFilter() *@
-@*     { *@
-@*         filteredData = previewData *@
-@*             .Where(x => x.Division == selectedDivision) *@
-@*             .ToList(); *@
-
-@*         slots = filteredData *@
-@*             .Select(x => x.Slot) *@
-@*             .Distinct() *@
-@*             .OrderBy(x => x) *@
-@*             .ToList(); *@
-@*     } *@
-
-@*     async Task Download() *@
-@*     { *@
-@*         if (string.IsNullOrEmpty(fileBase64)) *@
-@*             return; *@
-
-@*         await JS.InvokeVoidAsync("downloadFileFromBase64", "timetable.xlsx", fileBase64); *@
-@*     } *@
-
-@*     string GetDayName(int day) => day switch *@
-@*     { *@
-@*         1 => "Mon", *@
-@*         2 => "Tue", *@
-@*         3 => "Wed", *@
-@*         4 => "Thu", *@
-@*         5 => "Fri", *@
-@*         6 => "Sat", *@
-@*         _ => "" *@
-@*     }; *@
-@* } *@
-
-
-@* with swap *@
-@* @page "/tt/view" *@
-@* @layout ScheduleX.Web.Components.Layout.tt.TTLayout *@
-
-@* @using ScheduleX.Web.DTOs *@
-@* @using ScheduleX.Core.Entities *@
-@* @using ScheduleX.Web.Models.Template *@
-
-@* @inject ScheduleX.Web.Services.AuthState Auth *@
-@* @inject ScheduleX.Core.Interfaces.TTCoordinator.ITimetableRepository Repo *@
-@* @inject ScheduleX.Web.Services.TimeTable.ITimeTableService TTService *@
-@* @inject IJSRuntime JS *@
-
-@* <link href="css/tt-view.css" rel="stylesheet" /> *@
-
-@* <div class="generate-page"> *@
-
-@*     <div class="page-header"> *@
-@*         <h3>View Timetable</h3> *@
-@*     </div> *@
-
-@*     <!-- ================= CARDS ================= --> *@
-@*     <div class="tt-wrapper"> *@
-@*         <div class="tt-grid"> *@
-@*             @foreach (var batch in batches) *@
-@*             { *@
-@*                 <div class="tt-card" @onclick="() => LoadPreview(batch.BatchId)"> *@
-@*                     <div class="tt-top"> *@
-@*                         <h6>@batch.Course?.CourseName</h6> *@
-@*                         <span class="tt-version">@($"v{batch.VersionNo}")</span> *@
-@*                     </div> *@
-
-@*                     <div class="tt-body"> *@
-@*                         <div class="tt-row"> *@
-@*                             <span>Sem</span> *@
-@*                             <b>@string.Join(", ", batch.BatchSemesters.Select(s => s.Semester.SemesterNo))</b> *@
-@*                         </div> *@
-
-@*                         <div class="tt-row"> *@
-@*                             <span>Date</span> *@
-@*                             <b>@batch.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</b> *@
-@*                         </div> *@
-@*                     </div> *@
-
-@*                     <div class="tt-footer"> *@
-@*                         <span class="status">@batch.Status</span> *@
-@*                     </div> *@
-@*                 </div> *@
-@*             } *@
-@*         </div> *@
-@*     </div> *@
-
-@*     <!-- ================= DIVISION ================= --> *@
-@*     @if (divisions.Any()) *@
-@*     { *@
-@*         <div style="margin-top:20px;"> *@
-@*             @foreach (var div in divisions) *@
-@*             { *@
-@*                 <button class="btn btn-primary" *@
-@*                         style="margin-right:10px; *@
-@*                     background:@(selectedDivision == div ? "#22c55e" : "#2563eb")" *@
-@*                         @onclick="() => SelectDivision(div)"> *@
-@*                     @div *@
-@*                 </button> *@
-@*             } *@
-@*         </div> *@
-@*     } *@
-
-@*     <!-- ================= PREVIEW ================= --> *@
-@*     @if (filteredData.Any()) *@
-@*     { *@
-@*         <div class="preview-card"> *@
-
-@*             <h5 style="text-align:@style.titleAlign"> *@
-@*                 Division: @selectedDivision *@
-@*             </h5> *@
-
-@*             <table style="width:100%; border-collapse:collapse; font-size:@style.fontSize"> *@
-
-@*                 <thead style="background:@style.headerBg; color:@style.headerText;"> *@
-@*                     <tr> *@
-@*                         <th>Time</th> *@
-@*                         @foreach (var day in days) *@
-@*                         { *@
-@*                             <th>@GetDayName(day)</th> *@
-@*                         } *@
-@*                     </tr> *@
-@*                 </thead> *@
-
-@*                 <tbody> *@
-@*                     @foreach (var slot in slots) *@
-@*                     { *@
-@*                         <tr> *@
-@*                             <td><b>Slot @slot</b></td> *@
-
-@*                             @foreach (var day in days) *@
-@*                             { *@
-@*                                 var cell = filteredData *@
-@*                                 .FirstOrDefault(x => x.Day == day && x.Slot == slot); *@
-
-@*                                 <td style=" *@
-@*                                     padding:@style.cellPadding; *@
-@*                                     border:1px solid @style.borderColor; *@
-@*                                     cursor:pointer; *@
-@*                                     background:@(cell?.EntryId == firstSelectedCell?.EntryId ? "#fde68a" : style.bodyBg);" *@
-@*                                     @onclick="() => SelectCell(cell)"> *@
+@*                                 <td style="background:@style.bodyBg; color:@style.bodyText; padding:@style.cellPadding"> *@
 
 @*                                     @if (cell != null && cell.Subject != "Free") *@
 @*                                     { *@
@@ -1109,6 +108,7 @@
 @*                                     { *@
 @*                                         <span>Free</span> *@
 @*                                     } *@
+
 @*                                 </td> *@
 @*                             } *@
 @*                         </tr> *@
@@ -1118,26 +118,22 @@
 
 @*             <br /> *@
 
-@*             <!-- BUTTONS --> *@
-@*             <div class="d-flex gap-2"> *@
-@*                 <button class="btn btn-info" *@
-@*                         @onclick="ToggleSwapMode"> *@
-@*                     @(isSwapMode ? "Cancel Shuffle" : "Shuffle Timetable") *@
-@*                 </button> *@
-
-@*                 <button class="btn btn-primary" @onclick="Download"> *@
-@*                     Download Excel *@
-@*                 </button> *@
-@*             </div> *@
+@*             <button class="btn btn-primary" @onclick="Download"> *@
+@*                 Download Excel *@
+@*             </button> *@
 
 @*         </div> *@
 @*     } *@
+  
+
 @* </div> *@
 
 @* @code { *@
 
-@*     List<TimeTableBatch> batches = new(); *@
+
+@* List<TimeTableBatch> batches = new(); *@
 @*     List<PreviewDto> previewData = new(); *@
+
 @*     List<PreviewDto> filteredData = new(); *@
 
 @*     List<string> divisions = new(); *@
@@ -1149,12 +145,6 @@
 @*     string fileBase64 = ""; *@
 @*     TemplateStyle style = new(); *@
 
-@*     // 🔄 SWAP MODE *@
-@*     bool isSwapMode = false; *@
-@*     PreviewDto firstSelectedCell; *@
-
-@*     int selectedBatchId; *@
-
 @*     protected override async Task OnInitializedAsync() *@
 @*     { *@
 @*         var userId = Auth.UserId.Value; *@
@@ -1163,8 +153,29 @@
 
 @*         batches = all *@
 @*             .Where(x => x.CreatedByUserId == userId) *@
-@*             .OrderByDescending(x => x.CreatedAt) *@
+@*             .GroupBy(x => new *@
+@*             { *@
+@*                 x.CourseId, *@
+@*                 Sem = string.Join(",", x.BatchSemesters.Select(s => s.SemesterId)) *@
+@*             }) *@
+@*             .Select(g => g.OrderByDescending(x => x.CreatedAt).First()) *@
 @*             .ToList(); *@
+
+@*         // template *@
+@*         var json = @"{ *@
+@*       ""headerBg"":""#1e293b"", *@
+@*       ""headerText"":""#ffffff"", *@
+@*       ""bodyBg"":""#ffffff"", *@
+@*       ""bodyText"":""#111827"", *@
+@*       ""borderColor"":""#cbd5e1"", *@
+@*       ""showRoom"":true, *@
+@*       ""showFaculty"":true, *@
+@*       ""cellPadding"":""8px"", *@
+@*       ""fontSize"":""14px"", *@
+@*       ""titleAlign"":""center"" *@
+@*     }"; *@
+
+@*         style = System.Text.Json.JsonSerializer.Deserialize<TemplateStyle>(json); *@
 @*     } *@
 
 @*     async Task LoadPreview(int batchId) *@
@@ -1173,64 +184,15 @@
 
 @*         previewData = result.Preview; *@
 @*         fileBase64 = result.Base64 ?? ""; *@
-@*         style = result.TemplateStyle ?? new TemplateStyle(); *@
+@*         // ✅ GET UNIQUE DIVISIONS *@
+@*         divisions = previewData *@
+@*             .Select(x => x.Division) *@
+@*             .Distinct() *@
+@*             .ToList(); *@
 
-@*         divisions = previewData.Select(x => x.Division).Distinct().ToList(); *@
 @*         selectedDivision = divisions.FirstOrDefault(); *@
 
 @*         ApplyDivisionFilter(); *@
-
-@*         selectedBatchId = batchId; *@
-@*     } *@
-
-@*     // 🔄 TOGGLE SWAP *@
-@*     void ToggleSwapMode() *@
-@*     { *@
-@*         isSwapMode = !isSwapMode; *@
-@*         firstSelectedCell = null; *@
-@*     } *@
-
-@*     // 🔄 SELECT CELL *@
-@*     void SelectCell(PreviewDto cell) *@
-@*     { *@
-@*         if (!isSwapMode) *@
-@*             return; *@
-
-@*         if (cell == null || cell.Subject == "Free" || cell.Subject == "Break") *@
-@*             return; *@
-
-@*         // First click *@
-@*         if (firstSelectedCell == null) *@
-@*         { *@
-@*             firstSelectedCell = cell; *@
-@*             return; *@
-@*         } *@
-
-@*         // Second click → swap *@
-@*         SwapCells(firstSelectedCell, cell); *@
-
-@*         firstSelectedCell = null; *@
-@*     } *@
-
-@*     // 🔄 SWAP FUNCTION *@
-@*     async Task SwapCells(PreviewDto c1, PreviewDto c2) *@
-@*     { *@
-@*         var dto = new SwapEntryDto *@
-@*             { *@
-@*                 EntryId1 = c1.EntryId, *@
-@*                 EntryId2 = c2.EntryId, *@
-@*                 UserId = Auth.UserId.Value *@
-@*             }; *@
-
-@*         var result = await TTService.SwapEntriesAsync(dto); *@
-
-@*         if (!result.Success) *@
-@*         { *@
-@*             Console.WriteLine(result.Message); *@
-@*             return; *@
-@*         } *@
-
-@*         await LoadPreview(selectedBatchId); *@
 @*     } *@
 
 @*     void SelectDivision(string div) *@
@@ -1255,26 +217,34 @@
 @*     async Task Download() *@
 @*     { *@
 @*         if (string.IsNullOrEmpty(fileBase64)) *@
+@*         { *@
+@*             Console.WriteLine("Base64 is empty!"); *@
 @*             return; *@
+@*         } *@
 
-@*         await JS.InvokeVoidAsync("downloadFileFromBase64", "timetable.xlsx", fileBase64); *@
+@*         await JS.InvokeVoidAsync( *@
+@*             "downloadFileFromBase64", *@
+@*             "timetable.xlsx", *@
+@*             fileBase64 *@
+@*         ); *@
 @*     } *@
 
-@*     string GetDayName(int day) => day switch *@
+@*     string GetDayName(int day) *@
 @*     { *@
-@*         1 => "Mon", *@
-@*         2 => "Tue", *@
-@*         3 => "Wed", *@
-@*         4 => "Thu", *@
-@*         5 => "Fri", *@
-@*         6 => "Sat", *@
-@*         _ => "" *@
-@*     }; *@
+@*         return day switch *@
+@*         { *@
+@*             1 => "Mon", *@
+@*             2 => "Tue", *@
+@*             3 => "Wed", *@
+@*             4 => "Thu", *@
+@*             5 => "Fri", *@
+@*             6 => "Sat", *@
+@*             _ => "" *@
+@*         }; *@
+@*     } *@
+
+
 @* } *@
-
-
-
-
 
 @page "/tt/view"
 @layout ScheduleX.Web.Components.Layout.tt.TTLayout
@@ -1290,7 +260,10 @@
 
 <link href="css/tt-view.css" rel="stylesheet" />
 
+
+
 <div class="generate-page">
+
 
     <div class="page-header">
         <h3>View Timetable</h3>
@@ -1298,14 +271,10 @@
 
     <!-- ================= CARDS ================= -->
     <div class="tt-wrapper">
+
         <div class="tt-grid">
             @foreach (var batch in batches)
             {
-                <div class="tt-card" @onclick="() => LoadPreview(batch.BatchId)">
-                    <div class="tt-top">
-                        <h6>@batch.Course?.CourseName</h6>
-                        <span class="tt-version">@($"v{batch.VersionNo}")</span>
-                    </div>
                 <div class="tt-card">
 
                     <!-- CLICK AREA -->
@@ -1327,11 +296,6 @@
                                              batch.BatchSemesters.Select(s => s.Semester.SemesterNo))
                                 </b>
                             </div>
-                    <div class="tt-body">
-                        <div class="tt-row">
-                            <span>Sem</span>
-                            <b>@string.Join(", ", batch.BatchSemesters.Select(s => s.Semester.SemesterNo))</b>
-                        </div>
 
                             <div class="tt-row">
                                 <span>Date</span>
@@ -1353,12 +317,9 @@
                     </button>
 
                 </div>
-                    <div class="tt-footer">
-                        <span class="status">@batch.Status</span>
-                    </div>
-                </div>
             }
         </div>
+
     </div>
     @if (showDeletePopup)
     {
@@ -1384,7 +345,7 @@
             {
                 <button class="btn btn-primary"
                         style="margin-right:10px;
-                        background:@(selectedDivision == div ? "#22c55e" : "#2563eb")"
+                    background:@(selectedDivision == div ? "#22c55e" : "#2563eb")"
                         @onclick="() => SelectDivision(div)">
                     @div
                 </button>
@@ -1395,6 +356,7 @@
     <!-- ================= PREVIEW ================= -->
     @if (filteredData.Any())
     {
+        @* <div class="tt-card" style="margin-top:20px;"> *@
         <div class="preview-card">
 
             <h5 style="text-align:@style.titleAlign">
@@ -1405,10 +367,13 @@
 
                 <thead style="background:@style.headerBg; color:@style.headerText;">
                     <tr>
-                        <th>Time</th>
+                        <th style="padding:@style.cellPadding;">Time</th>
+
                         @foreach (var day in days)
                         {
-                            <th>@GetDayName(day)</th>
+                            <th style="padding:@style.cellPadding;">
+                                @GetDayName(day)
+                            </th>
                         }
                     </tr>
                 </thead>
@@ -1425,15 +390,11 @@
                                 .FirstOrDefault(x => x.Day == day && x.Slot == slot);
 
                                 <td style="
-                                    padding:@style.cellPadding;
-                                    border:1px solid @style.borderColor;
-                                    cursor:pointer;
-                                    background:@(
-                                        cell?.EntryId == errorCellId ? "#fca5a5" :
-                                        cell?.EntryId == firstSelectedCell?.EntryId ? "#fde68a" :
-                                        style.bodyBg
-                                    );"
-                                    @onclick="() => SelectCell(cell)">
+    background:@style.bodyBg;
+    color:@style.bodyText;
+    padding:@style.cellPadding;
+    border:1px solid @style.borderColor;
+            ">
 
                                     @if (cell != null && cell.Subject != "Free")
                                     {
@@ -1453,6 +414,7 @@
                                     {
                                         <span>Free</span>
                                     }
+
                                 </td>
                             }
                         </tr>
@@ -1462,34 +424,22 @@
 
             <br />
 
-            <!-- BUTTONS -->
-            <div class="d-flex gap-2">
-                <button class="btn btn-info"
-                        @onclick="ToggleSwapMode">
-                    @(isSwapMode ? "Cancel Shuffle" : "Shuffle Timetable")
-                </button>
-
-                <button class="btn btn-primary" @onclick="Download">
-                    Download Excel
-                </button>
-            </div>
-
-            <!-- ERROR MESSAGE -->
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div style="color:red; font-weight:bold; margin-top:10px;">
-                    @errorMessage
-                </div>
-            }
+            <button class="btn btn-primary" @onclick="Download">
+                Download Excel
+            </button>
 
         </div>
     }
+
+
 </div>
 
 @code {
 
+
     List<TimeTableBatch> batches = new();
     List<PreviewDto> previewData = new();
+
     List<PreviewDto> filteredData = new();
 
     List<string> divisions = new();
@@ -1501,26 +451,42 @@
     string fileBase64 = "";
     TemplateStyle style = new();
 
-    // 🔄 SWAP MODE
-    bool isSwapMode = false;
-    PreviewDto firstSelectedCell;
-
-    // ❗ ERROR UI
-    string errorMessage = "";
-    int errorCellId = 0;
-
-    int selectedBatchId;
-
     protected override async Task OnInitializedAsync()
     {
         var userId = Auth.UserId.Value;
 
         var all = await Repo.GetAllBatches();
 
+        // batches = all
+        //     .Where(x => x.CreatedByUserId == userId)
+        //     .GroupBy(x => new
+        //     {
+        //         x.CourseId,
+        //         Sem = string.Join(",", x.BatchSemesters.Select(s => s.SemesterId))
+        //     })
+        //     .Select(g => g.OrderByDescending(x => x.CreatedAt).First())
+        //     .ToList();
+
         batches = all
-            .Where(x => x.CreatedByUserId == userId)
-            .OrderByDescending(x => x.CreatedAt)
-            .ToList();
+    .Where(x => x.CreatedByUserId == userId)
+    .OrderByDescending(x => x.CreatedAt)
+    .ToList();
+
+        // template
+    //     var json = @"{
+    //   ""headerBg"":""#1e293b"",
+    //   ""headerText"":""#ffffff"",
+    //   ""bodyBg"":""#ffffff"",
+    //   ""bodyText"":""#111827"",
+    //   ""borderColor"":""#cbd5e1"",
+    //   ""showRoom"":true,
+    //   ""showFaculty"":true,
+    //   ""cellPadding"":""8px"",
+    //   ""fontSize"":""14px"",
+    //   ""titleAlign"":""center""
+    // }";
+
+    //     style = System.Text.Json.JsonSerializer.Deserialize<TemplateStyle>(json);
     }
 
     async Task LoadPreview(int batchId)
@@ -1529,84 +495,19 @@
 
         previewData = result.Preview;
         fileBase64 = result.Base64 ?? "";
-        style = result.TemplateStyle ?? new TemplateStyle();
 
-        divisions = previewData.Select(x => x.Division).Distinct().ToList();
+        style = result.TemplateStyle ?? new TemplateStyle();
+        // ✅ GET UNIQUE DIVISIONS
+        divisions = previewData
+            .Select(x => x.Division)
+            .Distinct()
+            .ToList();
+
         selectedDivision = divisions.FirstOrDefault();
 
         ApplyDivisionFilter();
-
-        selectedBatchId = batchId;
     }
 
-    void ToggleSwapMode()
-    {
-        isSwapMode = !isSwapMode;
-        firstSelectedCell = null;
-        errorMessage = "";
-        errorCellId = 0;
-    }
-
-    async Task SelectCell(PreviewDto cell)
-    {
-        if (!isSwapMode)
-            return;
-
-        if (cell == null || cell.Subject == "Break")
-            return;
-
-        // First click
-        if (firstSelectedCell == null)
-        {
-            firstSelectedCell = cell;
-            return;
-        }
-
-        // Same cell reset
-        if (firstSelectedCell.EntryId == cell.EntryId)
-        {
-            firstSelectedCell = null;
-            return;
-        }
-
-        // Different division block
-        if (firstSelectedCell.Division != cell.Division)
-        {
-            errorMessage = "Same division only";
-            errorCellId = cell.EntryId;
-            firstSelectedCell = null;
-            return;
-        }
-
-        // ✅ INSTANT SWAP (await important)
-        await SwapCells(firstSelectedCell, cell);
-
-        firstSelectedCell = null;
-    }
-
-    async Task SwapCells(PreviewDto c1, PreviewDto c2)
-    {
-        var dto = new SwapEntryDto
-            {
-                EntryId1 = c1.EntryId,
-                EntryId2 = c2.EntryId,
-                UserId = Auth.UserId.Value
-            };
-
-        var result = await TTService.SwapEntriesAsync(dto);
-
-        if (!result.Success)
-        {
-            errorMessage = result.Message;
-            errorCellId = c2.EntryId;
-            return;
-        }
-
-        errorMessage = "";
-        errorCellId = 0;
-
-        await LoadPreview(selectedBatchId);
-    }
     void SelectDivision(string div)
     {
         selectedDivision = div;
@@ -1656,19 +557,31 @@
     async Task Download()
     {
         if (string.IsNullOrEmpty(fileBase64))
+        {
+            Console.WriteLine("Base64 is empty!");
             return;
+        }
 
-        await JS.InvokeVoidAsync("downloadFileFromBase64", "timetable.xlsx", fileBase64);
+        await JS.InvokeVoidAsync(
+            "downloadFileFromBase64",
+            "timetable.xlsx",
+            fileBase64
+        );
     }
 
-    string GetDayName(int day) => day switch
+    string GetDayName(int day)
     {
-        1 => "Mon",
-        2 => "Tue",
-        3 => "Wed",
-        4 => "Thu",
-        5 => "Fri",
-        6 => "Sat",
-        _ => ""
-    };
+        return day switch
+        {
+            1 => "Mon",
+            2 => "Tue",
+            3 => "Wed",
+            4 => "Thu",
+            5 => "Fri",
+            6 => "Sat",
+            _ => ""
+        };
+    }
+
+
 }
