@@ -65,6 +65,15 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
 
             foreach (var semId in semesterIds)
             {
+                batch.BatchSemesters.Add(new TimeTableBatchSemester
+                {
+                    SemesterId = semId
+                });
+                // Ensure we load ALL subjects and their associated faculties correctly
+                var subjects = await _context.SubjectSemesters
+                    .Include(x => x.Subject)
+                    .Include(x => x.LectureConfigs)
+                    .Where(x => x.SemesterId == semId).ToListAsync();
                 // Ensure we load ALL subjects and their associated faculties correctly
                 var subjects = await _context.SubjectSemesters
           .Include(x => x.Subject)
@@ -230,9 +239,18 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
     public async Task<List<TimeTableTemplate>> GetTemplatesAsync() =>
       await _context.TimeTableTemplates.Where(x => x.IsActive).OrderByDescending(x => x.IsDefault).ToListAsync();
 
-    public async Task<List<TimeTableBatch>> GetAllBatches() =>
-      await _context.TimeTableBatches.Include(x => x.Course).Include(x => x.BatchSemesters).ThenInclude(bs => bs.Semester).OrderByDescending(x => x.CreatedAt).ToListAsync();
+    //public async Task<List<TimeTableBatch>> GetAllBatches() =>
+    //    await _context.TimeTableBatches.Include(x => x.Course).Include(x => x.BatchSemesters).ThenInclude(bs => bs.Semester).OrderByDescending(x => x.CreatedAt).ToListAsync();
 
+    public async Task<List<TimeTableBatch>> GetAllBatches()
+    {
+        return await _context.TimeTableBatches
+            .Include(x => x.Course)
+            .Include(x => x.BatchSemesters)
+               .ThenInclude(bs => bs.Semester)  // 🔥 THIS IS MISSING
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync();
+    }
     public async Task<List<TimeTableEntry>> GetEntriesByBatch(int batchId) =>
       await _context.TimeTableEntries.Where(x => x.BatchId == batchId).Include(x => x.TimeSlot).Include(x => x.Room).Include(x => x.Division).Include(x => x.SubjectSemester).ThenInclude(ss => ss.Subject).Include(x => x.SubjectSemester).ThenInclude(ss => ss.SubjectFaculties).ThenInclude(sf => sf.Faculty).ToListAsync();
 

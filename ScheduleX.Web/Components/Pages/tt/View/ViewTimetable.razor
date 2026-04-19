@@ -258,7 +258,9 @@
 @inject ScheduleX.Web.Services.TimeTable.ITimeTableService TTService
 @inject IJSRuntime JS
 
-<link href="css/tt-generate.css" rel="stylesheet" />
+<link href="css/tt-view.css" rel="stylesheet" />
+
+
 
 <div class="generate-page">
 
@@ -268,21 +270,43 @@
     </div>
 
     <!-- ================= CARDS ================= -->
-    <div class="card-container">
-        @foreach (var batch in batches)
-        {
-            <div class="tt-card" @onclick="() => LoadPreview(batch.BatchId)">
-                <h5>@batch.Course?.CourseName</h5>
+    <div class="tt-wrapper">
 
-                <p>
-                    Semester:
-                    @string.Join(", ",
-                             batch.BatchSemesters.Select(s => s.Semester.SemesterNo))
-                </p>
+        <div class="tt-grid">
+            @foreach (var batch in batches)
+            {
+                <div class="tt-card" @onclick="() => LoadPreview(batch.BatchId)">
 
-                <p>Generated: @batch.CreatedAt.ToString("dd MMM yyyy")</p>
-            </div>
-        }
+                    <div class="tt-top">
+                        <h6>@batch.Course?.CourseName</h6>
+                        <span class="tt-version">
+                            @($"v{batch.VersionNo}")
+                        </span>
+                    </div>
+
+                    <div class="tt-body">
+                        <div class="tt-row">
+                            <span>Sem</span>
+                            <b>
+                                @string.Join(", ",
+                                         batch.BatchSemesters.Select(s => s.Semester.SemesterNo))
+                            </b>
+                        </div>
+
+                        <div class="tt-row">
+                            <span>Date</span>
+                            <b>@batch.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</b>
+                        </div>
+                    </div>
+
+                    <div class="tt-footer">
+                        <span class="status">@batch.Status</span>
+                    </div>
+
+                </div>
+            }
+        </div>
+
     </div>
 
     <!-- ================= DIVISION SELECTOR ================= -->
@@ -304,7 +328,8 @@
     <!-- ================= PREVIEW ================= -->
     @if (filteredData.Any())
     {
-        <div class="tt-card" style="margin-top:20px;">
+        @* <div class="tt-card" style="margin-top:20px;"> *@
+        <div class="preview-card">
 
             <h5 style="text-align:@style.titleAlign">
                 Division: @selectedDivision

@@ -1,66 +1,435 @@
-﻿/* ================= CARD GRID ================= */
-.card-container {
+﻿
+/* ================= VIEW PAGE WRAPPER ================= */
+/*.tt-wrapper {
+    max-width: 1100px;
+    margin: auto;
+    padding: 10px;
+}*/
+
+/* ================= GRID ================= */
+/*.tt-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 18px;
+}*/
+
+/* ================= CARD ================= */
+/*.tt-wrapper .tt-card {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border-radius: 16px;
+    padding: 14px;
+    color: #e2e8f0;
+    cursor: pointer;
+    border: 1px solid #334155;*/
+    /* ✅ PERFECT SQUARE */
+    /*aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}*/
+
+    /* hover */
+    /*.tt-wrapper .tt-card:hover {
+        transform: translateY(-5px);
+        border-color: #3b82f6;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }*/
+
+/* ================= TOP ================= */
+/*.tt-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+    .tt-top h6 {
+        font-size: 14px;
+        margin: 0;
+        font-weight: 600;
+        line-height: 1.3;
+    }*/
+
+/* version */
+/*.tt-version {
+    font-size: 10px;
+    background: #2563eb;
+    padding: 3px 8px;
+    border-radius: 6px;
+    color: white;
+}*/
+
+/* ================= BODY ================= */
+/*.tt-body {
+    font-size: 12px;
+}
+
+.tt-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+}*/
+
+/* ================= FOOTER ================= */
+/*.tt-footer {
+    text-align: right;
+}
+
+.status {
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: #22c55e;
+    color: white;
+}*/
+
+/* ================= DIVISION BUTTONS ================= */
+/*.division-container {
     margin-top: 20px;
 }
 
-/* ================= CARD ================= */
-.tt-card {
-    background: linear-gradient(145deg, #0f172a, #1e293b);
-    color: #f1f5f9;
-    padding: 20px;
-    border-radius: 16px;
-    border: 1px solid #334155;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    position: relative;
-    z-index: 10;
-}
-
-    /* 🔥 HOVER EFFECT */
-    .tt-card:hover {
-        transform: translateY(-6px) scale(1.02);
-        background: linear-gradient(145deg, #1e293b, #334155);
-    }
+    .division-container .btn {
+        margin-right: 10px;
+        border-radius: 10px;
+    }*/
 
 /* ================= PREVIEW ================= */
-.tt-preview {
-    margin-top: 30px;
-}
+/*.preview-card {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 18px;
+    background: #0f172a;
+    border: 1px solid #334155;
+}*/
 
 /* ================= TABLE ================= */
-.table-dark {
+/*.preview-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
 }
 
-    .table-dark th,
-    .table-dark td {
+    .preview-table th {
+        background: #1e293b;
+        color: white;
+        padding: 10px;
+    }
+
+    .preview-table td {
+        padding: 10px;
         border: 1px solid #334155;
-        padding: 12px;
-        text-align: center;
-    }
+    }*/
 
-    .table-dark th {
-        background: #020617;
-        color: #e2e8f0;
+/* ================= MOBILE ================= */
+/*@media (max-width: 600px) {
+    .tt-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     }
-
-    .table-dark td {
-        background: #0b1220;
-    }
-
-/* ================= BUTTON ================= */
-.btn {
-    border-radius: 10px;
-    padding: 10px 16px;
-    font-weight: 600;
+}*/
+/* ================= WRAPPER ================= */
+.tt-wrapper {
+    max-width: 900px;
+    margin: auto;
+    padding: 8px;
 }
 
-.btn-primary {
-    background: #2563eb;
+/* ================= GRID ================= */
+.tt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+/* ================= SQUARE CARD ================= */
+.tt-card {
+    background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+    border-radius: 20px;
+    padding: 14px 12px;
+    color: #1e293b;
+    cursor: pointer;
+    border: 1px solid #eef2ff;
+    /* 🔥 PERFECT SQUARE - NARROWER */
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+    /* Premium gradient border on hover */
+    .tt-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 20px;
+        padding: 2px;
+        background: linear-gradient(135deg, #3b82f6, #a855f7, #ec4899);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    /* Soft glow on hover */
+    .tt-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #3b82f6, #a855f7, #ec4899);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-radius: 20px 20px 0 0;
+    }
+
+    /* hover effect */
+    .tt-card:hover {
+        transform: translateY(-4px);
+        border-color: transparent;
+        box-shadow: 0 15px 30px -12px rgba(0, 0, 0, 0.15);
+    }
+
+        .tt-card:hover::before {
+            opacity: 1;
+        }
+
+        .tt-card:hover::after {
+            opacity: 1;
+        }
+
+/* ================= TOP ================= */
+.tt-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+    .tt-top h6 {
+        font-size: 13px;
+        margin: 0;
+        font-weight: 700;
+        color: lightgray;
+        line-height: 1.3;
+        word-break: break-word;
+        flex: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+/* version badge */
+.tt-version {
+    font-size: 9px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    padding: 3px 8px;
+    border-radius: 16px;
     color: white;
+    letter-spacing: 0.2px;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2);
+    white-space: nowrap;
+}
+
+/* ================= BODY ================= */
+.tt-body {
+    font-size: 11px;
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 10px 8px;
+    margin: 6px 0;
+}
+
+.tt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+
+    .tt-row:first-child {
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 2px;
+    }
+
+    .tt-row span:first-child {
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .tt-row b {
+        color: #0f172a;
+        font-weight: 700;
+        font-size: 11px;
+        background: white;
+        padding: 2px 8px;
+        border-radius: 16px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+
+/* ================= FOOTER ================= */
+.tt-footer {
+    text-align: right;
+    margin-top: 2px;
+}
+
+.status {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    display: inline-block;
+    letter-spacing: 0.3px;
+    box-shadow: 0 1px 4px rgba(34, 197, 94, 0.25);
+}
+
+/* Responsive: even narrower on mobile */
+@media (max-width: 640px) {
+    .tt-grid {
+        gap: 14px;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .tt-card {
+        padding: 12px 10px;
+        border-radius: 18px;
+    }
+
+    .tt-body {
+        padding: 8px 6px;
+    }
+
+    .tt-top h6 {
+        font-size: 12px;
+    }
+
+    .tt-row b {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+    .tt-grid {
+        gap: 12px;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
+
+    .tt-card {
+        padding: 10px 8px;
+    }
+
+    .tt-body {
+        padding: 6px 5px;
+    }
+
+    .tt-top h6 {
+        font-size: 11px;
+    }
+}
+/* ================= NEW VIEW ONLY STYLES (SAFE) ================= */
+
+/* wrapper fix */
+.generate-page .tt-wrapper {
+    max-width: 1100px;
+    margin: auto;
+}
+
+/* grid fix */
+.generate-page .tt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 18px;
+}
+
+/* square card override */
+.generate-page .tt-card {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+    /* hover */
+    .generate-page .tt-card:hover {
+        transform: translateY(-5px);
+        border-color: #3b82f6;
+        box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+    }
+
+/* content spacing */
+.generate-page .tt-top h6 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.generate-page .tt-version {
+    font-size: 10px;
+    background: #2563eb;
+    padding: 3px 8px;
+    border-radius: 6px;
+    color: white;
+}
+
+.generate-page .tt-body {
+    font-size: 12px;
+}
+
+.generate-page .tt-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+}
+
+.generate-page .status {
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: #22c55e;
+    color: white;
+}
+
+/* preview card fix (VERY IMPORTANT) */
+.generate-page .preview-card {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 18px;
+    background: #0f172a;
+    border: 1px solid #334155;
+}
+
+/* table fix */
+.generate-page table {
+    width: 100%;
+}
+
+/* mobile */
+@media (max-width: 600px) {
+    .generate-page .tt-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
 }
