@@ -219,7 +219,14 @@ public class AppDbContext : DbContext
         .HasOne(x => x.SubjectSemester)
         .WithMany(s => s.RoomConfigs) // ✅
         .HasForeignKey(x => x.SubjectSemesterId);
-    modelBuilder.Entity<TTCoordinatorCourse>()
+        // SubjectSemester → TimeTableEntry
+        modelBuilder.Entity<TimeTableEntry>()
+            .HasOne(e => e.SubjectSemester)
+            .WithMany()
+            .HasForeignKey(e => e.SubjectSemesterId);
+
+       
+        modelBuilder.Entity<TTCoordinatorCourse>()
         .HasOne(x => x.Course)
         .WithMany(x => x.TTCoordinatorCourses)
         .HasForeignKey(x => x.CourseId)

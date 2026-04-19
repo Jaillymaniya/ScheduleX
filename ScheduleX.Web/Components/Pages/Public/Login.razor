@@ -13,9 +13,16 @@
 @inject NavigationManager Nav
 
 <div class="auth-container">
+    
 
     <!-- LEFT BRAND PANEL -->
     <div class="auth-left">
+        <div>
+            <button class="btn back-btn" @onclick="GoHome">
+                ← Back to Home
+            </button>
+        </div>
+        
         <h1>ScheduleX</h1>
         <h3>Timetable Generator</h3>
         <p>
@@ -26,6 +33,7 @@
 
     <div class="auth-right">
         <div class="login-card">
+            
 
             <h2>Sign in</h2>
             <p class="subtitle">Access your ScheduleX dashboard</p>
@@ -187,7 +195,7 @@
     {
         var uri = Nav.ToAbsoluteUri(Nav.Uri);
         var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
-
+        
         if (query.TryGetValue("msg", out var msg))
         {
             if (msg == "reset-success")
@@ -195,5 +203,10 @@
                 successMessage = "Password changed successfully!";
             }
         }
+    }
+
+    private void GoHome()
+    {
+        Nav.NavigateTo("/");
     }
 }

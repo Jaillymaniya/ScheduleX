@@ -1,5 +1,33 @@
-﻿using System.Net.Http.Json;
+﻿//using System.Net.Http.Json;
+//using ScheduleX.Core.Entities;
+
+//namespace ScheduleX.Web.Services.Admin;
+
+//public class DepartmentApiService
+//{
+//    private readonly HttpClient _http;
+
+//    public DepartmentApiService(HttpClient http)
+//    {
+//        _http = http;
+//    }
+
+//    public async Task<List<Department>> GetAllAsync()
+//        => await _http.GetFromJsonAsync<List<Department>>("api/admin/department") ?? new();
+
+//    public async Task CreateAsync(Department dept)
+//        => await _http.PostAsJsonAsync("api/admin/department", dept);
+
+//    public async Task UpdateAsync(Department dept)
+//        => await _http.PutAsJsonAsync($"api/admin/department/{dept.DepartmentId}", dept);
+
+//    public async Task ToggleAsync(int id)
+//        => await _http.PatchAsync($"api/admin/department/{id}", null);
+//}
+
+using System.Net.Http.Json;
 using ScheduleX.Core.Entities;
+using ScheduleX.Web.Models;
 
 namespace ScheduleX.Web.Services.Admin;
 
@@ -15,12 +43,27 @@ public class DepartmentApiService
     public async Task<List<Department>> GetAllAsync()
         => await _http.GetFromJsonAsync<List<Department>>("api/admin/department") ?? new();
 
-    public async Task CreateAsync(Department dept)
-        => await _http.PostAsJsonAsync("api/admin/department", dept);
+    public async Task<(bool success, string message)> CreateAsync(Department dept)
+    {
+        var response = await _http.PostAsJsonAsync("api/admin/department", dept);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse>();
 
-    public async Task UpdateAsync(Department dept)
-        => await _http.PutAsJsonAsync($"api/admin/department/{dept.DepartmentId}", dept);
+        return (response.IsSuccessStatusCode, result?.message ?? "Error");
+    }
 
-    public async Task ToggleAsync(int id)
-        => await _http.PatchAsync($"api/admin/department/{id}", null);
+    public async Task<(bool success, string message)> UpdateAsync(Department dept)
+    {
+        var response = await _http.PutAsJsonAsync($"api/admin/department/{dept.DepartmentId}", dept);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse>();
+
+        return (response.IsSuccessStatusCode, result?.message ?? "Error");
+    }
+
+    public async Task<(bool success, string message)> ToggleAsync(int id)
+    {
+        var response = await _http.PatchAsync($"api/admin/department/{id}", null);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse>();
+
+        return (response.IsSuccessStatusCode, result?.message ?? "Error");
+    }
 }

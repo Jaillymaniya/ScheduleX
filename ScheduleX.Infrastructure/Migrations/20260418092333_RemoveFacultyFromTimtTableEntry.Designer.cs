@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ScheduleX.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using ScheduleX.Infrastructure.Data;
 namespace ScheduleX.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260418092333_RemoveFacultyFromTimtTableEntry")]
+    partial class RemoveFacultyFromTimtTableEntry
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -516,7 +519,7 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.HasIndex("SemesterId");
 
-                    b.ToTable("SemesterStudentStrengths", (string)null);
+                    b.ToTable("SemesterStudentStrengths");
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Subject", b =>
@@ -902,10 +905,10 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Property<byte>("EntryType")
                         .HasColumnType("tinyint");
 
-                    b.Property<int?>("OfferingId")
+                    b.Property<int?>("RoomId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("RoomId")
+                    b.Property<int>("SemesterId")
                         .HasColumnType("int");
 
                     b.Property<int?>("SubjectSemesterId")
@@ -1493,11 +1496,6 @@ namespace ScheduleX.Infrastructure.Migrations
                         .HasForeignKey("DivisionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("ScheduleX.Core.Entities.SubjectOffering", "SubjectOffering")
-                        .WithMany("TimeTableEntries")
-                        .HasForeignKey("OfferingId")
-                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("ScheduleX.Core.Entities.Room", "Room")
                         .WithMany("TimeTableEntries")

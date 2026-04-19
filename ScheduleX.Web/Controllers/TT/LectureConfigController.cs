@@ -97,7 +97,19 @@ public class LectureConfigController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(rows);
+        var scheduleConfig = await _context.ScheduleConfigs
+    .Where(x => x.IsActive)
+    .OrderByDescending(x => x.CreatedAt)
+    .FirstOrDefaultAsync();
+
+        //return Ok(rows);
+        var response = new LectureConfigResponseDto
+        {
+            Rows = rows,
+            LecturesPerDay = scheduleConfig?.LecturesPerDay ?? 0
+        };
+
+        return Ok(response);
     }
 
     [HttpPost("save")]

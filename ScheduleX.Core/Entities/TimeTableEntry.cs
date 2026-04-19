@@ -1,4 +1,48 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿//using System.ComponentModel.DataAnnotations;
+//using System.ComponentModel.DataAnnotations.Schema;
+
+//namespace ScheduleX.Core.Entities;
+
+//public enum EntryTypeEnum : byte
+//{
+//    Lecture = 1,
+//    Break = 2,
+//    Free = 3
+//}
+
+//public class TimeTableEntry
+//{
+//    [Key]
+//    public int EntryId { get; set; }
+
+//    public int BatchId { get; set; }
+//    public int SemesterId { get; set; }
+//    public int DivisionId { get; set; }
+
+//    public byte DayOfWeek { get; set; }
+//    public int TimeSlotId { get; set; }
+
+//    public EntryTypeEnum EntryType { get; set; }
+
+//    // 🔥 NEW (IMPORTANT)
+//    public int? SubjectSemesterId { get; set; }
+//    public SubjectSemester? SubjectSemester { get; set; }
+
+//    public int? FacultyId { get; set; }
+//    public Faculty? Faculty { get; set; }
+
+//    public int? RoomId { get; set; }
+//    public Room? Room { get; set; }
+
+//    public Guid? BlockId { get; set; }
+//    public byte? BlockPart { get; set; }
+
+//    public DateTime CreatedAt { get; set; } = DateTime.Now;
+//    public ICollection<TimeTableEntryHistory> Histories { get; set; } = new List<TimeTableEntryHistory>();
+//}
+
+
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ScheduleX.Core.Entities;
@@ -34,7 +78,7 @@ public class TimeTableEntry
     public Division Division { get; set; } = null!;
 
     [Required]
-    public byte DayOfWeek { get; set; } // 1..7
+    public byte DayOfWeek { get; set; }
 
     [Required]
     public int TimeSlotId { get; set; }
@@ -45,10 +89,11 @@ public class TimeTableEntry
     [Required]
     public EntryTypeEnum EntryType { get; set; }
 
-    public int? OfferingId { get; set; }
+    // ✅ NEW (REPLACEMENT)
+    public int? SubjectSemesterId { get; set; }
 
-    [ForeignKey(nameof(OfferingId))]
-    public SubjectOffering? SubjectOffering { get; set; }
+    [ForeignKey(nameof(SubjectSemesterId))]
+    public SubjectSemester? SubjectSemester { get; set; }
 
     public int? RoomId { get; set; }
 
@@ -61,6 +106,5 @@ public class TimeTableEntry
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-    // Nav
     public ICollection<TimeTableEntryHistory> Histories { get; set; } = new List<TimeTableEntryHistory>();
 }
