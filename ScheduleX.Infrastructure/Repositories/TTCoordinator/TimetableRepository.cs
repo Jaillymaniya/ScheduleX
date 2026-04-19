@@ -314,6 +314,17 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
         return list;
     }
 
+
+    public async Task<TimeTableBatch> GetBatchWithTemplate(int batchId)
+    {
+        return await _context.TimeTableBatches
+            .Include(x => x.TimeTableTemplate) //  IMPORTANT
+            .FirstOrDefaultAsync(x => x.BatchId == batchId);
+    }
+
+
+
+
     private async Task<List<FacultyAvailability>> GetFacultyAvailability(List<int> facultyIds)
         => await _context.FacultyAvailabilities.Where(a => facultyIds.Contains(a.FacultyId) && a.IsAvailable).ToListAsync();
 }

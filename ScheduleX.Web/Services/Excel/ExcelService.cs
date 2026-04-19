@@ -6,29 +6,15 @@ namespace ScheduleX.Web.Services.Excel
 {
     public class ExcelService : IExcelService
     {
-        public byte[] GenerateExcel(List<PreviewDto> data)
+        public byte[] GenerateExcel(List<PreviewDto> data, TemplateStyle style)
         {
             using var wb = new XLWorkbook();
 
-            // ✅ GROUP BY DIVISION
             var grouped = data.GroupBy(x => x.Division);
 
             foreach (var divisionGroup in grouped)
             {
-                var ws = wb.Worksheets.Add(divisionGroup.Key); // Sheet name
-
-                var style = new TemplateStyle
-                {
-                    headerBg = "#1e293b",
-                    headerText = "#ffffff",
-                    bodyBg = "#ffffff",
-                    bodyText = "#111827",
-                    borderColor = "#cbd5e1",
-                    cellPadding = "8px",
-                    fontSize = "14px",
-                    showRoom = true,
-                    showFaculty = true
-                };
+                var ws = wb.Worksheets.Add(divisionGroup.Key);
 
                 var divData = divisionGroup.ToList();
 
@@ -51,6 +37,7 @@ namespace ScheduleX.Web.Services.Excel
                 headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                 headerRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
                 headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                headerRange.Style.Border.OutsideBorderColor = XLColor.FromHtml(style.borderColor);
 
                 // ================= BODY =================
                 int row = 2;
@@ -67,36 +54,73 @@ namespace ScheduleX.Web.Services.Excel
 
                         var cell = ws.Cell(row, i + 2);
 
-                        if (cellData != null && cellData.Subject != "Free")
+                        // 🔥 DEFAULT STYLE FIRST
+                        cell.Style.Fill.BackgroundColor = XLColor.FromHtml(style.bodyBg);
+                        cell.Style.Font.FontColor = XLColor.FromHtml(style.bodyText);
+
+                        // FONT SIZE
+                        if (!string.IsNullOrEmpty(style.fontSize))
                         {
-                            var text = cellData.Subject;
+                            var size = int.Parse(style.fontSize.Replace("px", ""));
+                            cell.Style.Font.FontSize = size;
+                        }
 
-                            if (style.showFaculty && !string.IsNullOrEmpty(cellData.Faculty))
-                                text += $"\n{cellData.Faculty}";
+                        cell.Style.Alignment.WrapText = true;
+                        cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
 
-                            if (style.showRoom && !string.IsNullOrEmpty(cellData.Room))
-                                text += $"\n{cellData.Room}";
+                        cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        cell.Style.Border.OutsideBorderColor = XLColor.FromHtml(style.borderColor);
 
-                            cell.Value = text;
+                        // 🔥 CONTENT LOGIC
+                        if (cellData != null)
+                        {
+                            if (cellData.Subject == "Break")
+                            {
+                                cell.Value = "Break";
+
+                                cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#facc15"); // yellow
+                                cell.Style.Font.FontColor = XLColor.Black;
+                                cell.Style.Font.Bold = true;
+                            }
+                            else if (cellData.Subject != "Free")
+                            {
+                                var text = cellData.Subject;
+
+                                if (style.showFaculty && !string.IsNullOrEmpty(cellData.Faculty))
+                                    text += $"\n{cellData.Faculty}";
+
+                                if (style.showRoom && !string.IsNullOrEmpty(cellData.Room))
+                                    text += $"\n{cellData.Room}";
+
+                                cell.Value = text;
+                            }
+                            else
+                            {
+                                cell.Value = "Free";
+
+                                cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#f1f5f9");
+                                cell.Style.Font.FontColor = XLColor.FromHtml("#64748b");
+                            }
                         }
                         else
                         {
                             cell.Value = "Free";
+
+                            cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#f1f5f9");
+                            cell.Style.Font.FontColor = XLColor.FromHtml("#64748b");
                         }
 
-                        // STYLE
-                        cell.Style.Fill.BackgroundColor = XLColor.FromHtml(style.bodyBg);
-                        cell.Style.Font.FontColor = XLColor.FromHtml(style.bodyText);
-                        cell.Style.Alignment.WrapText = true;
-                        cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                        cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-                        cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        // 🔥 ROW HEIGHT (padding simulation)
+                        ws.Row(row).Height = 40;
                     }
 
                     row++;
                 }
 
-                ws.Columns().AdjustToContents();
+                // 🔥 BETTER WIDTH
+                ws.Columns().Width = 25;
+
                 ws.Rows().AdjustToContents();
             }
 
@@ -104,7 +128,6 @@ namespace ScheduleX.Web.Services.Excel
             wb.SaveAs(ms);
             return ms.ToArray();
         }
-
         private string GetDayName(int day)
         {
             return day switch
