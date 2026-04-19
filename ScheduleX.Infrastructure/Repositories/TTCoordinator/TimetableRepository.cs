@@ -343,4 +343,46 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
 
     private async Task<List<FacultyAvailability>> GetFacultyAvailability(List<int> facultyIds)
         => await _context.FacultyAvailabilities.Where(a => facultyIds.Contains(a.FacultyId) && a.IsAvailable).ToListAsync();
+
+
+    public async Task<bool> DeleteBatchAsync(int batchId)
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            // 1️⃣ Delete Entries
+            var entries = await _context.TimeTableEntries
+                .Where(x => x.BatchId == batchId)
+                .ToListAsync();
+
+            _context.TimeTableEntries.RemoveRange(entries);
+
+            // 2️⃣ Delete Batch Semesters
+            var semesters = await _context.TimeTableBatchSemesters
+                .Where(x => x.BatchId == batchId)
+                .ToListAsync();
+
+            _context.TimeTableBatchSemesters.RemoveRange(semesters);
+
+            // 3️⃣ Delete Batch
+            var batch = await _context.TimeTableBatches
+                .FirstOrDefaultAsync(x => x.BatchId == batchId);
+
+            if (batch != null)
+            {
+                _context.TimeTableBatches.Remove(batch);
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return true;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            return false;
+        }
+    }
 }

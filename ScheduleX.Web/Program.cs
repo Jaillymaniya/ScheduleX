@@ -144,6 +144,7 @@ using ScheduleX.Infrastructure.Repositories.Admin;
 
 using ScheduleX.Web.Services.Excel;
 using ScheduleX.Web.Services.TimeTable;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -197,7 +198,7 @@ builder.Services.AddScoped(sp =>
         BaseAddress = new Uri(navigation.BaseUri)
     };
 });
-
+builder.Services.AddScoped<ProtectedSessionStorage>();
 // ================= API SERVICES =================
 builder.Services.AddScoped<TTCoordinatorApiService>();
 builder.Services.AddScoped<DepartmentApiService>();

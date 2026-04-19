@@ -17,7 +17,7 @@ namespace ScheduleX.Core.Interfaces.TTCoordinator
 
         Task<TimeTableBatch> GetBatchWithTemplate(int batchId);
         Task<List<TimeTableBatch>> GetAllBatches();
-       
+        Task<bool> DeleteBatchAsync(int batchId);
         Task<List<TimeTableEntry>> GetEntriesByBatch(int batchId);
 
     }

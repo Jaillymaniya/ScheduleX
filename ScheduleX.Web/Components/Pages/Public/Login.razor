@@ -171,7 +171,7 @@
                 return;
             }
 
-            Auth.SignIn(user.UserId, user.FullName, user.Role);
+            await Auth.SignIn(user.UserId, user.FullName, user.Role);
 
             Nav.NavigateTo(
                 user.Role == UserRole.Admin

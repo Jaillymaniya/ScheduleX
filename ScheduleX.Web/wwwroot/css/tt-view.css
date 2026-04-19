@@ -412,7 +412,88 @@
     background: #22c55e;
     color: white;
 }
+/* DELETE BUTTON - bottom left */
+.delete-btn {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    z-index: 10;
+}
 
+    .delete-btn:hover {
+        background: #dc2626;
+    }
+
+/* POPUP OVERLAY */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* POPUP BOX */
+.popup-box {
+    background: #0f172a;
+    padding: 25px;
+    border-radius: 16px;
+    width: 320px;
+    text-align: center;
+    color: #e5e7eb;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+    .popup-box h4 {
+        margin-bottom: 10px;
+    }
+
+    .popup-box p {
+        font-size: 14px;
+        margin-bottom: 20px;
+        color: #94a3b8;
+    }
+
+/* BUTTONS */
+.popup-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.btn-cancel {
+    flex: 1;
+    padding: 8px;
+    background: #374151;
+    color: white;
+    border: none;
+    border-radius: 8px;
+}
+
+.btn-delete {
+    flex: 1;
+    padding: 8px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 8px;
+}
+
+    .btn-delete:hover {
+        background: #dc2626;
+    }
 /* preview card fix (VERY IMPORTANT) */
 .generate-page .preview-card {
     margin-top: 25px;
