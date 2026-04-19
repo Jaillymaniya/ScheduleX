@@ -3,6 +3,7 @@
 
 @using ScheduleX.Web.DTOs
 @using ScheduleX.Core.Entities
+@using ScheduleX.Web.Models.Template
 
 @inject ScheduleX.Web.Services.AuthState Auth
 @inject ScheduleX.Core.Interfaces.TTCoordinator.ITimetableRepository Repo
@@ -13,84 +14,101 @@
 
 <div class="generate-page">
 
+    
     <div class="page-header">
         <h3>View Timetable</h3>
     </div>
 
     <!-- ================= CARDS ================= -->
     <div class="card-container">
-
-        @if (batches.Any())
+        @foreach (var batch in batches)
         {
-            @foreach (var batch in batches)
-            {
-                <div class="tt-card"
-                     style="cursor:pointer"
-                     @onclick="() => LoadPreview(batch.BatchId)">
+            <div class="tt-card" @onclick="() => LoadPreview(batch.BatchId)">
+                <h5>@batch.Course?.CourseName</h5>
 
-                    <h5>@batch.Course?.CourseName</h5>
+                <p>
+                    Semester:
+                    @string.Join(", ",
+                             batch.BatchSemesters.Select(s => s.Semester.SemesterNo))
+                </p>
 
-                    <p>
-                        Semester:
-                        @string.Join(", ",
-                                 batch.BatchSemesters.Select(s => s.Semester.SemesterNo))
-                    </p>
-
-                    <p>
-                        Generated:
-                        @batch.CreatedAt.ToString("dd MMM yyyy")
-                    </p>
-
-                </div>
-            }
+                <p>Generated: @batch.CreatedAt.ToString("dd MMM yyyy")</p>
+            </div>
         }
-        else
-        {
-            <div class="tt-card">No Timetable Found</div>
-        }
-
     </div>
 
-    <!-- ================= PREVIEW ================= -->
-    @if (previewData != null && previewData.Any())
+    <!-- ================= DIVISION SELECTOR ================= -->
+    @if (divisions.Any())
     {
-        <div class="tt-card">
+        <div style="margin-top:20px;">
+            @foreach (var div in divisions)
+            {
+                <button class="btn btn-primary"
+                        style="margin-right:10px;
+                    background:@(selectedDivision == div ? "#22c55e" : "#2563eb")"
+                        @onclick="() => SelectDivision(div)">
+                    @div
+                </button>
+            }
+        </div>
+    }
 
-            <h5>Timetable Preview</h5>
+    <!-- ================= PREVIEW ================= -->
+    @if (filteredData.Any())
+    {
+        <div class="tt-card" style="margin-top:20px;">
 
-            <table class="table-dark">
-                <thead>
+            <h5 style="text-align:@style.titleAlign">
+                Division: @selectedDivision
+            </h5>
+
+            <table style="width:100%; border-collapse:collapse; font-size:@style.fontSize">
+
+                <thead style="background:@style.headerBg; color:@style.headerText;">
                     <tr>
-                        <th>Day</th>
+                        <th style="padding:@style.cellPadding;">Time</th>
 
-                        @foreach (var slot in slots)
+                        @foreach (var day in days)
                         {
-                            <th>Slot @slot</th>
+                            <th style="padding:@style.cellPadding;">
+                                @GetDayName(day)
+                            </th>
                         }
                     </tr>
                 </thead>
 
                 <tbody>
-                    @foreach (var day in days)
+                    @foreach (var slot in slots)
                     {
                         <tr>
-                            <td>@GetDayName(day)</td>
+                            <td><b>Slot @slot</b></td>
 
-                            @foreach (var slot in slots)
+                            @foreach (var day in days)
                             {
-                                var cell = previewData
+                                var cell = filteredData
                                 .FirstOrDefault(x => x.Day == day && x.Slot == slot);
 
-                                <td>
-                                    @if (cell != null)
+                                <td style="background:@style.bodyBg; color:@style.bodyText; padding:@style.cellPadding">
+
+                                    @if (cell != null && cell.Subject != "Free")
                                     {
                                         <div><b>@cell.Subject</b></div>
-                                        <small>@cell.Faculty</small>
+
+                                        @if (style.showFaculty)
+                                        {
+                                            <small>@cell.Faculty</small>
+                                        }
+
+                                        @if (style.showRoom)
+                                        {
+                                            <div>@cell.Room</div>
+                                        }
                                     }
                                     else
                                     {
                                         <span>Free</span>
                                     }
+
                                 </td>
                             }
                         </tr>
@@ -106,18 +124,26 @@
 
         </div>
     }
+  
 
 </div>
 
 @code {
 
-    List<TimeTableBatch> batches = new();
+
+List<TimeTableBatch> batches = new();
     List<PreviewDto> previewData = new();
 
+    List<PreviewDto> filteredData = new();
+
+    List<string> divisions = new();
+    string selectedDivision;
+
     List<int> slots = new();
-    List<int> days = new() { 1, 2, 3, 4, 5, 6, 7 };
-    bool isLoading = false;
+    List<int> days = new() { 1, 2, 3, 4, 5, 6 };
+
     string fileBase64 = "";
+    TemplateStyle style = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -125,7 +151,6 @@
 
         var all = await Repo.GetAllBatches();
 
-        // ✅ REMOVE DUPLICATES (GROUPING)
         batches = all
             .Where(x => x.CreatedByUserId == userId)
             .GroupBy(x => new
@@ -133,66 +158,75 @@
                 x.CourseId,
                 Sem = string.Join(",", x.BatchSemesters.Select(s => s.SemesterId))
             })
-            .Select(g => g
-                .OrderByDescending(x => x.CreatedAt)
-                .First())
+            .Select(g => g.OrderByDescending(x => x.CreatedAt).First())
             .ToList();
+
+        // template
+        var json = @"{
+      ""headerBg"":""#1e293b"",
+      ""headerText"":""#ffffff"",
+      ""bodyBg"":""#ffffff"",
+      ""bodyText"":""#111827"",
+      ""borderColor"":""#cbd5e1"",
+      ""showRoom"":true,
+      ""showFaculty"":true,
+      ""cellPadding"":""8px"",
+      ""fontSize"":""14px"",
+      ""titleAlign"":""center""
+    }";
+
+        style = System.Text.Json.JsonSerializer.Deserialize<TemplateStyle>(json);
     }
 
     async Task LoadPreview(int batchId)
     {
-        if (isLoading) return;
+        var result = await TTService.GetPreviewByBatch(batchId);
 
-        isLoading = true;
+        previewData = result.Preview;
+        fileBase64 = result.Base64 ?? "";
+        // ✅ GET UNIQUE DIVISIONS
+        divisions = previewData
+            .Select(x => x.Division)
+            .Distinct()
+            .ToList();
 
-        try
-        {
-            Console.WriteLine("CLICKED: " + batchId);
+        selectedDivision = divisions.FirstOrDefault();
 
-            var result = await TTService.GetPreviewByBatch(batchId);
+        ApplyDivisionFilter();
+    }
 
-            if (result == null)
-            {
-                Console.WriteLine("RESULT NULL");
-                previewData = new();
-            }
-            else
-            {
-                Console.WriteLine("PREVIEW COUNT: " + (result.Preview?.Count ?? 0));
+    void SelectDivision(string div)
+    {
+        selectedDivision = div;
+        ApplyDivisionFilter();
+    }
 
-                previewData = result.Preview ?? new List<PreviewDto>();
-                fileBase64 = result.Base64 ?? "";
+    void ApplyDivisionFilter()
+    {
+        filteredData = previewData
+            .Where(x => x.Division == selectedDivision)
+            .ToList();
 
-                slots = previewData
-                    .Select(x => x.Slot)
-                    .Distinct()
-                    .OrderBy(x => x)
-                    .ToList();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("ERROR: " + ex.Message);
-        }
-        finally
-        {
-            isLoading = false;
-
-            // 🔥 THIS LINE WAS MISSING
-            await InvokeAsync(StateHasChanged);
-        }
+        slots = filteredData
+            .Select(x => x.Slot)
+            .Distinct()
+            .OrderBy(x => x)
+            .ToList();
     }
 
     async Task Download()
     {
-        if (!string.IsNullOrEmpty(fileBase64))
+        if (string.IsNullOrEmpty(fileBase64))
         {
-            await JS.InvokeVoidAsync(
-                "downloadFileFromBase64",
-                "timetable.xlsx",
-                fileBase64
-            );
+            Console.WriteLine("Base64 is empty!");
+            return;
         }
+
+        await JS.InvokeVoidAsync(
+            "downloadFileFromBase64",
+            "timetable.xlsx",
+            fileBase64
+        );
     }
 
     string GetDayName(int day)
@@ -205,8 +239,9 @@
             4 => "Thu",
             5 => "Fri",
             6 => "Sat",
-            7 => "Sun",
             _ => ""
         };
     }
+
+
 }

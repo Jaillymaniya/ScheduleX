@@ -11,17 +11,24 @@
 @inject ScheduleX.Web.Services.AuthState Auth
 @inject ScheduleX.Web.Services.PasswordHasher Hasher
 @inject NavigationManager Nav
+<button class="circle-back-btn" @onclick="GoHome">
+    ←
+</button>
 
 <div class="auth-container">
     
 
     <!-- LEFT BRAND PANEL -->
     <div class="auth-left">
-        <div>
-            <button class="btn back-btn" @onclick="GoHome">
-                ← Back to Home
-            </button>
-        </div>
+        @* <div> *@
+
+        @*     <button class="btn back-btn" @onclick="GoHome"> *@
+        @*         ← Back to Home *@
+        @*     </button> *@
+        @* </div> *@
+        @* <button class="back-btn" @onclick="GoHome"> *@
+        @*     ← *@
+        @* </button> *@
         
         <h1>ScheduleX</h1>
         <h3>Timetable Generator</h3>

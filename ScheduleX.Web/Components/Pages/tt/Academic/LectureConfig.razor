@@ -2,7 +2,7 @@
 @page "/tt/lecture-config"
 @layout ScheduleX.Web.Components.Layout.tt.TTLayout
 @rendermode InteractiveServer
-
+@inject NavigationManager Nav
 
 
 @using System.Net.Http.Json
@@ -13,6 +13,10 @@
 <link href="css/lecture-config.css" rel="stylesheet" />
 
 <PageTitle>Lecture Configuration</PageTitle>
+
+<button class="btn btn-secondary" @onclick="GoBack">
+    ← Back
+</button>
 
 <div class="lecture-config-page">
     <div class="lecture-header">
@@ -304,4 +308,5 @@
             row.PracticalBlockSize = 1;
         }
     }
+    void GoBack() => Nav.NavigateTo("/tt/academic/subject-mapping");
 }

@@ -21,6 +21,7 @@
 
 body {
     margin: 0;
+    overflow: hidden; /* ❌ stop outer scroll */
 }
 
 .tt-shell {
@@ -38,7 +39,7 @@ body {
     position: sticky;
     top: 0;
     height: 100vh;
-    overflow: auto;
+    overflow: hidden;
 }
 
 .tt-main {
@@ -620,3 +621,17 @@ body {
             background: rgba(255,255,255,0.92); /* keeps logo readable */
             border: 1px solid rgba(255,255,255,0.10);
         }
+
+
+.tt-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* 🔥 important */
+    overflow: hidden;  
+}
+
+.tt-content {
+    flex: 1;
+    overflow-y: auto;  ✅ THIS ENABLES SCROLL 
+}
