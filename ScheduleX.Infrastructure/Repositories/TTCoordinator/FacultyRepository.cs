@@ -37,17 +37,7 @@ public class FacultyRepository : IFacultyRepository
         }
     }
 
-    // ===============================
-    // GET ALL
-    // ===============================
-    //public async Task<List<Faculty>> GetAllAsync()
-    //{
-    //    return await _context.Faculties
-    //        .Include(f => f.Department)
-    //        .OrderByDescending(f => f.IsActive)
-    //        .ThenBy(f => f.FacultyName)
-    //        .ToListAsync();
-    //}
+    
 
 
     public async Task<List<Faculty>> GetAllAsync()
@@ -71,120 +61,7 @@ public class FacultyRepository : IFacultyRepository
             .ToListAsync();
     }
 
-    // ===============================
-    // UPDATE
-    // ===============================
-    //public async Task UpdateAsync(Faculty faculty)
-    //{
-    //    var existing = await _context.Faculties
-    //        .FirstOrDefaultAsync(f => f.FacultyId == faculty.FacultyId);
-
-    //    if (existing != null)
-    //    {
-    //        existing.FacultyName = faculty.FacultyName;
-    //        existing.FacultyCode = faculty.FacultyCode;
-    //        existing.Email = faculty.Email;
-    //        existing.Phone = faculty.Phone;
-    //        existing.DepartmentId = faculty.DepartmentId;
-    //        existing.MaxLecturesPerDay = faculty.MaxLecturesPerDay;
-    //        existing.IsExternal = faculty.IsExternal;
-
-    //        await _context.SaveChangesAsync();
-    //    }
-    //}
-
-    //public async Task UpdateAsync(Faculty faculty)
-    //{
-    //    var existing = await _context.Faculties
-    //        .FirstOrDefaultAsync(f => f.FacultyId == faculty.FacultyId);
-
-    //    if (existing != null)
-    //    {
-    //        existing.FacultyName = faculty.FacultyName;
-    //        existing.FacultyCode = faculty.FacultyCode;
-    //        existing.Email = faculty.Email;
-    //        existing.Phone = faculty.Phone;
-    //        existing.DepartmentId = faculty.DepartmentId;
-    //        existing.MaxLecturesPerDay = faculty.MaxLecturesPerDay;
-    //        existing.IsExternal = faculty.IsExternal;
-
-    //        await _context.SaveChangesAsync();
-
-    //        // 🔥 HANDLE EXTERNAL TABLE
-    //        var existingExternal = await _context.ExternalFacultyPermissions
-    //            .FirstOrDefaultAsync(x => x.FacultyId == faculty.FacultyId);
-
-    //        if (faculty.IsExternal)
-    //        {
-    //            if (existingExternal == null)
-    //            {
-    //                _context.ExternalFacultyPermissions.Add(new ExternalFacultyPermission
-    //                {
-    //                    FacultyId = faculty.FacultyId,
-    //                    DepartmentId = faculty.DepartmentId, // ⚠ you can change if needed
-    //                    IsActive = true
-    //                });
-    //            }
-    //        }
-    //        else
-    //        {
-    //            if (existingExternal != null)
-    //            {
-    //                _context.ExternalFacultyPermissions.Remove(existingExternal);
-    //            }
-    //        }
-
-    //        await _context.SaveChangesAsync();
-    //    }
-    //}
-
-
-    //iscorrect
-    //public async Task UpdateAsync(Faculty faculty)
-    //{
-    //    var existing = await _context.Faculties
-    //        .FirstOrDefaultAsync(f => f.FacultyId == faculty.FacultyId);
-
-    //    if (existing != null)
-    //    {
-    //        existing.FacultyName = faculty.FacultyName;
-    //        existing.FacultyCode = faculty.FacultyCode;
-    //        existing.Email = faculty.Email;
-    //        existing.Phone = faculty.Phone;
-    //        existing.DepartmentId = faculty.DepartmentId;
-    //        existing.MaxLecturesPerDay = faculty.MaxLecturesPerDay;
-    //        existing.IsExternal = faculty.IsExternal;
-
-    //        await _context.SaveChangesAsync();
-
-    //        // 🔥 HANDLE EXTERNAL TABLE
-    //        var existingExternal = await _context.ExternalFacultyPermissions
-    //            .FirstOrDefaultAsync(x => x.FacultyId == faculty.FacultyId);
-
-    //        if (faculty.IsExternal)
-    //        {
-    //            if (existingExternal == null)
-    //            {
-    //                // 🔥 INSERT (main requirement)
-    //                _context.ExternalFacultyPermissions.Add(new ExternalFacultyPermission
-    //                {
-    //                    FacultyId = faculty.FacultyId,
-    //                    DepartmentId = faculty.DepartmentId, // temp (will override below)
-    //                    IsActive = true
-    //                });
-    //            }
-    //        }
-    //        else
-    //        {
-    //            if (existingExternal != null)
-    //            {
-    //                _context.ExternalFacultyPermissions.Remove(existingExternal);
-    //            }
-    //        }
-
-    //        await _context.SaveChangesAsync();
-    //    }
-    //}
+    
 
     public async Task UpdateAsync(Faculty faculty)
     {
@@ -206,19 +83,7 @@ public class FacultyRepository : IFacultyRepository
     }
 
 
-    // ===============================
-    // DELETE
-    // ===============================
-    //public async Task SoftDeleteAsync(int id)
-    //{
-    //    var faculty = await _context.Faculties.FindAsync(id);
-
-    //    if (faculty != null)
-    //    {
-    //        faculty.IsActive = false;
-    //        await _context.SaveChangesAsync();
-    //    }
-    //}
+    
 
 
     public async Task SoftDeleteAsync(int id)

@@ -1,8 +1,337 @@
-﻿@layout ScheduleX.Web.Components.Layout.tt.TTLayout
+﻿@* @layout ScheduleX.Web.Components.Layout.tt.TTLayout *@
+@* @page "/tt/semesters" *@
+@* @rendermode InteractiveServer *@
+
+
+
+@* @inject HttpClient Http *@
+@* @inject ScheduleX.Web.Services.AuthState Auth *@
+
+@* <div class="semester-page"> *@
+@*     <div class="semester-header"> *@
+@*         <div> *@
+@*             <h2>Semester Management</h2> *@
+@*             <p>Manage add, edit and status of semesters for your allocated course.</p> *@
+@*         </div> *@
+@*     </div> *@
+
+@*     <div class="semester-card"> *@
+@*         <h4>@(isEdit ? "Edit Semester" : "Add / Edit Semester")</h4> *@
+
+@*         <div class="semester-form-grid"> *@
+@*             <div class="form-field"> *@
+@*                 <label>Course</label> *@
+@*                 <input type="text" class="form-input" value="@allocatedCourseName" readonly /> *@
+
+@*                 @if (allocatedCourse == null) *@
+@*                 { *@
+@*                     <small class="field-help error">No course allocated to this TT.</small> *@
+@*                 } *@
+@*                 else *@
+@*                 { *@
+@*                     <small class="field-help">&nbsp;</small> *@
+@*                 } *@
+@*             </div> *@
+
+@*             <div class="form-field"> *@
+@*                 <label>Semester No</label> *@
+@*                 <input type="number" *@
+@*                        class="form-input" *@
+@*                        @bind="model.SemesterNo" *@
+@*                        min="1" *@
+@*                        max="@allocatedMaxSem" *@
+@*                        disabled="@(allocatedCourse == null)" /> *@
+
+@*                 @if (allocatedCourse != null) *@
+@*                 { *@
+@*                     <small class="field-help">Allowed: 1 to @allocatedMaxSem</small> *@
+@*                 } *@
+@*                 else *@
+@*                 { *@
+@*                     <small class="field-help">&nbsp;</small> *@
+@*                 } *@
+@*             </div> *@
+
+@*             <div class="form-actions"> *@
+@*                 <button class="btn-save" @onclick="Save" disabled="@(!CanSave)"> *@
+@*                     @(isEdit ? "Update" : "Add") *@
+@*                 </button> *@
+
+@*                 @if (isEdit) *@
+@*                 { *@
+@*                     <button class="btn-cancel" @onclick="Reset">Cancel</button> *@
+@*                 } *@
+@*             </div> *@
+@*         </div> *@
+
+@*         @if (!string.IsNullOrEmpty(error)) *@
+@*         { *@
+@*             <div class="error-box">@error</div> *@
+@*         } *@
+@*     </div> *@
+
+@*     <div class="semester-card"> *@
+@*         <div class="table-header"> *@
+@*             <h4>Semester List</h4> *@
+@*         </div> *@
+
+@*         <div class="table-wrap"> *@
+@*             <table class="semester-table"> *@
+@*                 <thead> *@
+@*                     <tr> *@
+@*                         <th>Course</th> *@
+@*                         <th>Semester</th> *@
+@*                         <th>Status</th> *@
+@*                         <th style="width: 220px;">Actions</th> *@
+@*                     </tr> *@
+@*                 </thead> *@
+@*                 <tbody> *@
+@*                     @if (semesters.Any()) *@
+@*                     { *@
+@*                         @foreach (var s in semesters) *@
+@*                         { *@
+@*                             <tr> *@
+@*                                 <td>@s.CourseName</td> *@
+@*                                 <td>Sem @s.SemesterNo</td> *@
+@*                                 <td> *@
+@*                                     <span class="status-badge @(s.IsActive ? "active" : "inactive")"> *@
+@*                                         @(s.IsActive ? "Active" : "Inactive") *@
+@*                                     </span> *@
+@*                                 </td> *@
+@*                                 <td> *@
+@*                                     <div class="action-group"> *@
+@*                                         <button class="btn-edit" @onclick="() => Edit(s)">Edit</button> *@
+@*                                         <button class="btn-toggle" @onclick="() => Toggle(s.SemesterId)">Toggle</button> *@
+@*                                     </div> *@
+@*                                 </td> *@
+@*                             </tr> *@
+@*                         } *@
+@*                     } *@
+@*                     else *@
+@*                     { *@
+@*                         <tr> *@
+@*                             <td colspan="4" class="empty-row">No semesters found.</td> *@
+@*                         </tr> *@
+@*                     } *@
+@*                 </tbody> *@
+@*             </table> *@
+@*         </div> *@
+@*     </div> *@
+@* </div> *@
+
+@* @code { *@
+@*     List<SemesterDto> semesters = new(); *@
+@*     CourseDto? allocatedCourse; *@
+
+@*     string allocatedCourseName => allocatedCourse?.CourseName ?? ""; *@
+@*     int allocatedMaxSem => allocatedCourse?.MaxSem ?? 0; *@
+@*     bool CanSave => allocatedCourse != null; *@
+
+@*     SemesterCreateDto model = new(); *@
+@*     bool isEdit = false; *@
+@*     int editId = 0; *@
+@*     string error = ""; *@
+
+@*     protected override async Task OnInitializedAsync() *@
+@*     { *@
+@*         try *@
+@*         { *@
+@*             if (!Auth.IsLoggedIn || Auth.UserId == null) *@
+@*             { *@
+@*                 error = "Please login first."; *@
+@*                 return; *@
+@*             } *@
+
+@*             await LoadAllocatedCourse(); *@
+@*             await LoadSemesters(); *@
+@*         } *@
+@*         catch (Exception ex) *@
+@*         { *@
+@*             error = ex.Message; *@
+@*         } *@
+@*     } *@
+
+@*     async Task LoadAllocatedCourse() *@
+@*     { *@
+@*         try *@
+@*         { *@
+@*             if (!Auth.IsLoggedIn || Auth.UserId == null) *@
+@*             { *@
+@*                 error = "User not logged in."; *@
+@*                 return; *@
+@*             } *@
+
+@*             allocatedCourse = await Http.GetFromJsonAsync<CourseDto>( *@
+@*                 $"api/tt/course/my-course/{Auth.UserId}" *@
+@*             ); *@
+
+@*             if (allocatedCourse != null) *@
+@*             { *@
+@*                 model.CourseId = allocatedCourse.CourseId; *@
+@*             } *@
+@*         } *@
+@*         catch (Exception ex) *@
+@*         { *@
+@*             error = "Failed to load allocated course: " + ex.Message; *@
+@*         } *@
+@*     } *@
+
+@*     async Task LoadSemesters() *@
+@*     { *@
+@*         try *@
+@*         { *@
+@*             if (allocatedCourse == null) *@
+@*             { *@
+@*                 semesters = new(); *@
+@*                 return; *@
+@*             } *@
+
+@*             semesters = await Http.GetFromJsonAsync<List<SemesterDto>>( *@
+@*                 $"api/tt/semester/by-course/{allocatedCourse.CourseId}" *@
+@*             ) ?? new(); *@
+@*         } *@
+@*         catch (Exception ex) *@
+@*         { *@
+@*             error = "Failed to load semesters: " + ex.Message; *@
+@*         } *@
+@*     } *@
+
+@*     async Task Save() *@
+@*     { *@
+@*         error = ""; *@
+
+@*         if (allocatedCourse == null) *@
+@*         { *@
+@*             error = "No course allocated to this TT."; *@
+@*             return; *@
+@*         } *@
+
+@*         model.CourseId = allocatedCourse.CourseId; *@
+
+@*         if (model.SemesterNo < 1 || model.SemesterNo > allocatedCourse.MaxSem) *@
+@*         { *@
+@*             error = $"Semester must be between 1 and {allocatedCourse.MaxSem}."; *@
+@*             return; *@
+@*         } *@
+
+@*         bool alreadyExists = semesters.Any(x => *@
+@*             x.SemesterNo == model.SemesterNo && *@
+@*             (!isEdit || x.SemesterId != editId)); *@
+
+@*         if (alreadyExists) *@
+@*         { *@
+@*             error = $"Semester {model.SemesterNo} already exists for this course."; *@
+@*             return; *@
+@*         } *@
+
+@*         try *@
+@*         { *@
+@*             if (isEdit) *@
+@*             { *@
+@*                 var update = new SemesterUpdateDto *@
+@*                     { *@
+@*                         CourseId = model.CourseId, *@
+@*                         SemesterNo = model.SemesterNo, *@
+@*                         IsActive = true *@
+@*                     }; *@
+
+@*                 var res = await Http.PutAsJsonAsync($"api/tt/semester/{editId}", update); *@
+
+@*                 if (!res.IsSuccessStatusCode) *@
+@*                 { *@
+@*                     error = await res.Content.ReadAsStringAsync(); *@
+@*                     return; *@
+@*                 } *@
+@*             } *@
+@*             else *@
+@*             { *@
+@*                 var res = await Http.PostAsJsonAsync("api/tt/semester", model); *@
+
+@*                 if (!res.IsSuccessStatusCode) *@
+@*                 { *@
+@*                     error = await res.Content.ReadAsStringAsync(); *@
+@*                     return; *@
+@*                 } *@
+@*             } *@
+
+@*             await LoadSemesters(); *@
+@*             Reset(); *@
+@*         } *@
+@*         catch (Exception ex) *@
+@*         { *@
+@*             error = ex.Message; *@
+@*         } *@
+@*     } *@
+
+@*     void Edit(SemesterDto s) *@
+@*     { *@
+@*         isEdit = true; *@
+@*         editId = s.SemesterId; *@
+
+@*         model = new SemesterCreateDto *@
+@*             { *@
+@*                 CourseId = allocatedCourse?.CourseId ?? s.CourseId, *@
+@*                 SemesterNo = s.SemesterNo *@
+@*             }; *@
+@*     } *@
+
+@*     async Task Toggle(int id) *@
+@*     { *@
+@*         error = ""; *@
+@*         var res = await Http.PatchAsync($"api/tt/semester/{id}", null); *@
+
+@*         if (res.IsSuccessStatusCode) *@
+@*             await LoadSemesters(); *@
+@*         else *@
+@*             error = await res.Content.ReadAsStringAsync(); *@
+@*     } *@
+
+@*     void Reset() *@
+@*     { *@
+@*         model = new SemesterCreateDto(); *@
+
+@*         if (allocatedCourse != null) *@
+@*             model.CourseId = allocatedCourse.CourseId; *@
+
+@*         isEdit = false; *@
+@*         editId = 0; *@
+@*         error = ""; *@
+@*     } *@
+
+@*     public class SemesterDto *@
+@*     { *@
+@*         public int SemesterId { get; set; } *@
+@*         public int CourseId { get; set; } *@
+@*         public string CourseName { get; set; } = ""; *@
+@*         public int SemesterNo { get; set; } *@
+@*         public bool IsActive { get; set; } *@
+@*     } *@
+
+@*     public class CourseDto *@
+@*     { *@
+@*         public int CourseId { get; set; } *@
+@*         public string CourseName { get; set; } = ""; *@
+@*         public int MaxSem { get; set; } *@
+@*     } *@
+
+@*     public class SemesterCreateDto *@
+@*     { *@
+@*         public int CourseId { get; set; } *@
+@*         public int SemesterNo { get; set; } *@
+@*     } *@
+
+@*     public class SemesterUpdateDto *@
+@*     { *@
+@*         public int CourseId { get; set; } *@
+@*         public int SemesterNo { get; set; } *@
+@*         public bool IsActive { get; set; } *@
+@*     } *@
+@* } *@
+
+
+@layout ScheduleX.Web.Components.Layout.tt.TTLayout
 @page "/tt/semesters"
 @rendermode InteractiveServer
-
-
 
 @inject HttpClient Http
 @inject ScheduleX.Web.Services.AuthState Auth
@@ -22,15 +351,6 @@
             <div class="form-field">
                 <label>Course</label>
                 <input type="text" class="form-input" value="@allocatedCourseName" readonly />
-
-                @if (allocatedCourse == null)
-                {
-                    <small class="field-help error">No course allocated to this TT.</small>
-                }
-                else
-                {
-                    <small class="field-help">&nbsp;</small>
-                }
             </div>
 
             <div class="form-field">
@@ -41,15 +361,6 @@
                        min="1"
                        max="@allocatedMaxSem"
                        disabled="@(allocatedCourse == null)" />
-
-                @if (allocatedCourse != null)
-                {
-                    <small class="field-help">Allowed: 1 to @allocatedMaxSem</small>
-                }
-                else
-                {
-                    <small class="field-help">&nbsp;</small>
-                }
             </div>
 
             <div class="form-actions">
@@ -63,11 +374,6 @@
                 }
             </div>
         </div>
-
-        @if (!string.IsNullOrEmpty(error))
-        {
-            <div class="error-box">@error</div>
-        }
     </div>
 
     <div class="semester-card">
@@ -86,31 +392,22 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (semesters.Any())
-                    {
-                        @foreach (var s in semesters)
-                        {
-                            <tr>
-                                <td>@s.CourseName</td>
-                                <td>Sem @s.SemesterNo</td>
-                                <td>
-                                    <span class="status-badge @(s.IsActive ? "active" : "inactive")">
-                                        @(s.IsActive ? "Active" : "Inactive")
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="action-group">
-                                        <button class="btn-edit" @onclick="() => Edit(s)">Edit</button>
-                                        <button class="btn-toggle" @onclick="() => Toggle(s.SemesterId)">Toggle</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
+                    @foreach (var s in semesters)
                     {
                         <tr>
-                            <td colspan="4" class="empty-row">No semesters found.</td>
+                            <td>@s.CourseName</td>
+                            <td>Sem @s.SemesterNo</td>
+                            <td>
+                                <span class="status-badge @(s.IsActive ? "active" : "inactive")">
+                                    @(s.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-group">
+                                    <button class="btn-edit" @onclick="() => Edit(s)">Edit</button>
+                                    <button class="btn-toggle" @onclick="() => Toggle(s.SemesterId)">Toggle</button>
+                                </div>
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -118,6 +415,17 @@
         </div>
     </div>
 </div>
+
+<!-- 🔥 TOAST -->
+@if (showToast)
+{
+    <div class="toast-container">
+        <div class="toast-message @toastType">
+            <span>@toastMessage</span>
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+}
 
 @code {
     List<SemesterDto> semesters = new();
@@ -130,97 +438,88 @@
     SemesterCreateDto model = new();
     bool isEdit = false;
     int editId = 0;
-    string error = "";
+
+    // 🔥 TOAST
+    bool showToast = false;
+    string toastMessage = "";
+    string toastType = "success";
 
     protected override async Task OnInitializedAsync()
     {
-        try
+        if (!Auth.IsLoggedIn || Auth.UserId == null)
         {
-            if (!Auth.IsLoggedIn || Auth.UserId == null)
-            {
-                error = "Please login first.";
-                return;
-            }
+            await ShowToast("Please login first", "danger");
+            return;
+        }
 
-            await LoadAllocatedCourse();
-            await LoadSemesters();
-        }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-        }
+        await LoadAllocatedCourse();
+        await LoadSemesters();
+    }
+
+    async Task ShowToast(string message, string type = "success")
+    {
+        toastMessage = message;
+        toastType = type;
+        showToast = true;
+
+        StateHasChanged();
+
+        await Task.Delay(3000);
+
+        showToast = false;
+        StateHasChanged();
     }
 
     async Task LoadAllocatedCourse()
     {
-        try
-        {
-            if (!Auth.IsLoggedIn || Auth.UserId == null)
-            {
-                error = "User not logged in.";
-                return;
-            }
+        allocatedCourse = await Http.GetFromJsonAsync<CourseDto>(
+            $"api/tt/course/my-course/{Auth.UserId}"
+        );
 
-            allocatedCourse = await Http.GetFromJsonAsync<CourseDto>(
-                $"api/tt/course/my-course/{Auth.UserId}"
-            );
-
-            if (allocatedCourse != null)
-            {
-                model.CourseId = allocatedCourse.CourseId;
-            }
-        }
-        catch (Exception ex)
-        {
-            error = "Failed to load allocated course: " + ex.Message;
-        }
+        if (allocatedCourse != null)
+            model.CourseId = allocatedCourse.CourseId;
     }
 
     async Task LoadSemesters()
     {
-        try
+        if (allocatedCourse == null)
         {
-            if (allocatedCourse == null)
-            {
-                semesters = new();
-                return;
-            }
+            semesters = new();
+            return;
+        }
 
-            semesters = await Http.GetFromJsonAsync<List<SemesterDto>>(
-                $"api/tt/semester/by-course/{allocatedCourse.CourseId}"
-            ) ?? new();
-        }
-        catch (Exception ex)
-        {
-            error = "Failed to load semesters: " + ex.Message;
-        }
+        semesters = await Http.GetFromJsonAsync<List<SemesterDto>>(
+            $"api/tt/semester/by-course/{allocatedCourse.CourseId}"
+        ) ?? new();
     }
 
     async Task Save()
     {
-        error = "";
-
+        // 🔴 REQUIRED
         if (allocatedCourse == null)
         {
-            error = "No course allocated to this TT.";
+            await ShowToast("No course allocated", "danger");
             return;
         }
 
-        model.CourseId = allocatedCourse.CourseId;
-
-        if (model.SemesterNo < 1 || model.SemesterNo > allocatedCourse.MaxSem)
+        if (model.SemesterNo <= 0)
         {
-            error = $"Semester must be between 1 and {allocatedCourse.MaxSem}.";
+            await ShowToast("Semester number is required", "danger");
             return;
         }
 
-        bool alreadyExists = semesters.Any(x =>
+        if (model.SemesterNo > allocatedCourse.MaxSem)
+        {
+            await ShowToast($"Max allowed is {allocatedCourse.MaxSem}", "danger");
+            return;
+        }
+
+        // 🔴 UNIQUE
+        if (semesters.Any(x =>
             x.SemesterNo == model.SemesterNo &&
-            (!isEdit || x.SemesterId != editId));
-
-        if (alreadyExists)
+            (!isEdit || x.SemesterId != editId)))
         {
-            error = $"Semester {model.SemesterNo} already exists for this course.";
+            await ShowToast($"Semester {model.SemesterNo} already exists", "danger");
             return;
         }
 
@@ -230,7 +529,7 @@
             {
                 var update = new SemesterUpdateDto
                     {
-                        CourseId = model.CourseId,
+                        CourseId = allocatedCourse.CourseId,
                         SemesterNo = model.SemesterNo,
                         IsActive = true
                     };
@@ -239,9 +538,11 @@
 
                 if (!res.IsSuccessStatusCode)
                 {
-                    error = await res.Content.ReadAsStringAsync();
+                    await ShowToast(await res.Content.ReadAsStringAsync(), "danger");
                     return;
                 }
+
+                await ShowToast("Semester Updated Successfully", "info");
             }
             else
             {
@@ -249,9 +550,11 @@
 
                 if (!res.IsSuccessStatusCode)
                 {
-                    error = await res.Content.ReadAsStringAsync();
+                    await ShowToast(await res.Content.ReadAsStringAsync(), "danger");
                     return;
                 }
+
+                await ShowToast("Semester Added Successfully", "success");
             }
 
             await LoadSemesters();
@@ -259,7 +562,7 @@
         }
         catch (Exception ex)
         {
-            error = ex.Message;
+            await ShowToast(ex.Message, "danger");
         }
     }
 
@@ -270,20 +573,24 @@
 
         model = new SemesterCreateDto
             {
-                CourseId = allocatedCourse?.CourseId ?? s.CourseId,
+                CourseId = s.CourseId,
                 SemesterNo = s.SemesterNo
             };
     }
 
     async Task Toggle(int id)
     {
-        error = "";
         var res = await Http.PatchAsync($"api/tt/semester/{id}", null);
 
         if (res.IsSuccessStatusCode)
+        {
+            await ShowToast("Status Updated", "info");
             await LoadSemesters();
+        }
         else
-            error = await res.Content.ReadAsStringAsync();
+        {
+            await ShowToast(await res.Content.ReadAsStringAsync(), "danger");
+        }
     }
 
     void Reset()
@@ -295,7 +602,6 @@
 
         isEdit = false;
         editId = 0;
-        error = "";
     }
 
     public class SemesterDto

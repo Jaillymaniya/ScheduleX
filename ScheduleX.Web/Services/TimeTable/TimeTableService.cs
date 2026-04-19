@@ -11,31 +11,40 @@ namespace ScheduleX.Web.Services.TimeTable
         private readonly ITimetableRepository _repo;
         private readonly IExcelService _excel;
 
+        public TimeTableService(ITimetableRepository repo, IExcelService excel)
+        {
+            _repo = repo;
+            _excel = excel;
+        }
+
         public async Task<GenerateResultDto> GetPreviewByBatch(int batchId)
         {
+            // Here, your data is stored in 'entries'
             var entries = await _repo.GetEntriesByBatch(batchId);
 
-            // ✅ GROUP INTO GRID
+            // Change 'result.Entries' to 'entries' to fix the error
             var preview = entries.Select(e => new PreviewDto
             {
                 Day = e.DayOfWeek,
-                Slot = e.TimeSlot.SlotNo,
+                Slot = e.TimeSlot?.SlotNo ?? 0,
 
-                Subject = e.EntryType == EntryTypeEnum.Free
-                    ? "Free"
-                    : e.SubjectSemester?.Subject?.SubjectName ?? "N/A",
+                Subject = e.EntryType switch
+                {
+                    EntryTypeEnum.Break => e.TimeSlot?.BreakRule?.BreakName ?? "Break",
+                    EntryTypeEnum.Free => "Free",
+                    _ => e.SubjectSemester?.Subject?.SubjectName ?? "N/A"
+                },
 
-                Faculty = e.SubjectSemester?
-                    .SubjectFaculties
-                    .FirstOrDefault(f => f.DivisionId == e.DivisionId)?
-                    .Faculty?.FacultyName ?? "",
+                Faculty = e.EntryType == EntryTypeEnum.Lecture
+                    ? (e.SubjectSemester?.SubjectFaculties?
+                        .FirstOrDefault(f => f.DivisionId == e.DivisionId)?
+                        .Faculty?.FacultyName ?? "N/A")
+                    : "",
 
-                Room = e.Room?.RoomName ?? "",
-
-                Division = e.Division.DivisionName
+                Room = e.Room?.RoomName ?? "N/A",
+                Division = e.Division?.DivisionName ?? "N/A"
             }).ToList();
 
-            // ✅ SORT (VERY IMPORTANT FOR GRID)
             preview = preview
                 .OrderBy(x => x.Day)
                 .ThenBy(x => x.Slot)
@@ -51,17 +60,11 @@ namespace ScheduleX.Web.Services.TimeTable
             };
         }
 
-
-        public TimeTableService(ITimetableRepository repo, IExcelService excel)
-        {
-            _repo = repo;
-            _excel = excel;
-        }
-
         public async Task<GenerateResultDto> GenerateAsync(GenerateTTDto dto)
         {
             try
             {
+                // Here, the repository returns a tuple where the entries are inside 'result.Entries'
                 var result = await _repo.GenerateAsync(
                     dto.UserId,
                     dto.CourseId,
@@ -82,16 +85,19 @@ namespace ScheduleX.Web.Services.TimeTable
                 {
                     Day = e.DayOfWeek,
                     Slot = e.TimeSlot?.SlotNo ?? 0,
-                    Subject = e.EntryType == EntryTypeEnum.Free
-    ? "Free"
-    : e.SubjectSemester?.Subject?.SubjectName ?? "N/A",
-                    //Subject = e.SubjectSemester?.Subject?.SubjectName ?? "N/A",
 
-                    // ✅ FIXED + COMMA ADDED
-                    Faculty = e.SubjectSemester?
-                        .SubjectFaculties
-                        .FirstOrDefault(f => f.DivisionId == e.DivisionId)?
-                        .Faculty?.FacultyName ?? "N/A",
+                    Subject = e.EntryType switch
+                    {
+                        EntryTypeEnum.Break => e.TimeSlot?.BreakRule?.BreakName ?? "Break",
+                        EntryTypeEnum.Free => "Free",
+                        _ => e.SubjectSemester?.Subject?.SubjectName ?? "N/A"
+                    },
+
+                    Faculty = e.EntryType == EntryTypeEnum.Lecture
+                        ? (e.SubjectSemester?.SubjectFaculties?
+                            .FirstOrDefault(f => f.DivisionId == e.DivisionId)?
+                            .Faculty?.FacultyName ?? "N/A")
+                        : "",
 
                     Room = e.Room?.RoomName ?? "N/A",
                     Division = e.Division?.DivisionName ?? "N/A"

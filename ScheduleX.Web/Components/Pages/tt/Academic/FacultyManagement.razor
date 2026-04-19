@@ -1,182 +1,181 @@
-﻿
-
-@* //it wrkable *@
-@page "/tt/academic/faculty"
+﻿@page "/tt/academic/faculty"
 @layout ScheduleX.Web.Components.Layout.tt.TTLayout
 
 @using ScheduleX.Core.Entities
 @using ScheduleX.Core.Interfaces.TTCoordinator
 @inject IFacultyRepository FacultyRepo
 
-
 <div class="faculty-page">
-<h3>Faculty Management</h3>
+    <h3>Faculty Management</h3>
 
-<!-- ================= FORM ================= -->
-<div class="tt-card">
+    <!-- ================= FORM ================= -->
+    <div class="tt-card">
 
-    <h4>Add Faculty</h4>
+        <h4>Add Faculty</h4>
 
-    <div class="form-grid-2">
+        <div class="form-grid-2">
 
-        <div>
-            <label>Name</label>
-            <input class="tt-input" @bind="model.FacultyName" />
+            <div>
+                <label>Name</label>
+                <input class="tt-input" @bind="model.FacultyName" />
+            </div>
+
+            <div>
+                <label>Email</label>
+                <input class="tt-input" @bind="model.Email" />
+            </div>
+
+            <div>
+                <label>Phone</label>
+                <input class="tt-input" @bind="model.Phone" />
+            </div>
+
+            <div>
+                <label>Faculty Code</label>
+                <input class="tt-input" @bind="model.FacultyCode" />
+            </div>
+
+            <div>
+                <label>Max Lectures</label>
+                <input class="tt-input" type="number"
+                       @bind-value="model.MaxLecturesPerDay"
+                       @bind-value:event="oninput" />
+            </div>
+
+            <div>
+                <label>Department</label>
+                <select class="tt-input" @bind="model.DepartmentId">
+                    <option value="0">-- Select Department --</option>
+                    @foreach (var d in departments)
+                    {
+                        <option value="@d.DepartmentId">@d.DepartmentName</option>
+                    }
+                </select>
+            </div>
+
         </div>
 
-        <div>
-            <label>Email</label>
-            <input class="tt-input" @bind="model.Email" />
-        </div>
+        <br />
 
-        <div>
-            <label>Phone</label>
-            <input class="tt-input" @bind="model.Phone" />
-        </div>
+        <label>
+            <input type="checkbox" @bind="model.IsExternal" />
+            External Faculty
+        </label>
 
-        <div>
-            <label>Faculty Code</label>
-            <input class="tt-input" @bind="model.FacultyCode" />
-        </div>
-
-        <div>
-            <label>Max Lectures</label>
-            <input class="tt-input" type="number"
-                   @bind-value="model.MaxLecturesPerDay"
-                   @bind-value:event="oninput" />
-        </div>
-
-        <div>
-            <label>Department</label>
-            <select class="tt-input" @bind="model.DepartmentId">
-                <option value="0">-- Select Department --</option>
-                @foreach (var d in departments)
+        @if (model.IsExternal)
+        {
+            <select class="tt-input" @bind="externalDepartmentId">
+                <option value="0">-- Select External Dept --</option>
+                @foreach (var d in departments.Where(d => d.DepartmentId != model.DepartmentId))
                 {
                     <option value="@d.DepartmentId">@d.DepartmentName</option>
                 }
             </select>
-        </div>
+        }
+
+        <br />
+
+        @if (isEditMode)
+        {
+            <button class="btn-success" @onclick="UpdateFaculty">Update</button>
+            <button class="btn-danger" @onclick="CancelEdit">Cancel</button>
+        }
+        else
+        {
+            <button class="btn-save" @onclick="SaveFaculty">Save</button>
+        }
 
     </div>
 
-    <br />
+    <hr />
 
-    <label>
-        <input type="checkbox" @bind="model.IsExternal" />
-        External Faculty
-    </label>
+    <!-- ================= TABLE ================= -->
+    <div class="tt-table">
 
-    @if (model.IsExternal)
-    {
-        <select class="tt-input" @bind="externalDepartmentId">
-            <option value="0">-- Select External Dept --</option>
-            @foreach (var d in departments)
-            {
-                <option value="@d.DepartmentId">@d.DepartmentName</option>
-            }
-        </select>
-    }
-
-    <br />
-
-    @if (isEditMode)
-    {
-        <button class="btn-success" @onclick="UpdateFaculty">Update</button>
-        <button class="btn-danger" @onclick="CancelEdit">Cancel</button>
-    }
-    else
-    {
-        <button class="btn-save" @onclick="SaveFaculty">Save</button>
-    }
-
-</div>
-
-<hr />
-
-<!-- ================= TABLE ================= -->
-<div class="tt-table">
-
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Code</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Dept</th>
-                <th>Max Lec</th>
-                
-                @* <th>External</th> *@
-                <th>External Dept</th>   <!-- 🔥 ADD -->
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach (var f in facultyList)
-            {
+        <table>
+            <thead>
                 <tr>
-                    <td>@f.FacultyName</td>
-                    <td>@f.FacultyCode</td>
-                    <td>@f.Email</td>
-                    <td>@f.Phone</td>
-                    <td>@f.Department?.DepartmentName</td>
-                    <td>@f.MaxLecturesPerDay</td>
-                    @* <td>@(f.IsExternal ? "Yes" : "No")</td> *@
-
-                    <td>
-                        @if (f.ExternalPermissions != null && f.ExternalPermissions.Any())
-                        {
-                            @string.Join(", ", f.ExternalPermissions.Select(x => x.Department.DepartmentName))
-                        }
-                        else
-                        {
-                            <span>-</span>
-                        }
-                    </td>
-
-                    <td>
-                        <span class="status-badge @(f.IsActive ? "active" : "inactive")">
-                            @(f.IsActive ? "Active" : "Inactive")
-                        </span>
-                    </td>
-
-                    <td>
-                        @* <button class="btn-edit @(f.IsActive ? "" : "btn-disabled")" *@
-                        @*         disabled="@(!f.IsActive)" *@
-                        @*         @onclick="() => EditFaculty(f)"> *@
-                        @*     Edit *@
-                        @* </button> *@
-
-                        <button class="btn-edit @(f.IsActive ? "" : "btn-edit-disabled")"
-                                disabled="@(!f.IsActive)"
-                                @onclick="() => EditFaculty(f)">
-                            Edit
-                        </button>
-
-                        @if (f.IsActive)
-                        {
-                            <button class="btn-danger"
-                                    @onclick="() => DeleteFaculty(f.FacultyId)">
-                                Deactivate
-                            </button>
-                        }
-                        else
-                        {
-                            <button class="btn-success"
-                                    @onclick="() => ActivateFaculty(f.FacultyId)">
-                                Activate
-                            </button>
-                        }
-                    </td>
+                    <th>Name</th>
+                    <th>Code</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Dept</th>
+                    <th>Max Lec</th>
+                    <th>External Dept</th>
+                    <th>Status</th>
+                    <th>Action</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
 
+            <tbody>
+                @foreach (var f in facultyList)
+                {
+                    <tr>
+                        <td>@f.FacultyName</td>
+                        <td>@f.FacultyCode</td>
+                        <td>@f.Email</td>
+                        <td>@f.Phone</td>
+                        <td>@f.Department?.DepartmentName</td>
+                        <td>@f.MaxLecturesPerDay</td>
+
+                        <td>
+                            @if (f.ExternalPermissions != null && f.ExternalPermissions.Any())
+                            {
+                                @string.Join(", ", f.ExternalPermissions.Select(x => x.Department.DepartmentName))
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </td>
+
+                        <td>
+                            <span class="status-badge @(f.IsActive ? "active" : "inactive")">
+                                @(f.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </td>
+
+                        <td>
+                            <button class="btn-edit @(f.IsActive ? "" : "btn-edit-disabled")"
+                                    disabled="@(!f.IsActive)"
+                                    @onclick="() => EditFaculty(f)">
+                                Edit
+                            </button>
+
+                            @if (f.IsActive)
+                            {
+                                <button class="btn-danger"
+                                        @onclick="() => DeleteFaculty(f.FacultyId)">
+                                    Deactivate
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn-success"
+                                        @onclick="() => ActivateFaculty(f.FacultyId)">
+                                    Activate
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
 </div>
-</div>
+
+<!-- 🔥 TOAST (SAME AS SUBJECT PAGE) -->
+@if (showToast)
+{
+    <div class="toast-container">
+        <div class="toast-message @toastType">
+            <span>@toastMessage</span>
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+}
+
 @code {
 
     private Faculty model = new();
@@ -186,21 +185,125 @@
     private int externalDepartmentId = 0;
     private bool isEditMode = false;
 
+    // 🔥 TOAST
+    bool showToast = false;
+    string toastMessage = "";
+    string toastType = "success";
+
     protected override async Task OnInitializedAsync()
     {
         departments = await FacultyRepo.GetDepartmentsAsync();
         facultyList = await FacultyRepo.GetAllAsync();
     }
 
+    async Task ShowToast(string message, string type = "success")
+    {
+        toastMessage = message;
+        toastType = type;
+        showToast = true;
+
+        StateHasChanged();
+
+        await Task.Delay(3000);
+
+        showToast = false;
+        StateHasChanged();
+    }
+
+    // private async Task SaveFaculty()
+    // {
+    //     if (string.IsNullOrWhiteSpace(model.FacultyName)) return;
+    //     if (model.DepartmentId <= 0) return;
+
+    //     await FacultyRepo.AddAsync(model);
+    //     await ShowToast("Faculty Added Successfully", "success");
+
+    //     if (model.IsExternal && externalDepartmentId > 0)
+    //     {
+    //         await FacultyRepo.AddExternalPermissionAsync(
+    //             new ExternalFacultyPermission
+    //                 {
+    //                     FacultyId = model.FacultyId,
+    //                     DepartmentId = externalDepartmentId,
+    //                     IsActive = true
+    //                 });
+    //     }
+
+    //     ResetForm();
+    //     await LoadData();
+    // }
+
     private async Task SaveFaculty()
     {
+        // 🔴 REQUIRED VALIDATION
         if (string.IsNullOrWhiteSpace(model.FacultyName))
+        {
+            await ShowToast("Name is required", "danger");
             return;
+        }
+
+        if (string.IsNullOrWhiteSpace(model.Email))
+        {
+            await ShowToast("Email is required", "danger");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(model.Phone))
+        {
+            await ShowToast("Phone is required", "danger");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(model.FacultyCode))
+        {
+            await ShowToast("Faculty Code is required", "danger");
+            return;
+        }
 
         if (model.DepartmentId <= 0)
+        {
+            await ShowToast("Department is required", "danger");
             return;
+        }
 
+        // 🔴 PHONE VALIDATION (10 digits)
+        if (!System.Text.RegularExpressions.Regex.IsMatch(model.Phone, @"^\d{10}$"))
+        {
+            await ShowToast("Phone must be exactly 10 digits", "danger");
+            return;
+        }
+        // 🔴 PHONE UNIQUE
+        if (facultyList.Any(f => f.Phone == model.Phone))
+        {
+            await ShowToast("Phone number already exists", "danger");
+            return;
+        }
+
+        // 🔴 EMAIL UNIQUE
+        if (facultyList.Any(f => f.Email == model.Email))
+        {
+            await ShowToast("Email already exists", "danger");
+            return;
+        }
+
+        // 🔴 FACULTY CODE UNIQUE
+        if (facultyList.Any(f => f.FacultyCode == model.FacultyCode))
+        {
+            await ShowToast("Faculty Code already exists", "danger");
+            return;
+        }
+
+        // 🔴 EXTERNAL SAME DEPT CHECK
+        if (model.IsExternal && externalDepartmentId == model.DepartmentId)
+        {
+            await ShowToast("External department cannot be same", "danger");
+            return;
+        }
+
+        // ✅ SAVE
         await FacultyRepo.AddAsync(model);
+
+        await ShowToast("Faculty Added Successfully", "success");
 
         if (model.IsExternal && externalDepartmentId > 0)
         {
@@ -217,10 +320,157 @@
         await LoadData();
     }
 
+    // private async Task UpdateFaculty()
+    // {
+    //     await FacultyRepo.UpdateAsync(model);
+    //     await ShowToast("Updated Successfully", "info");
+
+    //     var existing = await FacultyRepo.GetExternalPermissions(model.FacultyId);
+
+    //     if (model.IsExternal && externalDepartmentId > 0)
+    //     {
+    //         if (!existing.Any())
+    //         {
+    //             await FacultyRepo.AddExternalPermissionAsync(
+    //                 new ExternalFacultyPermission
+    //                     {
+    //                         FacultyId = model.FacultyId,
+    //                         DepartmentId = externalDepartmentId,
+    //                         IsActive = true
+    //                     });
+    //         }
+    //         else
+    //         {
+    //             existing[0].DepartmentId = externalDepartmentId;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         foreach (var item in existing)
+    //         {
+    //             item.IsActive = false;
+    //         }
+    //     }
+
+    //     ResetForm();
+    //     await LoadData();
+    // }
+
+
+    private async Task UpdateFaculty()
+    {
+        // 🔴 REQUIRED
+        if (string.IsNullOrWhiteSpace(model.FacultyName))
+        {
+            await ShowToast("Name is required", "danger");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(model.Email))
+        {
+            await ShowToast("Email is required", "danger");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(model.Phone))
+        {
+            await ShowToast("Phone is required", "danger");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(model.FacultyCode))
+        {
+            await ShowToast("Faculty Code is required", "danger");
+            return;
+        }
+
+        // 🔴 PHONE
+        if (!System.Text.RegularExpressions.Regex.IsMatch(model.Phone, @"^\d{10}$"))
+        {
+            await ShowToast("Phone must be 10 digits", "danger");
+            return;
+        }
+
+        // 🔴 EMAIL UNIQUE (ignore self)
+        if (facultyList.Any(f => f.Email == model.Email && f.FacultyId != model.FacultyId))
+        {
+            await ShowToast("Email already exists", "danger");
+            return;
+        }
+
+        // 🔴 CODE UNIQUE
+        if (facultyList.Any(f => f.FacultyCode == model.FacultyCode && f.FacultyId != model.FacultyId))
+        {
+            await ShowToast("Faculty Code already exists", "danger");
+            return;
+        }
+        // 🔴 PHONE UNIQUE (ignore self)
+        if (facultyList.Any(f => f.Phone == model.Phone && f.FacultyId != model.FacultyId))
+        {
+            await ShowToast("Phone number already exists", "danger");
+            return;
+        }
+
+        // 🔴 EXTERNAL SAME DEPT
+        if (model.IsExternal && externalDepartmentId == model.DepartmentId)
+        {
+            await ShowToast("External department cannot be same", "danger");
+            return;
+        }
+
+        // ✅ UPDATE
+        await FacultyRepo.UpdateAsync(model);
+
+        await ShowToast("Updated Successfully", "success");
+
+        var existing = await FacultyRepo.GetExternalPermissions(model.FacultyId);
+
+        if (model.IsExternal && externalDepartmentId > 0)
+        {
+            if (!existing.Any())
+            {
+                await FacultyRepo.AddExternalPermissionAsync(
+                    new ExternalFacultyPermission
+                        {
+                            FacultyId = model.FacultyId,
+                            DepartmentId = externalDepartmentId,
+                            IsActive = true
+                        });
+            }
+            else
+            {
+                existing[0].DepartmentId = externalDepartmentId;
+            }
+        }
+        else
+        {
+            foreach (var item in existing)
+            {
+                item.IsActive = false;
+            }
+        }
+
+        ResetForm();
+        await LoadData();
+    }
+
+    private async Task DeleteFaculty(int id)
+    {
+        await FacultyRepo.SoftDeleteAsync(id);
+        await ShowToast("Faculty Deactivated", "danger");
+        await LoadData();
+    }
+
+    private async Task ActivateFaculty(int id)
+    {
+        await FacultyRepo.ActivateAsync(id);
+        await ShowToast("Faculty Activated", "success");
+        await LoadData();
+    }
+
     private void EditFaculty(Faculty f)
     {
-        if (!f.IsActive)
-            return;
+        if (!f.IsActive) return;
 
         model = new Faculty
             {
@@ -237,92 +487,7 @@
         isEditMode = true;
     }
 
-    // private async Task UpdateFaculty()
-    // {
-    //     await FacultyRepo.UpdateAsync(model);
-    //     ResetForm();
-    //     await LoadData();
-    // }
-    //iscorrect
-    // private async Task UpdateFaculty()
-    // {
-    //     await FacultyRepo.UpdateAsync(model);
-
-       
-    //     if (model.IsExternal && externalDepartmentId > 0)
-    //     {
-    //         var existing = await FacultyRepo.GetExternalPermissions(model.FacultyId);
-
-    //         if (!existing.Any())
-    //         {
-    //             await FacultyRepo.AddExternalPermissionAsync(
-    //                 new ExternalFacultyPermission
-    //                     {
-    //                         FacultyId = model.FacultyId,
-    //                         DepartmentId = externalDepartmentId,
-    //                         IsActive = true
-    //                     });
-    //         }
-    //     }
-
-    //     ResetForm();
-    //     await LoadData();
-    // }
-
-    private async Task UpdateFaculty()
-    {
-        await FacultyRepo.UpdateAsync(model);
-
-        var existing = await FacultyRepo.GetExternalPermissions(model.FacultyId);
-
-        if (model.IsExternal && externalDepartmentId > 0)
-        {
-            if (!existing.Any())
-            {
-                // INSERT
-                await FacultyRepo.AddExternalPermissionAsync(
-                    new ExternalFacultyPermission
-                        {
-                            FacultyId = model.FacultyId,
-                            DepartmentId = externalDepartmentId,
-                            IsActive = true
-                        });
-            }
-            else
-            {
-                // UPDATE (direct DB update needed)
-                existing[0].DepartmentId = externalDepartmentId;
-            }
-        }
-        else
-        {
-            // ❌ REMOVE WITHOUT NEW METHOD
-            foreach (var item in existing)
-            {
-                item.IsActive = false; // ✔ soft remove instead of delete
-            }
-        }
-
-        ResetForm();
-        await LoadData();
-    }
-
-    private void CancelEdit()
-    {
-        ResetForm();
-    }
-
-    private async Task DeleteFaculty(int id)
-    {
-        await FacultyRepo.SoftDeleteAsync(id);
-        await LoadData();
-    }
-
-    private async Task ActivateFaculty(int id)
-    {
-        await FacultyRepo.ActivateAsync(id);
-        await LoadData();
-    }
+    private void CancelEdit() => ResetForm();
 
     private async Task LoadData()
     {

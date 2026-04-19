@@ -12,206 +12,206 @@
 
 
 <div class="subject-semester-page">
-<h3 class="mb-4">Subject ↔ Semester Mapping</h3>
+    <h3 class="mb-4">Subject ↔ Semester Mapping</h3>
 
-<button class="btn btn-secondary" @onclick="GoBack">
-    ← Back
-</button>
+    <button class="btn btn-secondary" @onclick="GoBack">
+        ← Back
+    </button>
 
 
 
-<!-- BUTTONS -->
-<div class="btn-section">
-    <button class="btn btn-success" @onclick="ShowManual">Add Manual</button>
-    <button class="btn btn-warning" @onclick="ShowCsv">Upload CSV</button>
-</div>
-
-<!-- PROGRESS -->
-@if (isUploading)
-{
-    <div class="progress-container">
-        <div class="progress-bar" style="width:@progress%"></div>
+    <!-- BUTTONS -->
+    <div class="btn-section">
+        <button class="btn btn-success" @onclick="ShowManual">Add Manual</button>
+        <button class="btn btn-warning" @onclick="ShowCsv">Upload CSV</button>
     </div>
-}
 
-<!-- ================= MANUAL FORM ================= -->
-@if (showManual)
-{
-    <div class="tt-card">
-
-        <EditForm Model="model" OnValidSubmit="Save">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-
-            <div class="subject-grid">
-
-                <!-- COURSE -->
-                <div class="form-field">
-                    <label>Course</label>
-                    @if (!courses.Any())
-                    {
-                        <p class="text-warning">No courses assigned to you</p>
-                    }
-                    <select class="tt-select"
-                            @bind="courseId"
-                            @bind:after="LoadDropdowns">
-                        <option value="0">Select Course</option>
-                        @foreach (var c in courses)
-                        {
-                            <option value="@c.CourseId">@c.CourseName</option>
-                        }
-                    </select>
-                </div>
-
-                <!-- SEMESTER -->
-                <div class="form-field">
-                    <label>Semester</label>
-                    <select class="tt-select" @bind="model.SemesterId">
-                        <option value="0">Select Semester</option>
-                        @foreach (var s in semesters)
-                        {
-                            <option value="@s.SemesterId">Sem @s.SemesterNo</option>
-                        }
-                    </select>
-                </div>
-
-                <!-- SUBJECT -->
-                <div class="form-field">
-                    <label>Subject</label>
-                    <select class="tt-select" @bind="model.SubjectId">
-                        <option value="0">Select Subject</option>
-                        @foreach (var s in subjects)
-                        {
-                            <option value="@s.SubjectId">@s.SubjectName</option>
-                        }
-                    </select>
-                </div>
-
-            </div>
-            <div class="btn-section">
-            <button class="btn btn-success">Save</button>
-            <button type="button" class="btn btn-secondary" @onclick="CloseForm">Close</button>
-            </div>
-        </EditForm>
-    </div>
-}
-
-<!-- ================= CSV ================= -->
-@if (showCsv)
-{
-    <div class="tt-card">
-
-        <h5>Upload CSV</h5>
-
-        <button class="btn btn-info" @onclick="DownloadTemplate">
-            Download Template
-        </button>
-
-        <InputFile OnChange="OnFileSelected" />
-
-        <br />
-        <div class="btn-section">
-        <button class="btn btn-success"
-                @onclick="ProcessCsv"
-                disabled="@(!isFileSelected)">
-            Insert Data
-        </button>
-
-        <button class="btn btn-secondary" @onclick="CloseForm">
-            Close
-        </button>
+    <!-- PROGRESS -->
+    @if (isUploading)
+    {
+        <div class="progress-container">
+            <div class="progress-bar" style="width:@progress%"></div>
         </div>
-    </div>
-}
-<div class="section-divider"></div>
-<!-- ================= TABLE ================= -->
-<div class="tt-card">
-    <table class="table table-dark table-hover">
-        <thead>
-            <tr>
-                <th>Course</th>
-                <th>Semester</th>
-                <th>Subject</th>
-                <th width="120">Action</th>
-            </tr>
-        </thead>
+    }
 
-        <tbody>
+    <!-- ================= MANUAL FORM ================= -->
+    @if (showManual)
+    {
+        <div class="tt-card">
 
-            @if (!list.Any())
-            {
+            <EditForm Model="model" OnValidSubmit="Save">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="subject-grid">
+
+                    <!-- COURSE -->
+                    <div class="form-field">
+                        <label>Course</label>
+                        @if (!courses.Any())
+                        {
+                            <p class="text-warning">No courses assigned to you</p>
+                        }
+                        <select class="tt-select"
+                                @bind="courseId"
+                                @bind:after="LoadDropdowns">
+                            <option value="0">Select Course</option>
+                            @foreach (var c in courses)
+                            {
+                                <option value="@c.CourseId">@c.CourseName</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- SEMESTER -->
+                    <div class="form-field">
+                        <label>Semester</label>
+                        <select class="tt-select" @bind="model.SemesterId">
+                            <option value="0">Select Semester</option>
+                            @foreach (var s in semesters)
+                            {
+                                <option value="@s.SemesterId">Sem @s.SemesterNo</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- SUBJECT -->
+                    <div class="form-field">
+                        <label>Subject</label>
+                        <select class="tt-select" @bind="model.SubjectId">
+                            <option value="0">Select Subject</option>
+                            @foreach (var s in subjects)
+                            {
+                                <option value="@s.SubjectId">@s.SubjectName</option>
+                            }
+                        </select>
+                    </div>
+
+                </div>
+                <div class="btn-section">
+                    <button class="btn btn-success">Save</button>
+                    <button type="button" class="btn btn-secondary" @onclick="CloseForm">Close</button>
+                </div>
+            </EditForm>
+        </div>
+    }
+
+    <!-- ================= CSV ================= -->
+    @if (showCsv)
+    {
+        <div class="tt-card">
+
+            <h5>Upload CSV</h5>
+
+            <button class="btn btn-info" @onclick="DownloadTemplate">
+                Download Template
+            </button>
+
+            <InputFile OnChange="OnFileSelected" />
+
+            <br />
+            <div class="btn-section">
+                <button class="btn btn-success"
+                        @onclick="ProcessCsv"
+                        disabled="@(!isFileSelected)">
+                    Insert Data
+                </button>
+
+                <button class="btn btn-secondary" @onclick="CloseForm">
+                    Close
+                </button>
+            </div>
+        </div>
+    }
+    <div class="section-divider"></div>
+    <!-- ================= TABLE ================= -->
+    <div class="tt-card">
+        <table class="table table-dark table-hover">
+            <thead>
                 <tr>
-                    <td colspan="4" class="text-center text-warning">
-                        No records found
-                    </td>
+                    <th>Course</th>
+                    <th>Semester</th>
+                    <th>Subject</th>
+                    <th width="120">Action</th>
                 </tr>
-            }
-            else
-            {
-                <!-- ACTIVE -->
-                @* <tr class="table-section"> *@
-                @*     <td colspan="4">Active Records</td> *@
-                @* </tr> *@
+            </thead>
 
-                @foreach (var item in list.Where(x => x.IsActive))
+            <tbody>
+
+                @if (!list.Any())
                 {
                     <tr>
-                        <td>@item.Semester.Course.CourseName</td>
-                        <td>Semester @item.Semester.SemesterNo</td>
-                        <td>@item.Subject.SubjectName</td>
-
-                        <td>
-                            <div class="action-group">
-
-                                <button class="btn btn-sm btn-info"
-                                        @onclick="() => Edit(item)">
-                                     Edit
-                                </button>
-
-                                <button class="btn btn-sm btn-danger"
-                                        @onclick="() => Deactivate(item.SubjectSemesterId)">
-                                     Deactivate
-                                </button>
-
-                            </div>
+                        <td colspan="4" class="text-center text-warning">
+                            No records found
                         </td>
                     </tr>
                 }
-
-                <!-- INACTIVE -->
-                @* <tr class="table-section"> *@
-                @*     <td colspan="4">Inactive Records</td> *@
-                @* </tr> *@
-
-                @foreach (var item in list.Where(x => !x.IsActive))
+                else
                 {
-                    <tr class="opacity-50">
-                        <td>@item.Semester.Course.CourseName</td>
-                        <td>Semester @item.Semester.SemesterNo</td>
-                        <td>@item.Subject.SubjectName</td>
+                    <!-- ACTIVE -->
+                    @* <tr class="table-section"> *@
+                    @*     <td colspan="4">Active Records</td> *@
+                    @* </tr> *@
 
-                        <td>
-                            <div class="action-group">
+                    @foreach (var item in list.Where(x => x.IsActive))
+                    {
+                        <tr>
+                            <td>@item.Semester.Course.CourseName</td>
+                            <td>Semester @item.Semester.SemesterNo</td>
+                            <td>@item.Subject.SubjectName</td>
 
-                                <button class="btn btn-sm btn-info"
-                                        disabled>
-                                     Edit
-                                </button>
+                            <td>
+                                <div class="action-group">
 
-                                <button class="btn btn-sm btn-success"
-                                        @onclick="() => Activate(item.SubjectSemesterId)">
-                                     Activate
-                                </button>
+                                    <button class="btn btn-sm btn-info"
+                                            @onclick="() => Edit(item)">
+                                        Edit
+                                    </button>
 
-                            </div>
-                        </td>
-                    </tr>
+                                    <button class="btn btn-sm btn-danger"
+                                            @onclick="() => Deactivate(item.SubjectSemesterId)">
+                                        Deactivate
+                                    </button>
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                    <!-- INACTIVE -->
+                    @* <tr class="table-section"> *@
+                    @*     <td colspan="4">Inactive Records</td> *@
+                    @* </tr> *@
+
+                    @foreach (var item in list.Where(x => !x.IsActive))
+                    {
+                        <tr class="opacity-50">
+                            <td>@item.Semester.Course.CourseName</td>
+                            <td>Semester @item.Semester.SemesterNo</td>
+                            <td>@item.Subject.SubjectName</td>
+
+                            <td>
+                                <div class="action-group">
+
+                                    <button class="btn btn-sm btn-info"
+                                            disabled>
+                                        Edit
+                                    </button>
+
+                                    <button class="btn btn-sm btn-success"
+                                            @onclick="() => Activate(item.SubjectSemesterId)">
+                                        Activate
+                                    </button>
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
                 }
-            }
 
-        </tbody>
-    </table>
-</div>
+            </tbody>
+        </table>
+    </div>
 </div>
 @code {
 
@@ -493,7 +493,7 @@
         var allowedCourses = await Repo.GetCoursesForCoordinatorAsync(userId);
         var allSemesters = await Repo.GetAllSemestersAsync();
         var allSubjects = await Repo.GetAllSubjectsAsync();
-        
+
         while ((line = await reader.ReadLineAsync()) != null)
         {
             if (header)
