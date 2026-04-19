@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ScheduleX.Core.Entities;
+﻿using ScheduleX.Core.Entities;
 using ScheduleX.Core.Interfaces.TTCoordinator;
 using ScheduleX.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using static System.Reflection.Metadata.BlobBuilder;
 
 namespace ScheduleX.Infrastructure.Repositories.TTCoordinator;
@@ -22,7 +22,7 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
     }
 
     public async Task<(bool Success, string Message, List<TimeTableEntry> Entries)> GenerateAsync(
-     int userId, int courseId, List<int> semesterIds, int templateId)
+    int userId, int courseId, List<int> semesterIds, int templateId)
     {
         try
         {
@@ -40,9 +40,9 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
             var globalFacultyTracker = new Dictionary<(int day, int slot), HashSet<int>>();
             var globalRoomTracker = new Dictionary<(int day, int slot), HashSet<int>>();
             var facultyDailyCount = new Dictionary<(int day, int facultyId), int>();
-
             var allEntries = new List<TimeTableEntry>();
 
+            // 🔥 FIX 1: Initialize Batch with Semesters immediately to avoid FK Error 547
             var batch = new TimeTableBatch
             {
                 CreatedByUserId = userId,
@@ -51,20 +51,18 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
                 ConfigId = config.ConfigId,
                 TemplateId = templateId,
                 Status = BatchStatusEnum.Generated,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                BatchSemesters = semesterIds.Select(id => new TimeTableBatchSemester { SemesterId = id }).ToList()
             };
+
             _context.TimeTableBatches.Add(batch);
+            // Save here so BatchId is generated for the entries below
             await _context.SaveChangesAsync();
 
             var workingDays = GetWorkingDays(config.WorkingDaysMask);
 
             foreach (var semId in semesterIds)
             {
-                batch.BatchSemesters.Add(new TimeTableBatchSemester
-                {
-                    SemesterId = semId
-                });
-                // Ensure we load ALL subjects and their associated faculties correctly
                 var subjects = await _context.SubjectSemesters
                     .Include(x => x.Subject)
                     .Include(x => x.LectureConfigs)
@@ -79,16 +77,14 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
 
                     foreach (var day in workingDays)
                     {
-                        int lectureCounter = 0;
+                        int lecturesPlacedToday = 0;
 
                         for (int i = 0; i < timeSlots.Count; i++)
                         {
                             var slot = timeSlots[i];
 
-                            // 1. CHECK FOR BREAK FIRST
-                            //                        var breakRule = config.BreakRules
-                            //.FirstOrDefault(b => b.AfterLectureNo == lectureCounter);
-
+                            // 🔥 FIX 2: BREAK PROTECTION 
+                            // Using 'continue' ensures we don't fall through to the "Free" slot logic
                             if (slot.SlotType == SlotTypeEnum.Break)
                             {
                                 allEntries.Add(new TimeTableEntry
@@ -103,22 +99,22 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
                                 continue;
                             }
 
-                            // 2. SELECT SUBJECT
-                            // We shuffle the workloads list each time to prevent the same subject from hogging the start of the week
+                            // 🔥 FIX 3: IMPROVED SELECTION (Randomness fills Fridays)
                             var selected = workloads
-    .Where(w =>
-        (w.RemainingPracticalBlocks > 0 &&
-         CanFitBlock(w, i, timeSlots, day, globalFacultyTracker, facultyAvail, facultyDailyCount))
-        || w.RemainingTheory > 0)
-    .OrderByDescending(w => w.RemainingPracticalBlocks > 0) // 🔥 force practical first
-    .ThenByDescending(w => w.RemainingPracticalBlocks)
-    .ThenByDescending(w => w.RemainingTheory)
-    .FirstOrDefault();
+                                .Where(w =>
+                                    (w.RemainingPracticalBlocks > 0 && CanFitBlock(w, i, timeSlots, day, globalFacultyTracker, facultyAvail, facultyDailyCount))
+                                    || (w.RemainingTheory > 0 && (!globalFacultyTracker.ContainsKey((day, slot.SlotNo)) || !globalFacultyTracker[(day, slot.SlotNo)].Contains(w.FacultyId)))
+                                )
+                                .OrderByDescending(w => w.RemainingPracticalBlocks > 0)
+                                .ThenBy(w => Guid.NewGuid()) // Randomness prevents the same subjects hogging Mon-Tue
+                                .FirstOrDefault();
 
                             if (selected != null)
                             {
                                 bool isPractical = selected.RemainingPracticalBlocks > 0;
                                 int blockSize = isPractical ? selected.BlockSize : 1;
+
+                                // 🔥 Lab Room logic is handled inside AllocateRoom
                                 var roomId = AllocateRoom(globalRoomTracker, div.DivisionId, selected, day, slot.SlotNo);
 
                                 Guid blockId = Guid.NewGuid();
@@ -126,20 +122,7 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
                                 {
                                     int currentIdx = i + b;
                                     if (currentIdx >= timeSlots.Count) break;
-
                                     var currentSlot = timeSlots[currentIdx];
-
-                                    // ❌ STOP if break comes in between
-                                    if (currentSlot.SlotType != SlotTypeEnum.Lecture)
-                                        break;
-
-                                    // ❌ STOP if break rule applies here
-                                    //var innerBreakRule = config.BreakRules
-                                    //    .FirstOrDefault(br => br.AfterLectureNo == lectureCounter + b);
-
-                                    //if (innerBreakRule != null)
-                                    //    break;
-
 
                                     allEntries.Add(new TimeTableEntry
                                     {
@@ -164,7 +147,7 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
                                 if (isPractical) { selected.RemainingPracticalBlocks--; i += (blockSize - 1); }
                                 else { selected.RemainingTheory--; }
 
-                                lectureCounter++;
+                                lecturesPlacedToday++;
                             }
                             else
                             {
@@ -207,6 +190,7 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
     }
+
     public async Task<List<TimeTableEntry>> GetEntriesByBatch(int batchId) =>
         await _context.TimeTableEntries.Where(x => x.BatchId == batchId).Include(x => x.TimeSlot).Include(x => x.Room).Include(x => x.Division).Include(x => x.SubjectSemester).ThenInclude(ss => ss.Subject).Include(x => x.SubjectSemester).ThenInclude(ss => ss.SubjectFaculties).ThenInclude(sf => sf.Faculty).ToListAsync();
 

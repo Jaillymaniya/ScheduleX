@@ -1,4 +1,252 @@
-﻿@page "/tt/view"
+﻿@* @page "/tt/view" *@
+@* @layout ScheduleX.Web.Components.Layout.tt.TTLayout *@
+
+@* @using ScheduleX.Web.DTOs *@
+@* @using ScheduleX.Core.Entities *@
+@* @using ScheduleX.Web.Models.Template *@
+
+@* @inject ScheduleX.Web.Services.AuthState Auth *@
+@* @inject ScheduleX.Core.Interfaces.TTCoordinator.ITimetableRepository Repo *@
+@* @inject ScheduleX.Web.Services.TimeTable.ITimeTableService TTService *@
+@* @inject IJSRuntime JS *@
+
+@* <link href="css/tt-generate.css" rel="stylesheet" /> *@
+
+@* <div class="generate-page"> *@
+
+    
+@*     <div class="page-header"> *@
+@*         <h3>View Timetable</h3> *@
+@*     </div> *@
+
+@*     <!-- ================= CARDS ================= --> *@
+@*     <div class="card-container"> *@
+@*         @foreach (var batch in batches) *@
+@*         { *@
+@*             <div class="tt-card" @onclick="() => LoadPreview(batch.BatchId)"> *@
+@*                 <h5>@batch.Course?.CourseName</h5> *@
+
+@*                 <p> *@
+@*                     Semester: *@
+@*                     @string.Join(", ", *@
+@*                              batch.BatchSemesters.Select(s => s.Semester.SemesterNo)) *@
+@*                 </p> *@
+
+@*                 <p>Generated: @batch.CreatedAt.ToString("dd MMM yyyy")</p> *@
+@*             </div> *@
+@*         } *@
+@*     </div> *@
+
+@*     <!-- ================= DIVISION SELECTOR ================= --> *@
+@*     @if (divisions.Any()) *@
+@*     { *@
+@*         <div style="margin-top:20px;"> *@
+@*             @foreach (var div in divisions) *@
+@*             { *@
+@*                 <button class="btn btn-primary" *@
+@*                         style="margin-right:10px; *@
+@*                     background:@(selectedDivision == div ? "#22c55e" : "#2563eb")" *@
+@*                         @onclick="() => SelectDivision(div)"> *@
+@*                     @div *@
+@*                 </button> *@
+@*             } *@
+@*         </div> *@
+@*     } *@
+
+@*     <!-- ================= PREVIEW ================= --> *@
+@*     @if (filteredData.Any()) *@
+@*     { *@
+@*         <div class="tt-card" style="margin-top:20px;"> *@
+
+@*             <h5 style="text-align:@style.titleAlign"> *@
+@*                 Division: @selectedDivision *@
+@*             </h5> *@
+
+@*             <table style="width:100%; border-collapse:collapse; font-size:@style.fontSize"> *@
+
+@*                 <thead style="background:@style.headerBg; color:@style.headerText;"> *@
+@*                     <tr> *@
+@*                         <th style="padding:@style.cellPadding;">Time</th> *@
+
+@*                         @foreach (var day in days) *@
+@*                         { *@
+@*                             <th style="padding:@style.cellPadding;"> *@
+@*                                 @GetDayName(day) *@
+@*                             </th> *@
+@*                         } *@
+@*                     </tr> *@
+@*                 </thead> *@
+
+@*                 <tbody> *@
+@*                     @foreach (var slot in slots) *@
+@*                     { *@
+@*                         <tr> *@
+@*                             <td><b>Slot @slot</b></td> *@
+
+@*                             @foreach (var day in days) *@
+@*                             { *@
+@*                                 var cell = filteredData *@
+@*                                 .FirstOrDefault(x => x.Day == day && x.Slot == slot); *@
+
+@*                                 <td style="background:@style.bodyBg; color:@style.bodyText; padding:@style.cellPadding"> *@
+
+@*                                     @if (cell != null && cell.Subject != "Free") *@
+@*                                     { *@
+@*                                         <div><b>@cell.Subject</b></div> *@
+
+@*                                         @if (style.showFaculty) *@
+@*                                         { *@
+@*                                             <small>@cell.Faculty</small> *@
+@*                                         } *@
+
+@*                                         @if (style.showRoom) *@
+@*                                         { *@
+@*                                             <div>@cell.Room</div> *@
+@*                                         } *@
+@*                                     } *@
+@*                                     else *@
+@*                                     { *@
+@*                                         <span>Free</span> *@
+@*                                     } *@
+
+@*                                 </td> *@
+@*                             } *@
+@*                         </tr> *@
+@*                     } *@
+@*                 </tbody> *@
+@*             </table> *@
+
+@*             <br /> *@
+
+@*             <button class="btn btn-primary" @onclick="Download"> *@
+@*                 Download Excel *@
+@*             </button> *@
+
+@*         </div> *@
+@*     } *@
+  
+
+@* </div> *@
+
+@* @code { *@
+
+
+@* List<TimeTableBatch> batches = new(); *@
+@*     List<PreviewDto> previewData = new(); *@
+
+@*     List<PreviewDto> filteredData = new(); *@
+
+@*     List<string> divisions = new(); *@
+@*     string selectedDivision; *@
+
+@*     List<int> slots = new(); *@
+@*     List<int> days = new() { 1, 2, 3, 4, 5, 6 }; *@
+
+@*     string fileBase64 = ""; *@
+@*     TemplateStyle style = new(); *@
+
+@*     protected override async Task OnInitializedAsync() *@
+@*     { *@
+@*         var userId = Auth.UserId.Value; *@
+
+@*         var all = await Repo.GetAllBatches(); *@
+
+@*         batches = all *@
+@*             .Where(x => x.CreatedByUserId == userId) *@
+@*             .GroupBy(x => new *@
+@*             { *@
+@*                 x.CourseId, *@
+@*                 Sem = string.Join(",", x.BatchSemesters.Select(s => s.SemesterId)) *@
+@*             }) *@
+@*             .Select(g => g.OrderByDescending(x => x.CreatedAt).First()) *@
+@*             .ToList(); *@
+
+@*         // template *@
+@*         var json = @"{ *@
+@*       ""headerBg"":""#1e293b"", *@
+@*       ""headerText"":""#ffffff"", *@
+@*       ""bodyBg"":""#ffffff"", *@
+@*       ""bodyText"":""#111827"", *@
+@*       ""borderColor"":""#cbd5e1"", *@
+@*       ""showRoom"":true, *@
+@*       ""showFaculty"":true, *@
+@*       ""cellPadding"":""8px"", *@
+@*       ""fontSize"":""14px"", *@
+@*       ""titleAlign"":""center"" *@
+@*     }"; *@
+
+@*         style = System.Text.Json.JsonSerializer.Deserialize<TemplateStyle>(json); *@
+@*     } *@
+
+@*     async Task LoadPreview(int batchId) *@
+@*     { *@
+@*         var result = await TTService.GetPreviewByBatch(batchId); *@
+
+@*         previewData = result.Preview; *@
+@*         fileBase64 = result.Base64 ?? ""; *@
+@*         // ✅ GET UNIQUE DIVISIONS *@
+@*         divisions = previewData *@
+@*             .Select(x => x.Division) *@
+@*             .Distinct() *@
+@*             .ToList(); *@
+
+@*         selectedDivision = divisions.FirstOrDefault(); *@
+
+@*         ApplyDivisionFilter(); *@
+@*     } *@
+
+@*     void SelectDivision(string div) *@
+@*     { *@
+@*         selectedDivision = div; *@
+@*         ApplyDivisionFilter(); *@
+@*     } *@
+
+@*     void ApplyDivisionFilter() *@
+@*     { *@
+@*         filteredData = previewData *@
+@*             .Where(x => x.Division == selectedDivision) *@
+@*             .ToList(); *@
+
+@*         slots = filteredData *@
+@*             .Select(x => x.Slot) *@
+@*             .Distinct() *@
+@*             .OrderBy(x => x) *@
+@*             .ToList(); *@
+@*     } *@
+
+@*     async Task Download() *@
+@*     { *@
+@*         if (string.IsNullOrEmpty(fileBase64)) *@
+@*         { *@
+@*             Console.WriteLine("Base64 is empty!"); *@
+@*             return; *@
+@*         } *@
+
+@*         await JS.InvokeVoidAsync( *@
+@*             "downloadFileFromBase64", *@
+@*             "timetable.xlsx", *@
+@*             fileBase64 *@
+@*         ); *@
+@*     } *@
+
+@*     string GetDayName(int day) *@
+@*     { *@
+@*         return day switch *@
+@*         { *@
+@*             1 => "Mon", *@
+@*             2 => "Tue", *@
+@*             3 => "Wed", *@
+@*             4 => "Thu", *@
+@*             5 => "Fri", *@
+@*             6 => "Sat", *@
+@*             _ => "" *@
+@*         }; *@
+@*     } *@
+
+
+@* } *@
+
+@page "/tt/view"
 @layout ScheduleX.Web.Components.Layout.tt.TTLayout
 
 @using ScheduleX.Web.DTOs
@@ -16,7 +264,7 @@
 
 <div class="generate-page">
 
-    
+
     <div class="page-header">
         <h3>View Timetable</h3>
     </div>
@@ -182,14 +430,14 @@
 
         </div>
     }
-  
+
 
 </div>
 
 @code {
 
 
-List<TimeTableBatch> batches = new();
+    List<TimeTableBatch> batches = new();
     List<PreviewDto> previewData = new();
 
     List<PreviewDto> filteredData = new();

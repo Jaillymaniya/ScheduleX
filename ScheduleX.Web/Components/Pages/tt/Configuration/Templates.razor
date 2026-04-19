@@ -45,7 +45,7 @@
                         <th>Name</th>
                         <th>Layout</th>
                         <th>Status</th>
-                        <th>Default</th>
+                        @* <th>Default</th> *@
                         <th>Used In Batch</th>
                         <th>Created</th>
                         <th style="width:260px;">Actions</th>
@@ -67,16 +67,16 @@
                                     <span class="status-badge inactive">Inactive</span>
                                 }
                             </td>
-                            <td>
-                                @if (item.IsDefault)
-                                {
-                                    <span class="status-badge default">Default</span>
-                                }
-                                else
-                                {
-                                    <span>-</span>
-                                }
-                            </td>
+                            @* <td> *@
+                            @*     @if (item.IsDefault) *@
+                            @*     { *@
+                            @*         <span class="status-badge default">Default</span> *@
+                            @*     } *@
+                            @*     else *@
+                            @*     { *@
+                            @*         <span>-</span> *@
+                            @*     } *@
+                            @* </td> *@
                             <td>@item.UsedInBatchCount</td>
                             <td>@item.CreatedAt.ToString("dd-MM-yyyy")</td>
                             <td>
@@ -86,7 +86,7 @@
 
                                     @if (item.IsActive)
                                     {
-                                        <button class="tt-btn tt-btn-sm tt-btn-info" @onclick="() => SetDefault(item.TemplateId)">Set Default</button>
+                                        @* <button class="tt-btn tt-btn-sm tt-btn-info" @onclick="() => SetDefault(item.TemplateId)">Set Default</button> *@
                                         <button class="tt-btn tt-btn-sm tt-btn-danger" @onclick="() => SoftDelete(item.TemplateId)">Soft Delete</button>
                                     }
                                     else
