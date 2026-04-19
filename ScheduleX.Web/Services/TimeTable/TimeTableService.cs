@@ -395,15 +395,7 @@ namespace ScheduleX.Web.Services.TimeTable
 
         // ================= EDIT =================
 
-        public async Task<(bool Success, string Message)> UpdateEntryAsync(UpdateEntryDto dto)
-        {
-            return await _repo.UpdateEntryAsync(
-                dto.EntryId,
-                dto.SubjectSemesterId,
-                dto.RoomId,
-                dto.UserId
-            );
-        }
+        
 
         // ================= NEW METHODS (YOU ASKED) =================
 
