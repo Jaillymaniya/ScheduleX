@@ -1,6 +1,4 @@
-﻿
-
-@page "/tt/division-management"
+﻿@page "/tt/division-management"
 @layout ScheduleX.Web.Components.Layout.tt.TTLayout
 
 @using ScheduleX.Core.Entities
@@ -9,119 +7,130 @@
 
 @inject AppDbContext Context
 
-
 <div class="division-page">
-<h3 class="mb-4">Division Management</h3>
+    <h3 class="mb-4">Division Management</h3>
 
-<!-- ================= FORM ================= -->
-<div class="tt-card">
+    <!-- ================= FORM ================= -->
+    <div class="tt-card">
 
-    <h5 class="mb-4">Add Division</h5>
+        <h5 class="mb-4">Add Division</h5>
 
-    <div class="tt-form-row">
+        <div class="tt-form-row">
 
-        <div class="tt-form-group">
-            <label>Division Name</label>
-            <input class="tt-input" @bind="division.DivisionName" />
+            <div class="tt-form-group">
+                <label>Division Name</label>
+                <input class="tt-input" @bind="division.DivisionName" />
+            </div>
+
+            <div class="tt-form-group">
+                <label>Semester</label>
+                <select class="tt-select" @bind="division.SemesterId">
+                    <option value="0">-- Select Semester --</option>
+
+                    @foreach (var s in semesters)
+                    {
+                        <option value="@s.SemesterId">
+                            Semester @s.SemesterNo
+                        </option>
+                    }
+                </select>
+            </div>
+
         </div>
 
-        <div class="tt-form-group">
-            <label>Semester</label>
-            <select class="tt-select" @bind="division.SemesterId">
-                <option value="0">-- Select Semester --</option>
+        <div class="tt-form-row">
 
-                @foreach (var s in semesters)
-                {
-                    <option value="@s.SemesterId">
-                        Semester @s.SemesterNo
-                    </option>
-                }
-            </select>
+            <div class="tt-form-group">
+                <label>Student Strength</label>
+                <input type="number" class="tt-input" @bind="division.StudentStrength" />
+            </div>
+
         </div>
+
+        <button class="btn btn-success tt-btn"
+                @onclick="SaveDivision">
+            @(isEdit ? "Update Division" : "Save Division")
+        </button>
 
     </div>
 
-    <div class="tt-form-row">
+    <hr />
 
-        <div class="tt-form-group">
-            <label>Student Strength</label>
-            <input type="number" class="tt-input" @bind="division.StudentStrength" />
-        </div>
+    <!-- ================= TABLE ================= -->
+    <div class="tt-table-container">
 
-    </div>
-
-    <button class="btn btn-success tt-btn"
-            @onclick="SaveDivision">
-        @(isEdit ? "Update Division" : "Save Division")
-    </button>
-
-</div>
-
-<hr />
-
-<!-- ================= TABLE ================= -->
-<div class="tt-table-container">
-
-    <table class="tt-table">
-        <thead>
-            <tr>
-                <th>Division</th>
-                <th>Semester</th>
-                <th>Students</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach (var d in divisions)
-            {
-                <tr class="@(d.IsActive ? "" : "inactive-row")">
-
-                    <td>@d.DivisionName</td>
-                    <td>@d.Semester?.SemesterNo</td>
-                    <td>@d.StudentStrength</td>
-
-                    <td>
-                        <span class="badge @(d.IsActive ? "bg-success" : "bg-secondary")">
-                            @(d.IsActive ? "Active" : "Inactive")
-                        </span>
-                    </td>
-
-                    <td>
-                        <div class="action-buttons">
-
-                            <button class="btn btn-info"
-                                    disabled="@(!d.IsActive)"
-                                    @onclick="() => EditDivision(d)">
-                                Edit
-                            </button>
-
-                            @if (d.IsActive)
-                            {
-                                <button class="btn btn-danger"
-                                        @onclick="() => DeactivateDivision(d.DivisionId)">
-                                    Deactivate
-                                </button>
-                            }
-                            else
-                            {
-                                <button class="btn btn-success"
-                                        @onclick="() => ActivateDivision(d.DivisionId)">
-                                    Activate
-                                </button>
-                            }
-
-                        </div>
-                    </td>
-
+        <table class="tt-table">
+            <thead>
+                <tr>
+                    <th>Division</th>
+                    <th>Semester</th>
+                    <th>Students</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
 
+            <tbody>
+                @foreach (var d in divisions)
+                {
+                    <tr class="@(d.IsActive ? "" : "inactive-row")">
+
+                        <td>@d.DivisionName</td>
+                        <td>@d.Semester?.SemesterNo</td>
+                        <td>@d.StudentStrength</td>
+
+                        <td>
+                            <span class="badge @(d.IsActive ? "bg-success" : "bg-secondary")">
+                                @(d.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="action-buttons">
+
+                                <button class="btn btn-info"
+                                        disabled="@(!d.IsActive)"
+                                        @onclick="() => EditDivision(d)">
+                                    Edit
+                                </button>
+
+                                @if (d.IsActive)
+                                {
+                                    <button class="btn btn-danger"
+                                            @onclick="() => DeactivateDivision(d.DivisionId)">
+                                        Deactivate
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-success"
+                                            @onclick="() => ActivateDivision(d.DivisionId)">
+                                        Activate
+                                    </button>
+                                }
+
+                            </div>
+                        </td>
+
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
 </div>
-</div>
+
+<!-- 🔥 TOAST -->
+@if (showToast)
+{
+    <div class="toast-container">
+        <div class="toast-message @toastType">
+            <span>@toastMessage</span>
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+}
+
 @code {
 
     private Division division = new();
@@ -129,6 +138,11 @@
     private List<Semester> semesters = new();
 
     private bool isEdit = false;
+
+    // 🔥 TOAST
+    bool showToast = false;
+    string toastMessage = "";
+    string toastType = "success";
 
     protected override async Task OnInitializedAsync()
     {
@@ -139,23 +153,63 @@
             .ToListAsync();
     }
 
-    // ✅ FIXED SAVE
+    async Task ShowToast(string message, string type = "success")
+    {
+        toastMessage = message;
+        toastType = type;
+        showToast = true;
+
+        StateHasChanged();
+
+        await Task.Delay(3000);
+
+        showToast = false;
+        StateHasChanged();
+    }
+
     private async Task SaveDivision()
     {
-        if (division.SemesterId == 0 ||
-            string.IsNullOrWhiteSpace(division.DivisionName) ||
-            division.StudentStrength <= 0)
+        // 🔴 REQUIRED
+        if (division.SemesterId == 0)
         {
+            await ShowToast("Semester is required", "danger");
             return;
         }
 
-        // 🔥 KEY FIX: only add for new
+        if (string.IsNullOrWhiteSpace(division.DivisionName))
+        {
+            await ShowToast("Division Name is required", "danger");
+            return;
+        }
+
+        if (division.StudentStrength <= 0)
+        {
+            await ShowToast("Student Strength is required", "danger");
+            return;
+        }
+
+        // 🔴 UNIQUE (Division + Semester)
+        if (divisions.Any(d =>
+            d.DivisionName.ToLower() == division.DivisionName.ToLower() &&
+            d.SemesterId == division.SemesterId &&
+            (!isEdit || d.DivisionId != division.DivisionId)))
+        {
+            await ShowToast("Division already exists for this semester", "danger");
+            return;
+        }
+
+        // ✅ SAVE / UPDATE
         if (!isEdit)
         {
             division.IsActive = true;
             division.CreatedAt = DateTime.Now;
 
             Context.Divisions.Add(division);
+            await ShowToast("Division Added Successfully", "success");
+        }
+        else
+        {
+            await ShowToast("Division Updated Successfully", "info");
         }
 
         await Context.SaveChangesAsync();
@@ -168,22 +222,24 @@
             .ToListAsync();
     }
 
-    // ✅ FIXED EDIT
     private void EditDivision(Division d)
     {
         if (!d.IsActive) return;
 
-        division = d;   // ⭐ IMPORTANT FIX
+        division = d;
         isEdit = true;
     }
 
     private async Task DeactivateDivision(int id)
     {
         var d = await Context.Divisions.FindAsync(id);
+
         if (d != null)
         {
             d.IsActive = false;
             await Context.SaveChangesAsync();
+
+            await ShowToast("Division Deactivated", "danger");
         }
 
         divisions = await Context.Divisions
@@ -194,10 +250,13 @@
     private async Task ActivateDivision(int id)
     {
         var d = await Context.Divisions.FindAsync(id);
+
         if (d != null)
         {
             d.IsActive = true;
             await Context.SaveChangesAsync();
+
+            await ShowToast("Division Activated", "success");
         }
 
         divisions = await Context.Divisions

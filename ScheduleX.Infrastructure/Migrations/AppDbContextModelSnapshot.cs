@@ -516,7 +516,7 @@ namespace ScheduleX.Infrastructure.Migrations
 
                     b.HasIndex("SemesterId");
 
-                    b.ToTable("SemesterStudentStrengths", (string)null);
+                    b.ToTable("SemesterStudentStrengths");
                 });
 
             modelBuilder.Entity("ScheduleX.Core.Entities.Subject", b =>
@@ -902,10 +902,10 @@ namespace ScheduleX.Infrastructure.Migrations
                     b.Property<byte>("EntryType")
                         .HasColumnType("tinyint");
 
-                    b.Property<int?>("OfferingId")
+                    b.Property<int?>("RoomId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("RoomId")
+                    b.Property<int>("SemesterId")
                         .HasColumnType("int");
 
                     b.Property<int?>("SubjectSemesterId")
@@ -1493,11 +1493,6 @@ namespace ScheduleX.Infrastructure.Migrations
                         .HasForeignKey("DivisionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("ScheduleX.Core.Entities.SubjectOffering", "SubjectOffering")
-                        .WithMany("TimeTableEntries")
-                        .HasForeignKey("OfferingId")
-                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("ScheduleX.Core.Entities.Room", "Room")
                         .WithMany("TimeTableEntries")

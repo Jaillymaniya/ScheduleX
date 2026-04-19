@@ -148,3 +148,132 @@
         transform: none !important;
         background: #0f172a !important;
     }
+
+
+
+/* 🔥 TOP ALERT BANNER */
+/*.alert-banner {
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 14px;
+    margin-bottom: 15px;
+    font-weight: 500;
+    animation: slideDown 0.4s ease;
+}*/
+
+/* SUCCESS */
+/*.alert-success {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+}*/
+
+/* ERROR */
+/*.alert-error {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}*/
+
+/* ANIMATION */
+/*@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}*/
+
+
+/* 🔥 TOAST */
+/*.toast-custom {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #22c55e;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    z-index: 9999;
+    animation: fadeInOut 3s ease;
+}
+
+.toast-error {
+    background: #ef4444;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}*/
+
+
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast-message {
+    min-width: 260px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+    .toast-message.success {
+        background: linear-gradient(135deg, #00c853, #00e676);
+    }
+
+    .toast-message.danger {
+        background: linear-gradient(135deg, #ff5252, #ff1744);
+    }
+
+    .toast-message.warning {
+        background: linear-gradient(135deg, #ffb300, #ff8f00);
+    }
+
+    .toast-message.info {
+        background: linear-gradient(135deg, #00bcd4, #0097a7);
+    }
+
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    width: 100%;
+    background: rgba(255,255,255,0.7);
+    animation: toastProgress 3s linear forwards;
+}
+
+@keyframes toastProgress {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
