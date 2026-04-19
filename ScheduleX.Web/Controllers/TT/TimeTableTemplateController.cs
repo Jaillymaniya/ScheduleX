@@ -34,7 +34,9 @@ public class TimeTableTemplateController : ControllerBase
                 IsDefault = x.IsDefault,
                 IsActive = x.IsActive,
                 CreatedAt = x.CreatedAt,
-                UsedInBatchCount = x.TimeTableBatches.Count()
+                //UsedInBatchCount = x.TimeTableBatches.Count()
+                UsedInBatchCount = _context.TimeTableBatches
+    .Count(b => b.TemplateId == x.TemplateId)
             })
             .ToListAsync();
 
@@ -56,7 +58,9 @@ public class TimeTableTemplateController : ControllerBase
                 IsDefault = x.IsDefault,
                 IsActive = x.IsActive,
                 CreatedAt = x.CreatedAt,
-                UsedInBatchCount = x.TimeTableBatches.Count()
+                //UsedInBatchCount = x.TimeTableBatches.Count()
+                UsedInBatchCount = _context.TimeTableBatches
+    .Count(b => b.TemplateId == x.TemplateId)
             })
             .FirstOrDefaultAsync();
 
@@ -226,7 +230,9 @@ public class TimeTableTemplateController : ControllerBase
                 IsDefault = x.IsDefault,
                 IsActive = x.IsActive,
                 CreatedAt = x.CreatedAt,
-                UsedInBatchCount = x.TimeTableBatches.Count()
+                //UsedInBatchCount = x.TimeTableBatches.Count()
+                UsedInBatchCount = _context.TimeTableBatches
+    .Count(b => b.TemplateId == x.TemplateId)
             })
             .ToListAsync();
 
