@@ -83,6 +83,9 @@
             padding: 12px;
             border-bottom: 1px solid #1f2a44;
         }
+
+
+
 .progress {
     height: 20px;
     background: #1f2937;
@@ -92,10 +95,13 @@
 
 .progress-bar {
     background: #22c55e;
-    text-align: center;
+    height: 100%;
     color: white;
     font-size: 12px;
 }
+
+
+
 /* ================= TOAST ================= */
 .toast-container {
     position: fixed;
