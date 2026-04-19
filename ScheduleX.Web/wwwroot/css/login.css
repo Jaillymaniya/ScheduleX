@@ -215,3 +215,43 @@ body {
     cursor: pointer;
     width: 200px; /* IMPORTANT */
 }
+
+/* Container must be relative so the button can stay inside it */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+/* Ensure the input has padding on the right so text doesn't go under the eye */
+.password-input {
+    width: 100%;
+    padding-right: 45px !important; /* Space for the icon */
+}
+
+/* Pin the eye button to the right side of the input */
+.toggle-eye {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #94a3b8; /* Grayish color to match your theme */
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    height: 100%; /* Centers vertically within the wrapper */
+}
+
+    .toggle-eye:hover {
+        color: #ffffff; /* Brighten on hover */
+    }
+
+/* Optional: Adjust if your input has specific height */
+.input {
+    height: 45px;
+    /* ... your existing styles ... */
+}
