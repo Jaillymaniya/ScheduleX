@@ -183,6 +183,8 @@
             }
 
             Auth.SignIn(user.UserId, user.FullName, user.Role);
+            Auth.DepartmentId = user.DepartmentId ?? 0;
+            Auth.DepartmentName = user.Department?.DepartmentName;
 
             Nav.NavigateTo(
                 user.Role == UserRole.Admin
