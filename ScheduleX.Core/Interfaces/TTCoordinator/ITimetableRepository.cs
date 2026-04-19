@@ -19,6 +19,13 @@ namespace ScheduleX.Core.Interfaces.TTCoordinator
         Task<List<TimeTableBatch>> GetAllBatches();
        
         Task<List<TimeTableEntry>> GetEntriesByBatch(int batchId);
+        Task<(bool Success, string Message)> UpdateEntryAsync(
+    int entryId,
+    int? subjectSemesterId,
+    int? roomId,
+    int userId);
+
+        Task<(bool Success, string Message)> SwapEntriesAsync(int entryId1, int entryId2, int userId);
 
     }
 }
