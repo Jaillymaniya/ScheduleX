@@ -1,4 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ScheduleX.Core.Entities;
+using ScheduleX.Core.Interfaces.TTCoordinator;
+using ScheduleX.Infrastructure.Data;
+
+
+using Microsoft.EntityFrameworkCore;
 using ScheduleX.Core.Entities;
 using ScheduleX.Core.Interfaces.TTCoordinator;
 using ScheduleX.Infrastructure.Data;
@@ -10,8 +15,8 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
 {
     private readonly AppDbContext _context = context;
 
-    // Moving this INSIDE the class or namespace clearly to fix "Type not found"
-    internal class SubjectWorkload
+    // Moving this INSIDE the class or namespace clearly to fix "Type not found"
+    internal class SubjectWorkload
     {
         public int SubjectSemesterId { get; set; }
         public int FacultyId { get; set; }
@@ -22,20 +27,20 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
     }
 
     public async Task<(bool Success, string Message, List<TimeTableEntry> Entries)> GenerateAsync(
-     int userId, int courseId, List<int> semesterIds, int templateId)
+    int userId, int courseId, List<int> semesterIds, int templateId)
     {
         try
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.UserId == userId);
             var config = await _context.ScheduleConfigs
-                .Include(c => c.BreakRules)
-                .FirstOrDefaultAsync(x => x.CourseId == courseId && x.IsActive);
+              .Include(c => c.BreakRules)
+              .FirstOrDefaultAsync(x => x.CourseId == courseId && x.IsActive);
 
             if (config == null) return (false, "Schedule configuration not found", null);
 
             var timeSlots = await _context.TimeSlots
-                .Where(x => x.ConfigId == config.ConfigId)
-                .OrderBy(x => x.SlotNo).ToListAsync();
+              .Where(x => x.ConfigId == config.ConfigId)
+              .OrderBy(x => x.SlotNo).ToListAsync();
 
             var globalFacultyTracker = new Dictionary<(int day, int slot), HashSet<int>>();
             var globalRoomTracker = new Dictionary<(int day, int slot), HashSet<int>>();
@@ -60,11 +65,11 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
 
             foreach (var semId in semesterIds)
             {
-                // Ensure we load ALL subjects and their associated faculties correctly
-                var subjects = await _context.SubjectSemesters
-                    .Include(x => x.Subject)
-                    .Include(x => x.LectureConfigs)
-                    .Where(x => x.SemesterId == semId).ToListAsync();
+                // Ensure we load ALL subjects and their associated faculties correctly
+                var subjects = await _context.SubjectSemesters
+          .Include(x => x.Subject)
+          .Include(x => x.LectureConfigs)
+          .Where(x => x.SemesterId == semId).ToListAsync();
 
                 var divisions = await _context.Divisions.Where(x => x.SemesterId == semId).ToListAsync();
 
@@ -81,35 +86,37 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
                         {
                             var slot = timeSlots[i];
 
-                            // 1. CHECK FOR BREAK FIRST
-                            //                        var breakRule = config.BreakRules
-                            //.FirstOrDefault(b => b.AfterLectureNo == lectureCounter);
+                            // 1. CHECK FOR BREAK FIRST
+                            //                        var breakRule = config.BreakRules
+                            //.FirstOrDefault(b => b.AfterLectureNo == lectureCounter);
 
-                            if (slot.SlotType == SlotTypeEnum.Break)
+                            if (slot.SlotType == SlotTypeEnum.Break)
                             {
+                                lectureCounter++;
                                 allEntries.Add(new TimeTableEntry
                                 {
                                     BatchId = batch.BatchId,
                                     SemesterId = semId,
                                     DivisionId = div.DivisionId,
                                     DayOfWeek = (byte)day,
-                                    TimeSlotId = slot.TimeSlotId,
-                                    EntryType = EntryTypeEnum.Break
+                                    TimeSlotId = slot.TimeSlotId, // This links to the name "Lunch Break"
+                                    EntryType = EntryTypeEnum.Break,
+                                    // Ensure Room and Subject are null for breaks
+                                    SubjectSemesterId = null,
+                                    RoomId = null
                                 });
                                 continue;
                             }
 
-                            // 2. SELECT SUBJECT
-                            // We shuffle the workloads list each time to prevent the same subject from hogging the start of the week
-                            var selected = workloads
-    .Where(w =>
-        (w.RemainingPracticalBlocks > 0 &&
-         CanFitBlock(w, i, timeSlots, day, globalFacultyTracker, facultyAvail, facultyDailyCount))
-        || w.RemainingTheory > 0)
-    .OrderByDescending(w => w.RemainingPracticalBlocks > 0) // 🔥 force practical first
-    .ThenByDescending(w => w.RemainingPracticalBlocks)
-    .ThenByDescending(w => w.RemainingTheory)
-    .FirstOrDefault();
+                            // 2. SELECT SUBJECT
+                            // We shuffle the workloads list each time to prevent the same subject from hogging the start of the week
+                            var selected = workloads
+  .Where(w =>
+    (w.RemainingTheory > 0 || w.RemainingPracticalBlocks > 0) &&
+    CanFitBlock(w, i, timeSlots, day, globalFacultyTracker, facultyAvail, facultyDailyCount)
+  )
+  .OrderByDescending(w => w.RemainingTheory + w.RemainingPracticalBlocks)
+  .FirstOrDefault();
 
                             if (selected != null)
                             {
@@ -125,19 +132,19 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
 
                                     var currentSlot = timeSlots[currentIdx];
 
-                                    // ❌ STOP if break comes in between
-                                    if (currentSlot.SlotType != SlotTypeEnum.Lecture)
+                                    // ❌ STOP if break comes in between
+                                    if (currentSlot.SlotType != SlotTypeEnum.Lecture)
                                         break;
 
-                                    // ❌ STOP if break rule applies here
-                                    //var innerBreakRule = config.BreakRules
-                                    //    .FirstOrDefault(br => br.AfterLectureNo == lectureCounter + b);
+                                    // ❌ STOP if break rule applies here
+                                    //var innerBreakRule = config.BreakRules
+                                    //    .FirstOrDefault(br => br.AfterLectureNo == lectureCounter + b);
 
-                                    //if (innerBreakRule != null)
-                                    //    break;
+                                    //if (innerBreakRule != null)
+                                    //    break;
 
 
-                                    allEntries.Add(new TimeTableEntry
+                                    allEntries.Add(new TimeTableEntry
                                     {
                                         BatchId = batch.BatchId,
                                         SemesterId = semId,
@@ -162,9 +169,41 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
 
                                 lectureCounter++;
                             }
-                            else
+                            //else
+                            //{
+                            //    allEntries.Add(CreateEntry(batch.BatchId, semId, div.DivisionId, day, slot.TimeSlotId, EntryTypeEnum.Free));
+                            //}
+                            else
                             {
-                                allEntries.Add(CreateEntry(batch.BatchId, semId, div.DivisionId, day, slot.TimeSlotId, EntryTypeEnum.Free));
+                                var fallback = workloads
+                  .Where(w =>
+                    (w.RemainingTheory > 0 || w.RemainingPracticalBlocks > 0) &&
+                    CanFitBlock(w, i, timeSlots, day, globalFacultyTracker, facultyAvail, facultyDailyCount)
+                  )
+                  .OrderByDescending(w => w.RemainingTheory + w.RemainingPracticalBlocks)
+                  .FirstOrDefault();
+
+                                if (fallback != null)
+                                {
+                                    bool isPractical = fallback.RemainingPracticalBlocks > 0;
+
+                                    allEntries.Add(new TimeTableEntry
+                                    {
+                                        BatchId = batch.BatchId,
+                                        SemesterId = semId,
+                                        DivisionId = div.DivisionId,
+                                        DayOfWeek = (byte)day,
+                                        TimeSlotId = slot.TimeSlotId,
+                                        EntryType = EntryTypeEnum.Lecture,
+                                        SubjectSemesterId = fallback.SubjectSemesterId,
+                                        RoomId = AllocateRoom(globalRoomTracker, div.DivisionId, fallback, day, slot.SlotNo)
+                                    });
+
+                                    if (isPractical)
+                                        fallback.RemainingPracticalBlocks--;
+                                    else
+                                        fallback.RemainingTheory--;
+                                }
                             }
                         }
                     }
@@ -183,19 +222,19 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
     }
 
     public async Task<List<Course>> GetCoursesForCoordinatorAsync(int userId) =>
-        await _context.TTCoordinatorCourses.Include(x => x.Course).Where(x => x.UserId == userId).Select(x => x.Course).ToListAsync();
+      await _context.TTCoordinatorCourses.Include(x => x.Course).Where(x => x.UserId == userId).Select(x => x.Course).ToListAsync();
 
     public async Task<List<Semester>> GetSemestersByCourseAsync(int courseId) =>
-        await _context.Semesters.Where(x => x.CourseId == courseId).ToListAsync();
+      await _context.Semesters.Where(x => x.CourseId == courseId).ToListAsync();
 
     public async Task<List<TimeTableTemplate>> GetTemplatesAsync() =>
-        await _context.TimeTableTemplates.Where(x => x.IsActive).OrderByDescending(x => x.IsDefault).ToListAsync();
+      await _context.TimeTableTemplates.Where(x => x.IsActive).OrderByDescending(x => x.IsDefault).ToListAsync();
 
     public async Task<List<TimeTableBatch>> GetAllBatches() =>
-        await _context.TimeTableBatches.Include(x => x.Course).Include(x => x.BatchSemesters).ThenInclude(bs => bs.Semester).OrderByDescending(x => x.CreatedAt).ToListAsync();
+      await _context.TimeTableBatches.Include(x => x.Course).Include(x => x.BatchSemesters).ThenInclude(bs => bs.Semester).OrderByDescending(x => x.CreatedAt).ToListAsync();
 
     public async Task<List<TimeTableEntry>> GetEntriesByBatch(int batchId) =>
-        await _context.TimeTableEntries.Where(x => x.BatchId == batchId).Include(x => x.TimeSlot).Include(x => x.Room).Include(x => x.Division).Include(x => x.SubjectSemester).ThenInclude(ss => ss.Subject).Include(x => x.SubjectSemester).ThenInclude(ss => ss.SubjectFaculties).ThenInclude(sf => sf.Faculty).ToListAsync();
+      await _context.TimeTableEntries.Where(x => x.BatchId == batchId).Include(x => x.TimeSlot).Include(x => x.Room).Include(x => x.Division).Include(x => x.SubjectSemester).ThenInclude(ss => ss.Subject).Include(x => x.SubjectSemester).ThenInclude(ss => ss.SubjectFaculties).ThenInclude(sf => sf.Faculty).ToListAsync();
 
     private static void TrackCollision(Dictionary<(int day, int slot), HashSet<int>> tracker, int day, int slot, int id)
     {
@@ -205,7 +244,7 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
     }
 
     private static TimeTableEntry CreateEntry(int bId, int sId, int dId, int day, int slotId, EntryTypeEnum type)
-        => new() { BatchId = bId, SemesterId = sId, DivisionId = dId, DayOfWeek = (byte)day, TimeSlotId = slotId, EntryType = type };
+      => new() { BatchId = bId, SemesterId = sId, DivisionId = dId, DayOfWeek = (byte)day, TimeSlotId = slotId, EntryType = type };
 
     private static List<int> GetWorkingDays(int mask)
     {
@@ -215,11 +254,11 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
     }
 
     private bool CanFitBlock(SubjectWorkload w, int currentIdx, List<TimeSlot> slots, int day,
-        Dictionary<(int day, int slot), HashSet<int>> fTrack, List<FacultyAvailability> avail, Dictionary<(int day, int facultyId), int> dailyCount)
+      Dictionary<(int day, int slot), HashSet<int>> fTrack, List<FacultyAvailability> avail, Dictionary<(int day, int facultyId), int> dailyCount)
     {
         var faculty = _context.Faculties.Find(w.FacultyId);
-        // Explicitly using the Key to avoid Dictionary inference issues
-        var countKey = (day: day, facultyId: w.FacultyId);
+        // Explicitly using the Key to avoid Dictionary inference issues
+        var countKey = (day: day, facultyId: w.FacultyId);
         int currentDailyCount = dailyCount.ContainsKey(countKey) ? dailyCount[countKey] : 0;
 
         if (faculty?.MaxLecturesPerDay > 0 && currentDailyCount >= faculty.MaxLecturesPerDay)
@@ -233,66 +272,75 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
             if (s.SlotType != SlotTypeEnum.Lecture) return false;
             if (fTrack.ContainsKey((day, s.SlotNo)) && fTrack[(day, s.SlotNo)].Contains(w.FacultyId)) return false;
 
-            // Checking availability based on TimeOnly
-            if (!avail.Any(a => a.FacultyId == w.FacultyId && a.DayOfWeek == day && s.StartTime >= a.StartTime && s.StartTime < a.EndTime))
+            // Checking availability based on TimeOnly
+            if (!avail.Any(a => a.FacultyId == w.FacultyId && a.DayOfWeek == day && s.StartTime >= a.StartTime && s.StartTime < a.EndTime))
                 return false;
         }
         return true;
     }
 
-    //private int? AllocateRoom(Dictionary<(int day, int slot), HashSet<int>> tracker, int divId, SubjectWorkload w, int day, int slot)
-    //{
-    //    var fixedRoom = _context.DivisionRoomAllocations.FirstOrDefault(r => r.DivisionId == divId);
-    //    if (fixedRoom != null && (!tracker.ContainsKey((day, slot)) || !tracker[(day, slot)].Contains(fixedRoom.RoomId)))
-    //        return fixedRoom.RoomId;
+    //private int? AllocateRoom(Dictionary<(int day, int slot), HashSet<int>> tracker, int divId, SubjectWorkload w, int day, int slot)
+    //{
+    //    var fixedRoom = _context.DivisionRoomAllocations.FirstOrDefault(r => r.DivisionId == divId);
+    //    if (fixedRoom != null && (!tracker.ContainsKey((day, slot)) || !tracker[(day, slot)].Contains(fixedRoom.RoomId)))
+    //        return fixedRoom.RoomId;
 
-    //    var rooms = _context.Rooms.Where(r => r.IsActive && r.RoomType == w.PreferredRoomType).ToList();
-    //    foreach (var r in rooms)
-    //        if (!tracker.ContainsKey((day, slot)) || !tracker[(day, slot)].Contains(r.RoomId)) return r.RoomId;
+    //    var rooms = _context.Rooms.Where(r => r.IsActive && r.RoomType == w.PreferredRoomType).ToList();
+    //    foreach (var r in rooms)
+    //        if (!tracker.ContainsKey((day, slot)) || !tracker[(day, slot)].Contains(r.RoomId)) return r.RoomId;
 
-    //    return null;
-    //}
+    //    return null;
+    //}
 
-    private int? AllocateRoom(
-    Dictionary<(int day, int slot), HashSet<int>> tracker,
-    int divId,
-    SubjectWorkload w,
-    int day,
-    int slot)
+    private int? AllocateRoom(
+  Dictionary<(int day, int slot), HashSet<int>> tracker,
+  int divId,
+  SubjectWorkload w,
+  int day,
+  int slot)
     {
-        // 🔥 1. Get required room type
-        var requiredType = w.PreferredRoomType;
+        // 🔥 1. Get required room type
+        var requiredType = w.PreferredRoomType;
 
-        // 🔥 2. Check fixed room BUT match type
-        var fixedRoom = _context.DivisionRoomAllocations
-            .Include(r => r.Room)
-            .FirstOrDefault(r => r.DivisionId == divId && r.Room.RoomType == requiredType);
+        // 🔥 2. Check fixed room BUT match type
+        var fixedRoom = _context.DivisionRoomAllocations
+      .Include(r => r.Room)
+      .FirstOrDefault(r => r.DivisionId == divId && r.Room.RoomType == requiredType);
 
         if (fixedRoom != null)
         {
             if (!tracker.ContainsKey((day, slot)) ||
-                !tracker[(day, slot)].Contains(fixedRoom.RoomId))
+              !tracker[(day, slot)].Contains(fixedRoom.RoomId))
             {
                 return fixedRoom.RoomId;
             }
         }
 
-        // 🔥 3. Fallback → find any available room of required type
-        var rooms = _context.Rooms
-            .Where(r => r.IsActive && r.RoomType == requiredType)
-            .ToList();
+        // 🔥 3. Fallback → find any available room of required type
+        var rooms = _context.Rooms
+      .Where(r => r.IsActive && r.RoomType == requiredType)
+      .ToList();
 
         foreach (var r in rooms)
         {
-            if (!tracker.ContainsKey((day, slot)) ||
-                !tracker[(day, slot)].Contains(r.RoomId))
+            if (r.RoomType == requiredType &&
+              (!tracker.ContainsKey((day, slot)) ||
+              !tracker[(day, slot)].Contains(r.RoomId)))
             {
                 return r.RoomId;
             }
         }
 
-        // ❌ No room available
-        return null;
+        // ❌ No room available
+        //return null;
+        var room = _context.Rooms
+  .FirstOrDefault(r => r.IsActive && r.RoomType == requiredType);
+
+        if (room != null)
+            return room.RoomId;
+
+        // fallback ONLY if absolutely needed
+        return _context.Rooms.FirstOrDefault()?.RoomId ?? 0;
     }
 
     private async Task<List<SubjectWorkload>> LoadWorkloads(List<SubjectSemester> subjects, int divId)
@@ -318,5 +366,5 @@ public class TimetableRepository(AppDbContext context) : ITimetableRepository
     }
 
     private async Task<List<FacultyAvailability>> GetFacultyAvailability(List<int> facultyIds)
-        => await _context.FacultyAvailabilities.Where(a => facultyIds.Contains(a.FacultyId) && a.IsAvailable).ToListAsync();
+      => await _context.FacultyAvailabilities.Where(a => facultyIds.Contains(a.FacultyId) && a.IsAvailable).ToListAsync();
 }
