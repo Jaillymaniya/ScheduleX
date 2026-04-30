@@ -206,6 +206,7 @@ builder.Services.AddScoped(sp =>
         BaseAddress = new Uri(navigation.BaseUri)
     };
 });
+
 builder.Services.AddScoped<ProtectedSessionStorage>();
 // ================= API SERVICES =================
 builder.Services.AddScoped<TTCoordinatorApiService>();
